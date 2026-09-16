@@ -2,6 +2,7 @@ import Quickshell
 import QtQuick
 import Quickshell.Wayland
 import qs.services.paths
+import qs.services.theme
 
 Variants {
     model: Quickshell.screens
@@ -26,6 +27,10 @@ Variants {
                 fillMode: Image.PreserveAspectCrop
                 cache: false
                 asynchronous: true
+            }
+            Rectangle {
+                anchors.fill: parent
+                color: Theme.background
             }
         }
     }
