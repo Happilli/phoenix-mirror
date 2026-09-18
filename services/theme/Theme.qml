@@ -1,6 +1,6 @@
 pragma Singleton
 import Quickshell
-import qs.services.paths
+import qs.configuration.Wallpaper
 import QtQuick
 
 Singleton {
@@ -13,9 +13,9 @@ Singleton {
     }
     ColorQuantizer {
         id: quantizer
-        depth: 3
+        depth: 2
         rescaleSize: 64
-        source: PathService.defaultWallpaper
+        source: WallpaperConfig.currentWallpaper
         onColorsChanged: console.log(colors.length, colors)
     }
     readonly property var colors: quantizer.colors
