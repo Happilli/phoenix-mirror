@@ -3,6 +3,7 @@ import QtQuick
 import Quickshell.Wayland
 import qs.services.theme
 import qs.configuration.Wallpaper
+import qs.components.Wallpaper
 
 Variants {
     model: Quickshell.screens
@@ -29,6 +30,13 @@ Variants {
                 fillMode: Image.PreserveAspectCrop
                 cache: false
                 asynchronous: true
+            }
+            WallpaperCarousel {
+                anchors.bottom: parent.bottom
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.bottomMargin: 20
+                width: 1080
+                height: 220
             }
             Rectangle {
                 id: testColor
