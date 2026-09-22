@@ -16,7 +16,6 @@ Singleton {
         depth: 2
         rescaleSize: 64
         source: WallpaperConfig.currentWallpaper
-        onColorsChanged: console.log(colors.length, colors)
     }
     readonly property var colors: quantizer.colors
 
