@@ -1,7 +1,7 @@
 import Quickshell
 import QtQuick
 import Quickshell.Wayland
-import qs.services.theme
+import qs.services.shapes
 import qs.configuration.Wallpaper
 import qs.components.Wallpaper
 
@@ -31,23 +31,33 @@ Variants {
                 cache: false
                 asynchronous: true
             }
-            WallpaperCarousel {
-                anchors.bottom: parent.bottom
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.bottomMargin: 20
-                width: 1080
-                height: 220
-            }
-            Rectangle {
-                id: testColor
-                anchors.right: parent.right
+            PopOut {
                 anchors.top: parent.top
-                anchors.left: parent.left
-                color: Theme.background
-                height: 40
-                width: 40
-                border.color: "red"
-                border.width: 2
+                anchors.horizontalCenter: parent.horizontalCenter
+                height: hoverHandler.hovered ? 220 : 0.1
+                colour: "red"
+                width: 1080
+                radius: 20
+                Behavior on height {
+                    SpringAnimation {
+                        spring: 2.5
+                        damping: 0.2
+                        epsilon: 0.05
+                    }
+                }
+                HoverHandler {
+                    id: hoverHandler
+                }
+
+                WallpaperCarousel {
+                    anchors.fill: parent
+                    anchors {
+                        leftMargin: 30
+                        rightMargin: 30
+                        topMargin: 10
+                        bottomMargin: 10
+                    }
+                }
             }
         }
     }

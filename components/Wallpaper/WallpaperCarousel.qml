@@ -15,6 +15,7 @@ Item {
     readonly property real maxSideWidth: 120
     readonly property int visionRange: 7
     readonly property real gap: 12
+    readonly property real radius: 30
 
     readonly property real centerWidth: Math.min(0.6 * width, preferredCardWidth)
     readonly property real sideWidth: {
@@ -81,24 +82,27 @@ Item {
             }
         }
     }
-
-    Repeater {
-        model: walls.count
-        ClippingRectangle {
-            id: card
-            required property int index
-            readonly property bool near: Math.abs(index - root.position) < root.visionRange
-            visible: near
-            x: near ? root.leftFor(index) : 0
-            height: root.height
-            width: near ? root.widthFor(index) : 0
-            radius: 30
-            Image {
-                anchors.fill: parent
-                source: card.visible ? "file://" + walls.get(card.index, "filePath") : ""
-                sourceSize.height: root.height
-                asynchronous: true
-                fillMode: Image.PreserveAspectCrop
+    ClippingRectangle {
+        anchors.fill: parent
+        radius: root.radius
+        Repeater {
+            model: walls.count
+            ClippingRectangle {
+                id: card
+                required property int index
+                readonly property bool near: Math.abs(index - root.position) < root.visionRange
+                visible: near
+                x: near ? root.leftFor(index) : 0
+                height: root.height
+                width: near ? root.widthFor(index) : 0
+                radius: root.radius
+                Image {
+                    anchors.fill: parent
+                    source: card.visible ? "file://" + walls.get(card.index, "filePath") : ""
+                    sourceSize.height: 220
+                    asynchronous: true
+                    fillMode: Image.PreserveAspectCrop
+                }
             }
         }
     }
