@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import qs.configuration.Wallpaper
 import Quickshell.Widgets
+import qs.services.theme
 
 Item {
     id: root
@@ -56,6 +57,7 @@ Item {
     onCurrentChanged: {
         if (walls.count) {
             WallpaperConfig.setWallpaper(walls.get(current, "filePath"));
+            Theme.generate();
         }
     }
     Behavior on position {

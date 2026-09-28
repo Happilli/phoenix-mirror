@@ -1,29 +1,28 @@
 pragma Singleton
 import Quickshell
 import qs.configuration.Wallpaper
-import QtQuick
+import Quickshell.Io
 
 Singleton {
     id: root
-    enum Role {
-        Background,
-        Accent,
-        Surface,
-        Text
+    property bool queued: false
+    function generate() {
+        if (matugen.running) {
+            root.queued = true;
+            return;
+        }
+        const src = WallpaperConfig.currentWallpaper.toString().replace("file://", "");
+        matugen.command = ["matugen", "--prefer", "saturation", "image", src];
+        matugen.running = true;
     }
-    ColorQuantizer {
-        id: quantizer
-        depth: 2
-        rescaleSize: 64
-        source: WallpaperConfig.currentWallpaper
-    }
-    readonly property var colors: quantizer.colors
 
-    function colorFor(role) {
-        return role < colors.length ? colors[role] : "transparent";
+    Process {
+        id: matugen
+        onRunningChanged: {
+            if (!running && root.queued) {
+                root.generate();
+                root.queued = false;
+            }
+        }
     }
-    readonly property color background: colorFor(Theme.Background)
-    readonly property color surface: colorFor(Theme.Surface)
-    readonly property color accent: colorFor(Theme.Accent)
-    readonly property color text: colorFor(Theme.Text)
 }
