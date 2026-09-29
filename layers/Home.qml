@@ -36,7 +36,7 @@ Variants {
                 anchors.top: parent.top
                 anchors.horizontalCenter: parent.horizontalCenter
                 height: hoverHandler.hovered ? 220 : 0.1
-                colour: Theme.outline
+                colour: Theme.background
                 width: 1080
                 radius: 20
                 Behavior on height {
