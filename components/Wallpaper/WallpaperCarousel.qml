@@ -87,6 +87,7 @@ Item {
     ClippingRectangle {
         anchors.fill: parent
         radius: root.radius
+        color: "transparent"
         Repeater {
             model: walls.count
             ClippingRectangle {

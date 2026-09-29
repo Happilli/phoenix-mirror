@@ -4,6 +4,7 @@ import Quickshell.Wayland
 import qs.services.shapes
 import qs.configuration.Wallpaper
 import qs.components.Wallpaper
+import qs.services.theme
 
 Variants {
     model: Quickshell.screens
@@ -35,7 +36,7 @@ Variants {
                 anchors.top: parent.top
                 anchors.horizontalCenter: parent.horizontalCenter
                 height: hoverHandler.hovered ? 220 : 0.1
-                colour: "red"
+                colour: Theme.outline
                 width: 1080
                 radius: 20
                 Behavior on height {
