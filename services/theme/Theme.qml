@@ -3,12 +3,15 @@ import Quickshell
 import qs.configuration.Wallpaper
 import Quickshell.Io
 import qs.services.paths
+import qs.services.state
 import QtQuick
 
 Singleton {
     id: root
+    property string mode: StateService.get("mode", "dark")
     property string lastText: ""
     property bool queued: false
+    readonly property bool isDark: mode === "dark"
 
     property var md3: ({})
     property var palette: ({})
@@ -23,6 +26,17 @@ Singleton {
     readonly property color onBackground: md3_returner("on_background")
     readonly property color primary: md3_returner("primary")
     readonly property color onPrimary: md3_returner("on_primary")
+    function setMode(newMode) {
+        if (newMode !== "light" && newMode !== "dark")
+            return;
+        if (newMode === mode)
+            return;
+        StateService.set("mode", newMode);
+        generate();
+    }
+    function toggleMode() {
+        return setMode(isDark ? "light" : "dark");
+    }
 
     function generate() {
         if (matugen.running) {
@@ -30,7 +44,7 @@ Singleton {
             return;
         }
         const src = WallpaperConfig.currentWallpaper.toString().replace("file://", "");
-        matugen.command = ["matugen", "--prefer", "saturation", "image", src];
+        matugen.command = ["matugen", "--mode", root.mode, "--prefer", "saturation", "image", src];
         matugen.running = true;
     }
 
@@ -38,8 +52,8 @@ Singleton {
         id: matugen
         onRunningChanged: {
             if (!running && root.queued) {
-                root.generate();
                 root.queued = false;
+                root.generate();
             }
         }
     }
