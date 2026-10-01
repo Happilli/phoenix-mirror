@@ -60,24 +60,6 @@ Variants {
                     }
                 }
             }
-            Rectangle {
-                anchors.bottom: parent.bottom
-                anchors.horizontalCenter: parent.horizontalCenter
-                width: 120
-                height: 40
-                color: Theme.primary
-                radius: 20
-                Text {
-                    text: Theme.isDark ? "light" : "dark"
-                    anchors.centerIn: parent
-                    color: Theme.onPrimary
-                }
-                MouseArea {
-                    anchors.fill: parent
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: Theme.toggleMode()
-                }
-            }
         }
     }
 }

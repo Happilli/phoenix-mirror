@@ -10,6 +10,7 @@ Item {
     property int current: 0
     property real position: current
     property real scroll: 0
+    property bool animate: false
 
     readonly property real preferredCardWidth: 360
     readonly property real minSideWidth: 60
@@ -54,13 +55,26 @@ Item {
         return x;
     }
 
-    onCurrentChanged: {
-        if (walls.count) {
-            WallpaperConfig.setWallpaper(walls.get(current, "filePath"));
-            Theme.generate();
+    function syncToCurrent() {
+        const target = WallpaperConfig.currentWallpaper.toString();
+        for (let i = 0; i < walls.count; i++) {
+            if ("file://" + walls.get(i, "filePath") === target) {
+                current = i;
+                break;
+            }
         }
+        animate = true;
+    }
+    function select(index) {
+        if (index < 0 || index === current || index >= walls.count) {
+            return;
+        }
+        current = index;
+        WallpaperConfig.setWallpaper(walls.get(index, "filePath"));
+        Theme.generate();
     }
     Behavior on position {
+        enabled: root.animate
         SpringAnimation {
             spring: 1.7
             damping: 0.5
@@ -69,6 +83,7 @@ Item {
     }
     WallpaperModel {
         id: walls
+        onLoaded: root.syncToCurrent()
     }
     MouseArea {
         anchors.fill: parent
@@ -76,10 +91,10 @@ Item {
         onWheel: wheel => {
             root.scroll -= wheel.pixelDelta.x;
             if (root.scroll >= 50) {
-                root.current = Math.min(walls.count - 1, root.current + 1);
+                root.select(root.current + 1);
                 root.scroll = 0;
             } else if (root.scroll <= -50) {
-                root.current = Math.max(0, root.current - 1);
+                root.select(root.current - 1);
                 root.scroll = 0;
             }
         }

@@ -7,5 +7,6 @@ ShellRoot {
     Scope {
         // IpcRegistry {}
         Home {}
+        AboveHome {}
     }
 }
