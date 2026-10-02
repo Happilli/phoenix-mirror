@@ -45,6 +45,7 @@ Variants {
             }
             Bar {
                 id: bar
+                screen: screenScope.modelData
                 height: screenScope.barHeight
                 radius: screenScope.radius
                 colour: Theme.background

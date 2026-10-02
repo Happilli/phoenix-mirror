@@ -6,6 +6,7 @@ Item {
     id: root
     property real radius
     property color colour
+    property var screen
     Shape {
         anchors.fill: parent
         preferredRendererType: Shape.CurveRenderer
@@ -58,6 +59,13 @@ Item {
                 cursorShape: Qt.PointingHandCursor
                 onClicked: Theme.toggleMode()
             }
+        }
+        Workspace {
+            screen: root.screen
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.left: parent.left
+            anchors.verticalCenterOffset: root.radius / 2
+            anchors.leftMargin: root.radius / 2 + 16
         }
     }
 }
