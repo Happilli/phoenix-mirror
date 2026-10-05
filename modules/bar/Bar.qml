@@ -67,5 +67,11 @@ Item {
             anchors.verticalCenterOffset: root.radius / 2
             anchors.leftMargin: root.radius / 2 + 16
         }
+        Battery {
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.right: parent.right
+            anchors.verticalCenterOffset: root.radius / 2
+            anchors.rightMargin: root.radius / 2 + 16
+        }
     }
 }
