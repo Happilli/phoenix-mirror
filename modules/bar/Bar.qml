@@ -68,10 +68,17 @@ Item {
             anchors.leftMargin: root.radius / 2 + 16
         }
         Battery {
+            id: battery
             anchors.verticalCenter: parent.verticalCenter
             anchors.right: parent.right
             anchors.verticalCenterOffset: root.radius / 2
             anchors.rightMargin: root.radius / 2 + 16
+        }
+        DateTime {
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.right: battery.left
+            anchors.verticalCenterOffset: root.radius / 2
+            anchors.rightMargin: root.radius
         }
     }
 }

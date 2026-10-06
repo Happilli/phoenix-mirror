@@ -10,8 +10,8 @@ Item {
     property real shown: level
     readonly property bool charging: device.state === UPowerDeviceState.Charging || device.state === UPowerDeviceState.FullyCharged
     readonly property bool critical: !charging && level <= 0.5
-    width: 45
-    height: 25
+    width: 55
+    height: 28
 
     Behavior on shown {
         NumberAnimation {
