@@ -61,12 +61,20 @@ Item {
             }
         }
         Workspace {
+            id: workspace
             screen: root.screen
             anchors.verticalCenter: parent.verticalCenter
             anchors.left: parent.left
             anchors.verticalCenterOffset: root.radius / 2
             anchors.leftMargin: root.radius / 2 + 16
         }
+        OpenedApp {
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.left: workspace.right
+            anchors.verticalCenterOffset: root.radius / 2
+            anchors.leftMargin: root.radius / 2 + 16
+        }
+
         Battery {
             id: battery
             anchors.verticalCenter: parent.verticalCenter
