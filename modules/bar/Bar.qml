@@ -83,8 +83,15 @@ Item {
             anchors.rightMargin: root.radius / 2 + 16
         }
         DateTime {
+            id: datetime
             anchors.verticalCenter: parent.verticalCenter
             anchors.right: battery.left
+            anchors.verticalCenterOffset: root.radius / 2
+            anchors.rightMargin: root.radius
+        }
+        NotificationsIndicator {
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.right: datetime.left
             anchors.verticalCenterOffset: root.radius / 2
             anchors.rightMargin: root.radius
         }
