@@ -35,6 +35,9 @@ Variants {
             color: "transparent"
             mask: Region {
                 item: bar
+                Region {
+                    item: bar.popupS
+                }
             }
 
             anchors {

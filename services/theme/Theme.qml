@@ -47,7 +47,7 @@ Singleton {
             return;
         }
         const src = WallpaperConfig.currentWallpaper.toString().replace("file://", "");
-        matugen.command = ["matugen", "--mode", root.mode, "--prefer", "saturation", "image", src];
+        matugen.command = ["matugen", "--mode", root.mode, "--type", "scheme-content", "--source-color-index", "0", "image", src];
         matugen.running = true;
     }
 

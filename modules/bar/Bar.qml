@@ -7,6 +7,8 @@ Item {
     property real radius
     property color colour
     property var screen
+    readonly property Item popupS: controls.popupItem
+
     Shape {
         anchors.fill: parent
         preferredRendererType: Shape.CurveRenderer
@@ -81,6 +83,13 @@ Item {
             anchors.right: parent.right
             anchors.verticalCenterOffset: root.radius / 2
             anchors.rightMargin: root.radius / 2 + 16
+        }
+        Controls {
+            id: controls
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.right: datetime.left
+            anchors.verticalCenterOffset: root.radius / 2
+            anchors.rightMargin: root.radius
         }
         DateTime {
             id: datetime
