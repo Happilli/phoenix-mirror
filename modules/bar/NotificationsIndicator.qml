@@ -18,6 +18,6 @@ Row {
         anchors.verticalCenter: parent.verticalCenter
         text: root.list ? root.list.summary : ""
         font.pixelSize: 17
-        color: Theme.onSurfaceVariant
+        color: Theme.onSurfaceVariantColor
     }
 }

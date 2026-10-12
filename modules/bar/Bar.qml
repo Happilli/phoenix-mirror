@@ -54,7 +54,7 @@ Item {
             Text {
                 text: Theme.isDark ? "light" : "dark"
                 anchors.centerIn: parent
-                color: Theme.onPrimary
+                color: Theme.onPrimaryColor
             }
             MouseArea {
                 anchors.fill: parent

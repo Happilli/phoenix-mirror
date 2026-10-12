@@ -16,7 +16,7 @@ Item {
         anchors.centerIn: parent
         Text {
             anchors.verticalCenter: parent.verticalCenter
-            color: Theme.onSurfaceVariant
+            color: Theme.onSurfaceVariantColor
             text: Qt.formatDateTime(sysClock.date, "ddd, d MMM")
             font.pixelSize: 16
             font.bold: true
@@ -26,7 +26,7 @@ Item {
             height: 4
             radius: 4
             anchors.verticalCenter: parent.verticalCenter
-            color: Theme.onSurfaceVariant
+            color: Theme.onSurfaceVariantColor
         }
         Text {
             color: Theme.primary

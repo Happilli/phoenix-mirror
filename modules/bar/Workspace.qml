@@ -31,7 +31,7 @@ Row {
             width: active ? 45 : 10
             height: 10
             radius: height / 2
-            color: filled ? Theme.primary : Theme.onBackground
+            color: filled ? Theme.primary : Theme.onBackgroundColor
 
             Behavior on width{
               SpringAnimation{

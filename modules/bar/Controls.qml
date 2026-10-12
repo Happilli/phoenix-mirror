@@ -2,28 +2,57 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import qs.services.theme
 import Ryu.Extraa
+import qs.services.controls
 
 Rectangle {
     id: root
-    color: Theme.onBackground
+    color: Theme.surfaceContainer
     implicitWidth: 150
-    implicitHeight: 44
+    implicitHeight: 38
     radius: height / 2
 
-    readonly property var controls: [
-        {
-            value: 1,
-            icon: "\uf027"
-        },
-        {
-            value: 0.5,
-            icon: "\udb80\udce0"
-        },
-        {
-            value: 0.8,
-            icon: "\uf130"
+    function iconOf(key) {
+        switch (key) {
+        case "volume":
+            if (AudioService.muted || AudioService.volume <= 0) {
+                return "\uf026";
+            }
+            return AudioService.volume < 0.5 ? "\uf027" : "\uf028";
+        case "brightness":
+            return "\udb80\udce0";
+        case "mic":
+            return AudioService.micMuted ? "\uf131" : "\uf130";
         }
-    ]
+        return "";
+    }
+    function valueOf(key) {
+        switch (key) {
+        case "volume":
+            return AudioService.volume;
+        case "brightness":
+            return 1;
+        case "mic":
+            return AudioService.micVolume;
+        }
+        return 0;
+    }
+    function toggleMute(key) {
+        if (key === "volume")
+            AudioService.toggleMute();
+        else if (key === "mic")
+            AudioService.toggleMicMute();
+    }
+    function setValue(key, v) {
+        switch (key) {
+        case "volume":
+            AudioService.setVolume(v);
+            break;
+        case "mic":
+            AudioService.setMicVolume(v);
+            break;
+        }
+    }
+    readonly property var controls: ["volume", "brightness", "mic"]
 
     readonly property bool open: pillHover.hovered || popupHover.hovered
     property alias popupItem: panel
@@ -47,7 +76,7 @@ Rectangle {
 
         Rectangle {
             id: card
-            width: sliders.implicitWidth + (root.gap * 2 - (root.itemWidth - root.trackWidth)) * 2
+            width: sliders.implicitWidth + root.gap * 2 - (root.itemWidth - root.trackWidth)
             height: sliders.implicitHeight + root.gap * 2
             radius: root.gap + 12
             color: Theme.background
@@ -62,7 +91,7 @@ Rectangle {
                         required property var modelData
                         orientation: MaterialSlider.Vertical
                         sizeStyle: MaterialSlider.Medium
-                        value: modelData.value
+                        value: root.valueOf(modelData)
                         showStops: false
                         showValueIndicator: false
                         outerRadius: 12
@@ -70,6 +99,12 @@ Rectangle {
                         trackColor: Theme.surfaceContainerHighest
                         color: Theme.primary
                         handleColor: Theme.primary
+
+                        onValueChanged: {
+                            if (Math.abs(value - root.valueOf(modelData)) > 0.005) {
+                                root.setValue(modelData, value);
+                            }
+                        }
 
                         Component.onCompleted: {
                             width = root.itemWidth;
@@ -95,21 +130,26 @@ Rectangle {
                 required property var modelData
                 WavyProgress {
                     anchors.centerIn: parent
-                    anchors.verticalCenter: parent.verticalCenter
                     style: WavyProgress.Circular
                     amplitude: 0
                     strokeWidth: 3
                     trackColor: Theme.surfaceContainerHighest
                     color: Theme.primary
-                    progress: cell.modelData.value
+                    progress: root.valueOf(cell.modelData)
                     indeterminate: false
                     width: 32
                     height: 32
                 }
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: root.toggleMute(cell.modelData)
+                }
+
                 Text {
                     anchors.centerIn: parent
-                    text: cell.modelData.icon
-                    color: Theme.onSurfaceVariant
+                    text: root.iconOf(cell.modelData)
+                    color: Theme.onSurfaceVariantColor
                     font.bold: true
                     font.pixelSize: 17
                 }

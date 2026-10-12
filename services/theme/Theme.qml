@@ -22,13 +22,15 @@ Singleton {
     }
 
     readonly property color background: md3_returner("background")
+    readonly property color onBackgroundColor: md3_returner("on_background")
     readonly property color error: md3_returner("error")
-    readonly property color onBackground: md3_returner("on_background")
+    readonly property color onErrorColor: md3_returner("on_error")
     readonly property color primary: md3_returner("primary")
-    readonly property color onPrimary: md3_returner("on_primary")
-    readonly property color onError: md3_returner("on_error")
+    readonly property color onPrimaryColor: md3_returner("on_primary")
     readonly property color surfaceContainerHighest: md3_returner("surface_container_highest")
-    readonly property color onSurfaceVariant: md3_returner("on_surface_variant")
+    readonly property color surfaceContainer: md3_returner("surface_container")
+    readonly property color onSurfaceVariantColor: md3_returner("on_surface_variant")
+
     function setMode(newMode) {
         if (newMode !== "light" && newMode !== "dark")
             return;

@@ -9,7 +9,7 @@ Variants {
     Scope {
         id: screenScope
         required property var modelData
-        property int barHeight: 55
+        property int barHeight: 60
         property int gap: 2
         property int radius: 15
 

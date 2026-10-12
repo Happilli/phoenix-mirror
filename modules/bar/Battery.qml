@@ -58,7 +58,7 @@ Item {
 
     Layer {
         base: Theme.surfaceContainerHighest
-        textColor: Theme.onSurfaceVariant
+        textColor: Theme.onSurfaceVariantColor
     }
 
     Item {
@@ -68,7 +68,7 @@ Item {
 
         Layer {
             base: root.critical ? Theme.error : Theme.primary
-            textColor: root.critical ? Theme.onError : Theme.onPrimary
+            textColor: root.critical ? Theme.onErrorColor : Theme.onPrimaryColor
         }
     }
 }
