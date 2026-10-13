@@ -27,10 +27,12 @@ Item {
             return calendarLoader.item;
         if (target === appSlot)
             return previewLoader.item;
+        if (target === nightMode)
+            return nightLoader.item;
         return null;
     }
 
-    readonly property bool popupShown: notchOpen && (target === controls || target === powerProfile || target === datetime || target === appSlot)
+    readonly property bool popupShown: notchOpen && (target === controls || target === powerProfile || target === datetime || target === appSlot || target === nightMode)
     readonly property Item hoveredItem: {
         if (powerHover.hovered)
             return powerProfile;
@@ -42,8 +44,8 @@ Item {
             return datetime;
         if (openedApp.hoveredCell)
             return appSlot;
-        if (workspaceHover.hovered)
-            return workspace;
+        if (nightHover.hovered)
+            return nightMode;
         if (host.hovered)
             return target;
         return null;
@@ -171,17 +173,24 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             anchors.left: parent.left
             anchors.verticalCenterOffset: root.radius / 2
-            anchors.leftMargin: root.radius + root.notchPadding + root.notchRadius
+            anchors.leftMargin: root.itemGap + root.notchPadding 
+        }
+        NightModeButton {
+            id: nightMode
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.left: workspace.right
+            anchors.verticalCenterOffset: root.radius / 2
+            anchors.leftMargin: root.itemGap 
             HoverHandler {
-                id: workspaceHover
+                id: nightHover
             }
         }
         OpenedApp {
             id: openedApp
             anchors.verticalCenter: parent.verticalCenter
-            anchors.left: workspace.right
+            anchors.left: nightMode.right
             anchors.verticalCenterOffset: root.radius / 2
-            anchors.leftMargin: 18
+            anchors.leftMargin: root.itemGap
         }
         Item {
             id: appSlot
@@ -311,6 +320,14 @@ Item {
                 active: true
                 group: openedApp.hoverGroup
                 maxWidth: root.width - 2 * host.edgeMargin - host.pad * 2
+            }
+        }
+        Loader {
+            id: nightLoader
+            anchors.centerIn: parent
+            active: root.notchOpen && root.target === nightMode
+            sourceComponent: NightModePopup {
+                active: true
             }
         }
     }
