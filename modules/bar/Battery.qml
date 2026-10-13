@@ -3,15 +3,19 @@ import QtQuick
 import qs.services.theme
 import Quickshell.Services.UPower
 
-Item {
+Rectangle {
     id: root
     readonly property var device: UPower.displayDevice
     readonly property real level: Math.max(0, Math.min(1, device.percentage))
     property real shown: level
     readonly property bool charging: device.state === UPowerDeviceState.Charging || device.state === UPowerDeviceState.FullyCharged
     readonly property bool critical: !charging && level <= 0.5
-    width: 55
-    height: 28
+    readonly property real barWidth: 55
+    readonly property real barHeight: 28
+    color: Theme.surfaceContainer
+    width: barWidth + 16
+    radius: height / 2
+    height: 40
 
     Behavior on shown {
         NumberAnimation {
@@ -25,12 +29,12 @@ Item {
         property color base
         property color textColor
 
-        width: root.width
-        height: root.height
+        width: root.barWidth
+        height: root.barHeight
 
         Rectangle {
-            width: root.width
-            height: root.height
+            width: root.barWidth
+            height: root.barHeight
             radius: height / 2
             color: layer.base
         }
@@ -56,19 +60,24 @@ Item {
         }
     }
 
-    Layer {
-        base: Theme.surfaceContainerHighest
-        textColor: Theme.onSurfaceVariantColor
-    }
-
     Item {
-        width: root.width * root.shown
-        height: root.height
-        clip: true
-
+        anchors.centerIn: parent
+        width: root.barWidth
+        height: root.barHeight
         Layer {
-            base: root.critical ? Theme.error : Theme.primary
-            textColor: root.critical ? Theme.onErrorColor : Theme.onPrimaryColor
+            base: Theme.surfaceContainerHighest
+            textColor: Theme.onSurfaceVariantColor
+        }
+
+        Item {
+            width: root.barWidth * root.shown
+            height: root.barHeight
+            clip: true
+
+            Layer {
+                base: root.critical ? Theme.error : Theme.primary
+                textColor: root.critical ? Theme.onErrorColor : Theme.onPrimaryColor
+            }
         }
     }
 }

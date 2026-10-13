@@ -6,10 +6,12 @@ import qs.services.controls
 
 Rectangle {
     id: root
-    color: Theme.surfaceContainer
-    implicitWidth: 150
-    implicitHeight: 38
+    color: Theme.background
+    implicitWidth: 120
+    implicitHeight: 40
     radius: height / 2
+
+    readonly property var controls: ["volume", "brightness", "mic"]
 
     function iconOf(key) {
         switch (key) {
@@ -52,72 +54,6 @@ Rectangle {
             break;
         }
     }
-    readonly property var controls: ["volume", "brightness", "mic"]
-
-    readonly property bool open: pillHover.hovered || popupHover.hovered
-    property alias popupItem: panel
-    readonly property int gap: 8
-    readonly property int sliderLength: 400
-    readonly property int itemWidth: 50
-    readonly property int trackWidth: 42
-
-    Item {
-        id: panel
-        width: root.open ? card.width : 0
-        height: root.open ? card.height + root.y - 7 : 0
-
-        y: -height
-        x: Math.round((root.width - width) / 2)
-        visible: root.open
-
-        HoverHandler {
-            id: popupHover
-        }
-
-        Rectangle {
-            id: card
-            width: sliders.implicitWidth + root.gap * 2 - (root.itemWidth - root.trackWidth)
-            height: sliders.implicitHeight + root.gap * 2
-            radius: root.gap + 12
-            color: Theme.background
-
-            Row {
-                id: sliders
-                anchors.centerIn: parent
-                spacing: -(root.itemWidth - root.trackWidth - root.gap)
-                Repeater {
-                    model: root.controls
-                    MaterialSlider {
-                        required property var modelData
-                        orientation: MaterialSlider.Vertical
-                        sizeStyle: MaterialSlider.Medium
-                        value: root.valueOf(modelData)
-                        showStops: false
-                        showValueIndicator: false
-                        outerRadius: 12
-                        innerRadius: 2
-                        trackColor: Theme.surfaceContainerHighest
-                        color: Theme.primary
-                        handleColor: Theme.primary
-
-                        onValueChanged: {
-                            if (Math.abs(value - root.valueOf(modelData)) > 0.005) {
-                                root.setValue(modelData, value);
-                            }
-                        }
-
-                        Component.onCompleted: {
-                            width = root.itemWidth;
-                            height = root.sliderLength;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    HoverHandler {
-        id: pillHover
-    }
 
     Row {
         anchors.centerIn: parent
@@ -125,7 +61,7 @@ Rectangle {
             model: root.controls
             Item {
                 id: cell
-                width: 50
+                width: 39
                 height: root.height
                 required property var modelData
                 WavyProgress {
@@ -137,8 +73,8 @@ Rectangle {
                     color: Theme.primary
                     progress: root.valueOf(cell.modelData)
                     indeterminate: false
-                    width: 32
-                    height: 32
+                    width: 35
+                    height: 35
                 }
                 MouseArea {
                     anchors.fill: parent

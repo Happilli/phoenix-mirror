@@ -2,10 +2,13 @@ import QtQuick
 import Quickshell
 import qs.services.theme
 
-Item {
+Rectangle {
     id: root
-    implicitWidth: row.implicitWidth
-    implicitHeight: row.implicitHeight
+    color: Theme.background
+    radius: height / 2
+    implicitWidth: row.implicitWidth + 10
+    implicitHeight: 40
+
     SystemClock {
         id: sysClock
         precision: SystemClock.Minutes
