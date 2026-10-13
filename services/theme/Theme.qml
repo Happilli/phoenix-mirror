@@ -30,7 +30,16 @@ Singleton {
     readonly property color surfaceContainerHighest: md3_returner("surface_container_highest")
     readonly property color surfaceContainer: md3_returner("surface_container")
     readonly property color onSurfaceVariantColor: md3_returner("on_surface_variant")
+    property string scheme: StateService.get("scheme", "scheme-content")
 
+    readonly property var schemes: ["scheme-content", "scheme-expressive", "scheme-fidelity", "scheme-fruit-salad", "scheme-monochrome", "scheme-neutral", "scheme-rainbow", "scheme-tonal-spot"]
+
+    function setScheme(s) {
+        if (s === scheme)
+            return;
+        StateService.set("scheme", s);
+        generate();
+    }
     function setMode(newMode) {
         if (newMode !== "light" && newMode !== "dark")
             return;
@@ -49,7 +58,7 @@ Singleton {
             return;
         }
         const src = WallpaperConfig.currentWallpaper.toString().replace("file://", "");
-        matugen.command = ["matugen", "--mode", root.mode, "--type", "scheme-content", "--source-color-index", "0", "image", src];
+        matugen.command = ["matugen", "--mode", root.mode, "--type", root.scheme, "--source-color-index", "0", "image", src];
         matugen.running = true;
     }
 
@@ -62,14 +71,20 @@ Singleton {
             }
         }
     }
+    Timer {
+        id: reloadTimer
+        interval: 50
+        onTriggered: colorsFile.reload()
+    }
     FileView {
+        id: colorsFile
         path: PathService.home + "/.local/state/ryu/colors.json"
         watchChanges: true
-        onFileChanged: reload()
+        onFileChanged: reloadTimer.restart()
         onLoadFailed: err => console.log("error loading file: ", err)
         onLoaded: {
             const raw = text();
-            if (raw === root.lastText) {
+            if (raw.trim() === "" || raw === root.lastText) {
                 return;
             }
             let data;
