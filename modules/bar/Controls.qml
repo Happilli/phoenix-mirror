@@ -32,7 +32,7 @@ Rectangle {
         case "volume":
             return AudioService.volume;
         case "brightness":
-            return 1;
+            return BrightnessService.brightness;
         case "mic":
             return AudioService.micVolume;
         }
@@ -43,6 +43,7 @@ Rectangle {
             AudioService.toggleMute();
         else if (key === "mic")
             AudioService.toggleMicMute();
+        OsdService.show(key);
     }
     function setValue(key, v) {
         switch (key) {
@@ -52,9 +53,12 @@ Rectangle {
         case "mic":
             AudioService.setMicVolume(v);
             break;
+        case "brightness":
+            BrightnessService.setBrightness(v);
+            break;
         }
+        OsdService.show(key);
     }
-
     Row {
         anchors.centerIn: parent
         Repeater {

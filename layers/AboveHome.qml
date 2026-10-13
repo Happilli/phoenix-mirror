@@ -3,6 +3,7 @@ import QtQuick
 import Quickshell.Wayland
 import qs.services.theme
 import qs.modules.bar
+import qs.components.osd
 
 Variants {
     model: Quickshell.screens
@@ -57,6 +58,11 @@ Variants {
                     left: parent.left
                     right: parent.right
                 }
+            }
+            Osd {
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.bottom: bar.top
+                anchors.bottomMargin: 8
             }
         }
     }

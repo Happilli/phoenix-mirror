@@ -12,6 +12,7 @@ Item {
     property real pad: 8
     property real gap: 0
     property real cardRadius: 20
+    property real edgeMargin: 12
 
     readonly property bool hovered: hover.hovered
     default property alias slot: holder.data
@@ -66,9 +67,11 @@ Item {
         }
     }
 
-    width: Math.max(0, w)
-    height: Math.max(0, h)
-    x: Math.round(cx - width / 2)
+    readonly property real parentW: parent ? parent.width : 0
+
+    width: shown ? Math.max(0, w) : 0
+    height: shown ? Math.max(0, h) : 0
+    x: Math.round(Math.max(edgeMargin, Math.min(cx - width / 2, parentW - width - edgeMargin)))
     y: bottomY - height
     visible: shown && height > 0.5
 

@@ -25,10 +25,12 @@ Item {
             return powerLoader.item;
         if (target === datetime)
             return calendarLoader.item;
+        if (target === appSlot)
+            return previewLoader.item;
         return null;
     }
 
-    readonly property bool popupShown: notchOpen && (target === controls || target === powerProfile || target === datetime)
+    readonly property bool popupShown: notchOpen && (target === controls || target === powerProfile || target === datetime || target === appSlot)
     readonly property Item hoveredItem: {
         if (powerHover.hovered)
             return powerProfile;
@@ -38,6 +40,8 @@ Item {
             return controls;
         if (dateHover.hovered)
             return datetime;
+        if (openedApp.hoveredCell)
+            return appSlot;
         if (workspaceHover.hovered)
             return workspace;
         if (host.hovered)
@@ -173,10 +177,16 @@ Item {
             }
         }
         OpenedApp {
+            id: openedApp
             anchors.verticalCenter: parent.verticalCenter
             anchors.left: workspace.right
             anchors.verticalCenterOffset: root.radius / 2
             anchors.leftMargin: 18
+        }
+        Item {
+            id: appSlot
+            x: openedApp.x + openedApp.lastX
+            width: 32
         }
         Battery {
             id: battery
@@ -291,6 +301,16 @@ Item {
             active: root.notchOpen && root.target === datetime
             sourceComponent: CalendarPopup {
                 active: true
+            }
+        }
+        Loader {
+            id: previewLoader
+            anchors.centerIn: parent
+            active: root.notchOpen && root.target === appSlot
+            sourceComponent: WindowPreviewPopup {
+                active: true
+                group: openedApp.hoverGroup
+                maxWidth: root.width - 2 * host.edgeMargin - host.pad * 2
             }
         }
     }

@@ -9,6 +9,16 @@ Row {
     id: root
     spacing: 2
 
+    property var hoveredCell: null
+    property real lastX: 0
+    property string lastAppId: ""
+    readonly property var hoverGroup: groups.find(g => g.appId === lastAppId) ?? null
+
+    onHoveredCellChanged: if (hoveredCell) {
+        lastX = hoveredCell.x;
+        lastAppId = hoveredCell.modelData.appId;
+    }
+
     readonly property var groups: {
         DesktopEntries.applications.values;
         const list = ToplevelManager.toplevels.values;
@@ -86,6 +96,15 @@ Row {
                             duration: 150
                         }
                     }
+                }
+            }
+
+            HoverHandler {
+                onHoveredChanged: {
+                    if (hovered)
+                        root.hoveredCell = cell;
+                    else if (root.hoveredCell === cell)
+                        root.hoveredCell = null;
                 }
             }
 
