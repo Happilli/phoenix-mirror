@@ -5,4 +5,5 @@ Scope {
     LockIpc {}
     ScreenshotIpc {}
     RecorderIpc {}
+    ClipboardIpc {}
 }

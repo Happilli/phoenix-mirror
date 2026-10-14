@@ -29,10 +29,12 @@ Item {
             return previewLoader.item;
         if (target === nightMode)
             return nightLoader.item;
+        if (target === startMenu)
+            return startLoader.item;
         return null;
     }
 
-    readonly property bool popupShown: notchOpen && (target === controls || target === powerProfile || target === datetime || target === appSlot || target === nightMode)
+    readonly property bool popupShown: notchOpen && (target === controls || target === powerProfile || target === datetime || target === appSlot || target === nightMode || target === startMenu)
     readonly property Item hoveredItem: {
         if (powerHover.hovered)
             return powerProfile;
@@ -46,6 +48,8 @@ Item {
             return appSlot;
         if (nightHover.hovered)
             return nightMode;
+        if (startHover.hovered)
+            return startMenu;
         if (host.hovered)
             return target;
         return null;
@@ -60,6 +64,7 @@ Item {
             easing.type: Easing.OutCubic
         }
     }
+
     property real recOffset: (notchOpen && target === powerProfile) ? dateShift : 0
     Behavior on recOffset {
         NumberAnimation {
@@ -186,10 +191,21 @@ Item {
             anchors.verticalCenterOffset: root.radius / 2
             anchors.leftMargin: root.itemGap + root.notchPadding
         }
+        StartButton {
+            id: startMenu
+            open: root.notchOpen && root.target === startMenu
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.left: workspace.right
+            anchors.verticalCenterOffset: root.radius / 2
+            anchors.leftMargin: root.itemGap
+            HoverHandler {
+                id: startHover
+            }
+        }
         NightModeButton {
             id: nightMode
             anchors.verticalCenter: parent.verticalCenter
-            anchors.left: workspace.right
+            anchors.left: startMenu.right
             anchors.verticalCenterOffset: root.radius / 2
             anchors.leftMargin: root.itemGap
             HoverHandler {
@@ -339,6 +355,17 @@ Item {
             anchors.centerIn: parent
             active: root.notchOpen && root.target === nightMode
             sourceComponent: NightModePopup {
+                active: true
+            }
+        }
+        Loader {
+            id: startLoader
+            anchors.left: parent.left
+            anchors.leftMargin: host.pad
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: host.pad
+            active: root.notchOpen && root.target === startMenu
+            sourceComponent: StartMenuPopup {
                 active: true
             }
         }

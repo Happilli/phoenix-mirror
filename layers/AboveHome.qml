@@ -32,6 +32,7 @@ Variants {
             namespace: "phoenix-aboveHome"
             screen: screenScope.modelData
             layer: WlrLayer.Top
+            keyboardFocus: WlrKeyboardFocus.OnDemand
             exclusiveZone: -1
             color: "transparent"
             mask: Region {
