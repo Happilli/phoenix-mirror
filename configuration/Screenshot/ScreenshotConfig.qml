@@ -2,18 +2,20 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Hyprland
-import Quickshell.Io
 import qs.services.paths
+import qs.services.screenshot
 
 Singleton {
     id: root
 
     property bool capturing: false
     property bool silent: false
+    property bool regionMode: false
+    property bool selecting: false
+    property string selectScreen: ""
+    property string selectSource: ""
     property var targets: []
     property int pending: 0
-
-    readonly property string saveDir: PathService.home + "/Screenshots"
 
     signal captured(string screenName, string path)
     signal finished
@@ -23,7 +25,7 @@ Singleton {
     }
 
     function begin(names, quiet) {
-        if (capturing || names.length === 0) {
+        if (capturing || selecting || names.length === 0) {
             return false;
         }
         silent = quiet;
@@ -55,34 +57,49 @@ Singleton {
         finished();
     }
 
-    function captureFocused() {
-        const name = Hyprland.focusedMonitor?.name ?? Quickshell.screens[0]?.name;
-        if (!name) {
-            return false;
-        }
-        return begin([name], false);
+    function focusedName() {
+        return Hyprland.focusedMonitor?.name ?? Quickshell.screens[0]?.name ?? "";
     }
 
-    function captureAll() {
-        return begin(Quickshell.screens.map(s => s.name), false);
+    function captureFocused() {
+        const name = focusedName();
+        regionMode = false;
+        return name !== "" && begin([name], false);
+    }
+
+    function captureRegion() {
+        const name = focusedName();
+        regionMode = true;
+        return name !== "" && begin([name], false);
+    }
+
+    function finishSelect(geom) {
+        const source = selectSource;
+        selecting = false;
+        regionMode = false;
+        if (geom !== "") {
+            ScreenshotService.present(selectScreen, source, geom);
+        } else {
+            Quickshell.execDetached(["rm", "-f", source]);
+        }
     }
 
     onCaptured: (screenName, path) => {
         if (silent) {
             return;
         }
-        const ts = Qt.formatDateTime(new Date(), "yyyy-MM-dd_hh-mm-ss");
-        const dest = saveDir + "/screenshot_" + ts + "_" + screenName + ".jpg";
-        saver.command = ["sh", "-c", 'mkdir -p "$(dirname "$2")" && magick "$1" -quality 90 "$2" && wl-copy -t image/jpeg < "$2" && notify-send -a Phoenix "Screenshot saved" "$2"; rm -f "$1"', "sh", path, dest];
-        saver.running = true;
+        if (regionMode) {
+            selectScreen = screenName;
+            selectSource = path;
+            selecting = true;
+            return;
+        }
+        ScreenshotService.present(screenName, path, "");
     }
+
     Timer {
         id: timeout
         interval: 2500
         onTriggered: root.complete()
-    }
-
-    Process {
-        id: saver
     }
 }

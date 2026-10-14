@@ -1,10 +1,43 @@
+import QtQuick
 import Quickshell.Io
 import qs.configuration.Screenshot
+import qs.services.screenshot
+import Quickshell
 
-IpcHandler {
-    target: "screenshot"
+Scope {
+    id: root
 
-    function capture(): string {
-        return ScreenshotConfig.captureFocused() ? "capturing focused screen" : "busy";
+    property bool wantRegion: false
+
+    function start(region) {
+        wantRegion = region;
+        if (ScreenshotService.active) {
+            ScreenshotService.dismiss();
+            delay.restart();
+        } else {
+            go();
+        }
+    }
+
+    function go() {
+        wantRegion ? ScreenshotConfig.captureRegion() : ScreenshotConfig.captureFocused();
+    }
+
+    Timer {
+        id: delay
+        interval: 250
+        onTriggered: root.go()
+    }
+
+    IpcHandler {
+        target: "screenshot"
+
+        function full(): void {
+            root.start(false);
+        }
+
+        function region(): void {
+            root.start(true);
+        }
     }
 }

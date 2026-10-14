@@ -173,14 +173,14 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             anchors.left: parent.left
             anchors.verticalCenterOffset: root.radius / 2
-            anchors.leftMargin: root.itemGap + root.notchPadding 
+            anchors.leftMargin: root.itemGap + root.notchPadding
         }
         NightModeButton {
             id: nightMode
             anchors.verticalCenter: parent.verticalCenter
             anchors.left: workspace.right
             anchors.verticalCenterOffset: root.radius / 2
-            anchors.leftMargin: root.itemGap 
+            anchors.leftMargin: root.itemGap
             HoverHandler {
                 id: nightHover
             }
@@ -270,12 +270,6 @@ Item {
             HoverHandler {
                 id: powerHover
             }
-        }
-        NotificationsIndicator {
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.right: powerProfile.left
-            anchors.verticalCenterOffset: root.radius / 2
-            anchors.rightMargin: root.notchPadding + root.notchRadius + 8
         }
     }
 
