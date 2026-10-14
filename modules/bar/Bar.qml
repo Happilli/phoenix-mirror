@@ -16,7 +16,7 @@ Item {
     readonly property real popupGap: 10
     readonly property real dateShift: notchRadius + notchPadding + 12
 
-    readonly property var permanent: [battery]
+    readonly property var permanent: [battery, recordingIndicator]
 
     readonly property var activeContent: {
         if (target === controls)
@@ -55,6 +55,13 @@ Item {
 
     property real dateOffset: (notchOpen && target === datetime) ? dateShift : 0
     Behavior on dateOffset {
+        NumberAnimation {
+            duration: 180
+            easing.type: Easing.OutCubic
+        }
+    }
+    property real recOffset: (notchOpen && target === powerProfile) ? dateShift : 0
+    Behavior on recOffset {
         NumberAnimation {
             duration: 180
             easing.type: Easing.OutCubic
@@ -109,10 +116,14 @@ Item {
         const H = height;
         const cuts = [];
         for (const item of permanent) {
+            const k = item.cutProgress ?? 1;
+            if (permanentDepth * k < 0.5) {
+                continue;
+            }
             cuts.push({
                 l: item.x - notchPadding,
                 r: item.x + item.width + notchPadding,
-                d: permanentDepth
+                d: permanentDepth * k
             });
         }
         if (depth > 0.5) {
@@ -258,6 +269,13 @@ Item {
             anchors.right: controls.left
             anchors.verticalCenterOffset: root.radius / 2
             anchors.rightMargin: root.itemGap
+        }
+        RecordingIndicator {
+            id: recordingIndicator
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.right: powerProfile.left
+            anchors.verticalCenterOffset: root.radius / 2
+            anchors.rightMargin: 16 + root.recOffset
         }
         Item {
             id: powerHit

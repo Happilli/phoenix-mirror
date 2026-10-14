@@ -4,4 +4,5 @@ Scope {
     WallpaperIpc {}
     LockIpc {}
     ScreenshotIpc {}
+    RecorderIpc {}
 }

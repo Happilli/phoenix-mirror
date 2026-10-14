@@ -14,10 +14,12 @@ Singleton {
     property bool selecting: false
     property string selectScreen: ""
     property string selectSource: ""
+    property string selectPurpose: "screenshot"
     property var targets: []
     property int pending: 0
 
     signal captured(string screenName, string path)
+    signal regionPicked(string screenName, var rect)
     signal finished
 
     function pathFor(name) {
@@ -64,21 +66,38 @@ Singleton {
     function captureFocused() {
         const name = focusedName();
         regionMode = false;
+        selectPurpose = "screenshot";
         return name !== "" && begin([name], false);
     }
 
     function captureRegion() {
         const name = focusedName();
         regionMode = true;
+        selectPurpose = "screenshot";
         return name !== "" && begin([name], false);
     }
 
-    function finishSelect(geom) {
+    function captureRegionForRecording() {
+        const name = focusedName();
+        regionMode = true;
+        selectPurpose = "record";
+        return name !== "" && begin([name], false);
+    }
+
+    function finishSelect(geom, rect) {
         const source = selectSource;
+        const purpose = selectPurpose;
+        const screen = selectScreen;
         selecting = false;
         regionMode = false;
-        if (geom !== "") {
-            ScreenshotService.present(selectScreen, source, geom);
+        selectPurpose = "screenshot";
+        if (purpose === "record") {
+            Quickshell.execDetached(["rm", "-f", source]);
+            if (geom !== "" && rect) {
+                regionPicked(screen, rect);
+            }
+        } else if (geom !== "") {
+            ScreenshotService.present(screen, source, geom);
         } else {
             Quickshell.execDetached(["rm", "-f", source]);
         }

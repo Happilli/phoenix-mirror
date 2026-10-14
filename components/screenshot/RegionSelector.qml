@@ -18,7 +18,7 @@ Item {
 
     focus: true
     Component.onCompleted: forceActiveFocus()
-    Keys.onEscapePressed: ScreenshotConfig.finishSelect("")
+    Keys.onEscapePressed: ScreenshotConfig.finishSelect("", null)
 
     Image {
         id: frozen
@@ -106,8 +106,14 @@ Item {
             const k = root.ratio;
             const ok = root.sw > 4 && root.sh > 4;
             const geom = Math.round(root.sw * k) + "x" + Math.round(root.sh * k) + "+" + Math.round(root.sx * k) + "+" + Math.round(root.sy * k);
+            const rect = {
+                x: Math.round(root.sx),
+                y: Math.round(root.sy),
+                w: Math.round(root.sw),
+                h: Math.round(root.sh)
+            };
             root.dragging = false;
-            ScreenshotConfig.finishSelect(ok ? geom : "");
+            ScreenshotConfig.finishSelect(ok ? geom : "", ok ? rect : null);
         }
     }
 }
