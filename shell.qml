@@ -1,12 +1,13 @@
 import Quickshell
 import qs.layers
-
-// import qs.ipc
+import qs.ipc
 
 ShellRoot {
     Scope {
-        // IpcRegistry {}
+        IpcRegistry {}
         Home {}
         AboveHome {}
+        BeyondHome {}
+        Lock {}
     }
 }
