@@ -1,7 +1,7 @@
 import Quickshell
 
 Scope {
-    WallpaperIpc {}
+    // WallpaperIpc {}
     LockIpc {}
     ScreenshotIpc {}
     RecorderIpc {}

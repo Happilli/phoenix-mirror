@@ -11,7 +11,7 @@ Item {
 
     Text {
         anchors.centerIn: parent
-        text: "\ued16"
+        text: "\uf40e"
         font.pixelSize: 24
         font.bold: true
         color: root.open ? Theme.primary : Theme.onSurfaceVariantColor

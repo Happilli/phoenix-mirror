@@ -31,13 +31,17 @@ Item {
             return nightLoader.item;
         if (target === startMenu)
             return startLoader.item;
+        if (target === dailyWar)
+            return warLoader.item;
         return null;
     }
 
-    readonly property bool popupShown: notchOpen && (target === controls || target === powerProfile || target === datetime || target === appSlot || target === nightMode || target === startMenu)
+    readonly property bool popupShown: notchOpen && (target === controls || target === powerProfile || target === datetime || target === appSlot || target === nightMode || target === startMenu || target === dailyWar)
     readonly property Item hoveredItem: {
         if (powerHover.hovered)
             return powerProfile;
+        if (warHover.hovered)
+            return dailyWar;
         if (ctrlHover.hovered && dateHover.hovered)
             return (notchOpen && target === datetime) ? datetime : controls;
         if (ctrlHover.hovered)
@@ -78,8 +82,10 @@ Item {
             return dateSlot.x - dateShift;
         if (target === controls)
             return dateSlot.x - itemGap - controls.width;
+        if (target === dailyWar)
+            return dateSlot.x - itemGap - controls.width - itemGap - dailyWar.width;
         if (target === powerProfile)
-            return dateSlot.x - itemGap - controls.width - itemGap - powerProfile.width;
+            return dateSlot.x - itemGap - controls.width - itemGap - dailyWar.width - itemGap - powerProfile.width;
         return target.x;
     }
 
@@ -279,13 +285,7 @@ Item {
             anchors.verticalCenterOffset: root.radius / 2
             anchors.rightMargin: root.itemGap + root.dateOffset
         }
-        PowerProfileButton {
-            id: powerProfile
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.right: controls.left
-            anchors.verticalCenterOffset: root.radius / 2
-            anchors.rightMargin: root.itemGap
-        }
+
         RecordingIndicator {
             id: recordingIndicator
             anchors.verticalCenter: parent.verticalCenter
@@ -293,13 +293,40 @@ Item {
             anchors.verticalCenterOffset: root.radius / 2
             anchors.rightMargin: 16 + root.recOffset
         }
+        DailyWarButton {
+            id: dailyWar
+            open: root.notchOpen && root.target === dailyWar
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.right: controls.left
+            anchors.verticalCenterOffset: root.radius / 2
+            anchors.rightMargin: root.itemGap
+        }
+        PowerProfileButton {
+            id: powerProfile
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.right: dailyWar.left
+            anchors.verticalCenterOffset: root.radius / 2
+            anchors.rightMargin: root.itemGap
+        }
+        Item {
+            id: warHit
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.right: dateSlot.left
+            anchors.verticalCenterOffset: root.radius / 2
+            anchors.rightMargin: root.itemGap + controls.width + root.itemGap + root.dateOffset
+            width: dailyWar.width
+            height: 40
+            HoverHandler {
+                id: warHover
+            }
+        }
         Item {
             id: powerHit
             anchors.verticalCenter: parent.verticalCenter
             anchors.right: dateSlot.left
             anchors.verticalCenterOffset: root.radius / 2
-            anchors.rightMargin: root.itemGap + controls.width + root.itemGap
-            width: powerProfile.width + root.dateOffset
+            anchors.rightMargin: root.itemGap + controls.width + root.itemGap + dailyWar.width + root.itemGap + root.dateOffset
+            width: powerProfile.width
             height: 40
             HoverHandler {
                 id: powerHover
@@ -314,7 +341,14 @@ Item {
         gap: root.popupGap
         centerX: root.targetX + root.target.width / 2
         bottomY: root.radius
-
+        Loader {
+            id: warLoader
+            anchors.centerIn: parent
+            active: root.notchOpen && root.target === dailyWar
+            sourceComponent: DailyWarPopup {
+                active: true
+            }
+        }
         Loader {
             id: controlsLoader
             anchors.centerIn: parent

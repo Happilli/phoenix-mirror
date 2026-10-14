@@ -1,0 +1,121 @@
+pragma ComponentBehavior: Bound
+import QtQuick
+import qs.services.theme
+import qs.services.dailywar
+
+Item {
+    id: root
+
+    required property bool active
+
+    readonly property int contentWidth: 300
+    readonly property int pad: 14
+
+    property real enter: 0
+
+    anchors.centerIn: parent
+    implicitWidth: contentWidth + pad * 2
+    implicitHeight: column.implicitHeight + pad * 2
+    visible: active
+
+    Component.onCompleted: enter = 1
+
+    Behavior on enter {
+        NumberAnimation {
+            duration: 260
+            easing.type: Easing.OutCubic
+        }
+    }
+
+    Column {
+        id: column
+        x: root.pad
+        y: root.pad + (1 - root.enter) * 8
+        width: root.contentWidth
+        spacing: 12
+        opacity: root.enter
+
+        Item {
+            width: parent.width
+            height: heading.implicitHeight
+
+            Text {
+                id: heading
+                anchors.left: parent.left
+                anchors.verticalCenter: parent.verticalCenter
+                text: "DAILY WAR"
+                font.pixelSize: 11
+                font.weight: Font.DemiBold
+                font.letterSpacing: 1.2
+                color: Theme.primary
+                opacity: 0.8
+            }
+
+            Text {
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                visible: text !== ""
+                text: DailyWarService.date
+                font.pixelSize: 11
+                color: Theme.onSurfaceVariantColor
+                opacity: 0.55
+            }
+        }
+
+        Rectangle {
+            width: parent.width
+            height: 1
+            color: Qt.alpha(Theme.primary, 0.12)
+        }
+
+        Column {
+            width: parent.width
+            spacing: 6
+
+            Text {
+                width: parent.width
+                text: DailyWarService.loaded ? DailyWarService.challengeTitle : "No pick yet"
+                wrapMode: Text.Wrap
+                font.pixelSize: 17
+                font.weight: Font.DemiBold
+                color: Theme.onBackgroundColor
+            }
+
+            Text {
+                width: parent.width
+                visible: text !== ""
+                text: DailyWarService.challengeDetail
+                wrapMode: Text.Wrap
+                maximumLineCount: 5
+                elide: Text.ElideRight
+                lineHeight: 1.35
+                font.pixelSize: 13
+                color: Theme.onSurfaceVariantColor
+                opacity: 0.85
+            }
+        }
+        Rectangle {
+            visible: DailyWarService.languageName !== ""
+            width: chipRow.implicitWidth + 24
+            height: 30
+            radius: 10
+            color: Theme.surfaceContainerHighest
+            border.width: 1
+            border.color: Qt.alpha(Theme.primary, 0.2)
+
+            Row {
+                id: chipRow
+                anchors.centerIn: parent
+                spacing: 5
+
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: DailyWarService.languageName
+                    font.pixelSize: 12
+                    font.weight: Font.DemiBold
+                    color: Theme.primary
+                }
+            }
+        }
+    }
+}

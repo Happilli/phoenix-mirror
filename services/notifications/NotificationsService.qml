@@ -74,7 +74,7 @@ Singleton {
         bodyMarkupSupported: true
         bodySupported: true
         extraHints: ["values"]
-        keepOnReload: true
+        keepOnReload: false
         actionIconsSupported: true
 
         onNotification: n => {
