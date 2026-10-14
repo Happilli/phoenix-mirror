@@ -29,6 +29,8 @@ Item {
             return previewLoader.item;
         if (target === nightMode)
             return nightLoader.item;
+        if (target === mediaButton)
+            return mediaLoader.item;
         if (target === startMenu)
             return startLoader.item;
         if (target === dailyWar)
@@ -36,7 +38,7 @@ Item {
         return null;
     }
 
-    readonly property bool popupShown: notchOpen && (target === controls || target === powerProfile || target === datetime || target === appSlot || target === nightMode || target === startMenu || target === dailyWar)
+    readonly property bool popupShown: notchOpen && (target === controls || target === powerProfile || target === datetime || target === appSlot || target === nightMode || target === mediaButton || target === startMenu || target === dailyWar)
     readonly property Item hoveredItem: {
         if (powerHover.hovered)
             return powerProfile;
@@ -50,6 +52,8 @@ Item {
             return datetime;
         if (openedApp.hoveredCell)
             return appSlot;
+        if (mediaHover.hovered)
+            return mediaButton;
         if (nightHover.hovered)
             return nightMode;
         if (startHover.hovered)
@@ -218,10 +222,21 @@ Item {
                 id: nightHover
             }
         }
+        MediaButton {
+            id: mediaButton
+            open: root.notchOpen && root.target === mediaButton
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.left: nightMode.right
+            anchors.verticalCenterOffset: root.radius / 2
+            anchors.leftMargin: root.itemGap
+            HoverHandler {
+                id: mediaHover
+            }
+        }
         OpenedApp {
             id: openedApp
             anchors.verticalCenter: parent.verticalCenter
-            anchors.left: nightMode.right
+            anchors.left: mediaButton.right
             anchors.verticalCenterOffset: root.radius / 2
             anchors.leftMargin: root.itemGap
         }
@@ -389,6 +404,14 @@ Item {
             anchors.centerIn: parent
             active: root.notchOpen && root.target === nightMode
             sourceComponent: NightModePopup {
+                active: true
+            }
+        }
+        Loader {
+            id: mediaLoader
+            anchors.centerIn: parent
+            active: root.notchOpen && root.target === mediaButton
+            sourceComponent: MediaPopup {
                 active: true
             }
         }
