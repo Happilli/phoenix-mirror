@@ -13,6 +13,7 @@ Variants {
         id: screenScope
         required property var modelData
         readonly property bool open: hoverHandler.hovered || stripHover.hovered
+        readonly property bool shown: open || popout.height > 0.5
 
         WlrLayershell {
             namespace: "phoenix-background"
@@ -27,14 +28,41 @@ Variants {
                 left: true
                 right: true
             }
-            Image {
+            Item {
+                id: wall
                 anchors.fill: parent
-                source: WallpaperConfig.currentWallpaper
-                fillMode: Image.PreserveAspectCrop
-                cache: false
-                asynchronous: true
-            }
+                clip: true
 
+                property real mouseNorm: 0.5
+                readonly property real imgAspect: wallpaper.implicitHeight > 0 ? wallpaper.implicitWidth / wallpaper.implicitHeight : 0
+                readonly property bool pannable: imgAspect > (width / height) * 1.1
+
+                HoverHandler {
+                    onPointChanged: if (hovered && wall.width > 0)
+                        wall.mouseNorm = Math.max(0, Math.min(1, point.position.x / wall.width))
+                }
+
+                Image {
+                    id: wallpaper
+                    height: wall.height
+                    width: wall.pannable ? implicitWidth * (wall.height / implicitHeight) : wall.width
+                    source: WallpaperConfig.currentWallpaper
+                    sourceSize.height: wall.height
+                    fillMode: Image.PreserveAspectCrop
+                    cache: false
+                    asynchronous: true
+
+                    x: wall.pannable ? -(width - wall.width) * wall.mouseNorm : 0
+
+                    Behavior on x {
+                        enabled: wall.pannable
+                        NumberAnimation {
+                            duration: 400
+                            easing.type: Easing.OutCubic
+                        }
+                    }
+                }
+            }
             PopOut {
                 id: popout
                 anchors.top: parent.top
@@ -56,14 +84,14 @@ Variants {
                     id: hoverHandler
                 }
 
-                WallpaperCarousel {
+                Loader {
                     anchors.fill: parent
-                    anchors {
-                        leftMargin: 30
-                        rightMargin: 30
-                        topMargin: 10
-                        bottomMargin: 10
-                    }
+                    anchors.leftMargin: 30
+                    anchors.rightMargin: 30
+                    anchors.topMargin: 10
+                    anchors.bottomMargin: 10
+                    active: screenScope.shown
+                    sourceComponent: WallpaperCarousel {}
                 }
             }
 

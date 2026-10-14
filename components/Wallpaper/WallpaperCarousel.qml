@@ -27,6 +27,15 @@ Item {
         return Math.max(minSideWidth, Math.min(maxSideWidth, fitted));
     }
     readonly property real farWidth: minSideWidth
+    property bool ready: false
+    opacity: ready ? 1 : 0
+
+    Behavior on opacity {
+        NumberAnimation {
+            duration: 200
+            easing.type: Easing.OutCubic
+        }
+    }
 
     function lerp(from, to, t) {
         return from + (to - from) * t;
@@ -64,6 +73,7 @@ Item {
             }
         }
         animate = true;
+        ready = true;
     }
     function select(index) {
         if (index < 0 || index === current || index >= walls.count) {
@@ -110,6 +120,7 @@ Item {
                 required property int index
                 readonly property bool near: Math.abs(index - root.position) < root.visionRange
                 visible: near
+                color: Theme.surfaceContainerHighest
                 x: near ? root.leftFor(index) : 0
                 height: root.height
                 width: near ? root.widthFor(index) : 0
@@ -120,6 +131,13 @@ Item {
                     sourceSize.height: 220
                     asynchronous: true
                     fillMode: Image.PreserveAspectCrop
+                    opacity: status === Image.Ready ? 1 : 0
+
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: 150
+                        }
+                    }
                 }
             }
         }
