@@ -5,6 +5,7 @@ import Ryu.Extraa
 import qs.services.shapes
 import qs.configuration.Wallpaper
 import qs.components.Wallpaper
+import qs.components.menu
 import qs.services.theme
 
 Variants {
@@ -61,6 +62,10 @@ Variants {
                             easing.type: Easing.OutCubic
                         }
                     }
+                }
+
+                HomeMenu {
+                    anchors.fill: parent
                 }
             }
             PopOut {
