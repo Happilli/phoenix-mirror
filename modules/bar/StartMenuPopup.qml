@@ -14,9 +14,13 @@ Item {
     readonly property int columns: 2
     readonly property int maxRows: 7
     readonly property int cellW: 220
-    readonly property int cellH: 52
+    readonly property int cellH: 48
     readonly property int gap: 8
-    readonly property int controlHeight: 56
+    readonly property real searchScale: 0.8
+    readonly property real controlHeight: Math.round(search.height * searchScale)
+
+    property int hovered: -1
+    property int shownIndex: 0
 
     readonly property bool searching: search.activeFocus
 
@@ -43,8 +47,15 @@ Item {
             apps[0].execute();
     }
 
-    onActiveChanged: if (!active)
-        search.clear()
+    onHoveredChanged: if (hovered >= 0)
+        shownIndex = hovered
+
+    onAppsChanged: hovered = -1
+
+    onActiveChanged: if (!active) {
+        search.clear();
+        hovered = -1;
+    }
 
     implicitWidth: columns * cellW
     implicitHeight: column.implicitHeight
@@ -67,26 +78,58 @@ Item {
                 cellHeight: root.cellH
                 model: root.apps
 
+                Rectangle {
+                    id: pill
+                    z: -1
+                    x: (root.shownIndex % root.columns) * root.cellW + 2
+                    y: Math.floor(root.shownIndex / root.columns) * root.cellH + 2
+                    width: root.cellW - 4
+                    height: root.cellH - 4
+                    radius: 14
+                    color: Theme.surfaceContainerHighest
+                    opacity: root.hovered >= 0 && root.hovered < root.apps.length ? 1 : 0
+
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: 120
+                        }
+                    }
+
+                    Behavior on x {
+                        enabled: pill.opacity > 0.01
+                        SpringAnimation {
+                            spring: 5
+                            damping: 0.32
+                            epsilon: 0.25
+                        }
+                    }
+
+                    Behavior on y {
+                        enabled: pill.opacity > 0.01
+                        SpringAnimation {
+                            spring: 5
+                            damping: 0.32
+                            epsilon: 0.25
+                        }
+                    }
+                }
+
                 delegate: Item {
                     id: cell
                     required property var modelData
+                    required property int index
+
+                    readonly property bool selected: root.hovered === index
 
                     width: grid.cellWidth
                     height: grid.cellHeight
 
-                    Rectangle {
-                        anchors.fill: parent
-                        anchors.margins: 2
-                        radius: 14
-                        color: area.containsMouse ? Theme.surfaceContainerHighest : "transparent"
-                    }
-
                     IconImage {
                         id: icon
                         anchors.left: parent.left
-                        anchors.leftMargin: 14
+                        anchors.leftMargin: 16
                         anchors.verticalCenter: parent.verticalCenter
-                        implicitSize: 32
+                        implicitSize: 30
                         source: root.iconOf(cell.modelData)
                     }
 
@@ -100,16 +143,27 @@ Item {
                         elide: Text.ElideRight
                         font.pixelSize: 13
                         font.weight: Font.Medium
-                        color: area.containsMouse ? Theme.primary : Theme.onSurfaceVariantColor
+                        color: cell.selected ? Theme.primary : Theme.onSurfaceVariantColor
                     }
+                }
+            }
 
-                    MouseArea {
-                        id: area
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: cell.modelData.execute()
-                    }
+            MouseArea {
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+
+                function indexAtMouse(m) {
+                    const i = grid.indexAt(m.x + grid.contentX, m.y + grid.contentY);
+                    return i >= 0 && i < root.apps.length ? i : -1;
+                }
+
+                onPositionChanged: m => root.hovered = indexAtMouse(m)
+                onExited: root.hovered = -1
+                onClicked: m => {
+                    const i = indexAtMouse(m);
+                    if (i >= 0)
+                        root.apps[i].execute();
                 }
             }
 
@@ -123,12 +177,18 @@ Item {
             }
         }
 
-        Row {
-            spacing: root.gap
+        Item {
+            id: controls
+            width: root.columns * root.cellW
+            height: root.controlHeight
 
             MaterialSearchBox {
                 id: search
-                width: root.implicitWidth - lock.width - root.gap
+                anchors.left: parent.left
+                anchors.verticalCenter: parent.verticalCenter
+                width: (controls.width - root.controlHeight - root.gap) / root.searchScale
+                scale: root.searchScale
+                transformOrigin: Item.Left
                 placeholderText: "Search apps"
                 color: Theme.surfaceContainerHighest
                 textColor: Theme.onSurfaceVariantColor
@@ -146,11 +206,14 @@ Item {
 
             MaterialIconButton {
                 id: lock
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                width: root.controlHeight
+                height: root.controlHeight
                 type: MaterialIconButton.Tonal
                 shape: MaterialIconButton.Round
-                sizeStyle: MaterialIconButton.Medium
                 iconText: "\uf023"
-                iconSize: 22
+                iconSize: Math.round(root.controlHeight * 0.45)
                 color: Theme.surfaceContainerHighest
                 iconColor: Theme.onSurfaceVariantColor
                 springStiffness: 650

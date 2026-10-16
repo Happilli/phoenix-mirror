@@ -5,7 +5,7 @@ import qs.services.controls
 Rectangle {
     id: root
 
-    readonly property var state: {
+    readonly property var erm: {
         switch (OsdService.key) {
         case "volume":
             {
@@ -32,7 +32,7 @@ Rectangle {
         }
     }
 
-    readonly property real value: Math.max(0, Math.min(1, state.value))
+    readonly property real value: Math.max(0, Math.min(1, erm.value))
 
     width: 300
     height: 56
@@ -56,7 +56,7 @@ Rectangle {
             width: 24
             anchors.verticalCenter: parent.verticalCenter
             horizontalAlignment: Text.AlignHCenter
-            text: root.state.icon
+            text: root.erm.icon
             font.pixelSize: 20
             font.bold: true
             color: Theme.onSurfaceVariantColor

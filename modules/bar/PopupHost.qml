@@ -62,7 +62,7 @@ Item {
         enabled: root.settled
         SpringAnimation {
             spring: 3
-            damping: 0.4
+            damping: 0.25
             epsilon: 0.25
         }
     }
