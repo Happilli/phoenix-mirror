@@ -1,7 +1,9 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import qs.services.theme
 import qs.configuration.Settings
+import qs.Settings.pages
 
 Scope {
     LazyLoader {
@@ -9,18 +11,39 @@ Scope {
 
         FloatingWindow {
             title: "Phoenix Settings"
-            implicitWidth: 900
-            implicitHeight: 640
+            implicitWidth: 980
+            implicitHeight: 700
             color: Theme.background
 
             onVisibleChanged: if (!visible)
                 SettingsConfig.open = false
 
-            Text {
-                anchors.centerIn: parent
-                text: "Settings"
-                font.pixelSize: 20
-                color: Theme.onSurfaceVariantColor
+            Shortcut {
+                sequence: "Escape"
+                onActivated: SettingsConfig.open = false
+            }
+
+            Component {
+                id: widgetsPage
+                WidgetsPage {}
+            }
+
+            Item {
+                anchors.fill: parent
+
+                SettingsSidebar {
+                    id: sidebar
+                    width: 260
+                    height: parent.height
+                }
+
+                Loader {
+                    anchors.left: sidebar.right
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    sourceComponent: widgetsPage
+                }
             }
         }
     }

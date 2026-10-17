@@ -7,6 +7,8 @@ import qs.configuration.Wallpaper
 import qs.components.Wallpaper
 import qs.components.menu
 import qs.services.theme
+import Ryu.Widgets
+import qs.configuration.Widgets
 
 Variants {
     model: Quickshell.screens
@@ -66,6 +68,29 @@ Variants {
 
                 HomeMenu {
                     anchors.fill: parent
+                }
+            }
+            Loader {
+                id: clock
+                active: ClockConfig.enabled
+                width: ClockConfig.size
+                height: ClockConfig.orientation === 0 ? ClockConfig.size * 1.1 : ClockConfig.size * 0.45
+                x: ClockConfig.hAlign === 0 ? ClockConfig.margin : ClockConfig.hAlign === 1 ? (parent.width - width) / 2 : parent.width - width - ClockConfig.margin
+                y: ClockConfig.vAlign === 0 ? ClockConfig.margin : ClockConfig.vAlign === 1 ? (parent.height - height) / 2 : parent.height - height - ClockConfig.margin
+
+                sourceComponent: DigitalClock {
+                    orientation: ClockConfig.orientation
+                    use24Hour: ClockConfig.use24Hour
+                    showAmPm: ClockConfig.showAmPm
+                    amPmStyle: ClockConfig.amPmStyle
+                    showSeparator: ClockConfig.showSeparator
+                    fontWeight: ClockConfig.fontWeight
+                    gap: ClockConfig.gap
+                    overlap: ClockConfig.overlap
+                    groupGap: ClockConfig.groupGap
+                    letterSpacing: ClockConfig.letterSpacing
+                    padding: ClockConfig.padding
+                    color: ClockConfig.tint
                 }
             }
             PopOut {
