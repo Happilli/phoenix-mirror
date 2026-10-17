@@ -1,6 +1,7 @@
 import Quickshell
 import qs.layers
 import qs.ipc
+import qs.Settings
 
 ShellRoot {
     Scope {
@@ -9,5 +10,6 @@ ShellRoot {
         AboveHome {}
         BeyondHome {}
         Lock {}
+        SettingsWindow {}
     }
 }

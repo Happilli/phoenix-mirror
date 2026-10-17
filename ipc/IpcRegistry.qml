@@ -6,4 +6,5 @@ Scope {
     ScreenshotIpc {}
     RecorderIpc {}
     ClipboardIpc {}
+    SettingsIpc {}
 }

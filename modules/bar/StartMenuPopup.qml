@@ -42,9 +42,16 @@ Item {
         return Quickshell.iconPath(name, "application-x-executable");
     }
 
+    function launch(entry) {
+        if (entry.runInTerminal)
+            Quickshell.execDetached(["kitty", "-e"].concat(Array.from(entry.command)));
+        else
+            entry.execute();
+    }
+
     function launchFirst() {
         if (apps.length > 0)
-            apps[0].execute();
+            launch(apps[0]);
     }
 
     onHoveredChanged: if (hovered >= 0)
@@ -68,6 +75,45 @@ Item {
         Item {
             width: root.columns * root.cellW
             height: root.rows * root.cellH
+            clip: true
+
+            Rectangle {
+                id: pill
+
+                property real rowY: Math.floor(root.shownIndex / root.columns) * root.cellH
+
+                x: (root.shownIndex % root.columns) * root.cellW + 2
+                y: rowY - grid.contentY + 2
+                width: root.cellW - 4
+                height: root.cellH - 4
+                radius: 14
+                color: Theme.surfaceContainerHighest
+                opacity: root.hovered >= 0 && root.hovered < root.apps.length ? 1 : 0
+
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 120
+                    }
+                }
+
+                Behavior on x {
+                    enabled: pill.opacity > 0.01
+                    SpringAnimation {
+                        spring: 5
+                        damping: 0.32
+                        epsilon: 0.25
+                    }
+                }
+
+                Behavior on rowY {
+                    enabled: pill.opacity > 0.01
+                    SpringAnimation {
+                        spring: 5
+                        damping: 0.32
+                        epsilon: 0.25
+                    }
+                }
+            }
 
             GridView {
                 id: grid
@@ -77,42 +123,6 @@ Item {
                 cellWidth: root.cellW
                 cellHeight: root.cellH
                 model: root.apps
-
-                Rectangle {
-                    id: pill
-                    z: -1
-                    x: (root.shownIndex % root.columns) * root.cellW + 2
-                    y: Math.floor(root.shownIndex / root.columns) * root.cellH + 2
-                    width: root.cellW - 4
-                    height: root.cellH - 4
-                    radius: 14
-                    color: Theme.surfaceContainerHighest
-                    opacity: root.hovered >= 0 && root.hovered < root.apps.length ? 1 : 0
-
-                    Behavior on opacity {
-                        NumberAnimation {
-                            duration: 120
-                        }
-                    }
-
-                    Behavior on x {
-                        enabled: pill.opacity > 0.01
-                        SpringAnimation {
-                            spring: 5
-                            damping: 0.32
-                            epsilon: 0.25
-                        }
-                    }
-
-                    Behavior on y {
-                        enabled: pill.opacity > 0.01
-                        SpringAnimation {
-                            spring: 5
-                            damping: 0.32
-                            epsilon: 0.25
-                        }
-                    }
-                }
 
                 delegate: Item {
                     id: cell
@@ -149,21 +159,44 @@ Item {
             }
 
             MouseArea {
+                id: hoverArea
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
 
-                function indexAtMouse(m) {
-                    const i = grid.indexAt(m.x + grid.contentX, m.y + grid.contentY);
+                property real mx: 0
+                property real my: 0
+
+                function indexAtMouse() {
+                    const i = grid.indexAt(mx + grid.contentX, my + grid.contentY);
                     return i >= 0 && i < root.apps.length ? i : -1;
                 }
 
-                onPositionChanged: m => root.hovered = indexAtMouse(m)
+                function refresh() {
+                    if (containsMouse)
+                        root.hovered = indexAtMouse();
+                }
+
+                onPositionChanged: m => {
+                    mx = m.x;
+                    my = m.y;
+                    refresh();
+                }
                 onExited: root.hovered = -1
                 onClicked: m => {
-                    const i = indexAtMouse(m);
+                    mx = m.x;
+                    my = m.y;
+                    const i = indexAtMouse();
                     if (i >= 0)
-                        root.apps[i].execute();
+                        root.launch(root.apps[i]);
+                }
+
+                Connections {
+                    target: grid
+
+                    function onContentYChanged() {
+                        hoverArea.refresh();
+                    }
                 }
             }
 
