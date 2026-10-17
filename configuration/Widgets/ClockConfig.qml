@@ -3,6 +3,7 @@ import QtQuick
 import Quickshell
 import qs.services.state
 import qs.services.theme
+import qs.configuration.Wallpaper
 
 Singleton {
     id: root
@@ -24,9 +25,35 @@ Singleton {
             size: 260,
             hAlign: 1,
             vAlign: 1,
-            margin: 48
+            margin: 48,
+            randomizePosition: false
         })
+    function place(pos, container, item, margin) {
+        const a = margin;
+        const b = (container - item) / 2;
+        const c = container - item - margin;
+        return pos <= 1 ? a + (b - a) * pos : b + (c - b) * (pos - 1);
+    }
+    property real hPos: hAlign
+    property real vPos: vAlign
 
+    Behavior on hPos {
+        SpringAnimation {
+            spring: 1.2
+            damping: 0.22
+            mass: 1.4
+            epsilon: 0.001
+        }
+    }
+
+    Behavior on vPos {
+        SpringAnimation {
+            spring: 1.2
+            damping: 0.22
+            mass: 1.4
+            epsilon: 0.001
+        }
+    }
     readonly property var colorOptions: [
         {
             key: "primary",
@@ -45,6 +72,8 @@ Singleton {
             label: "Alert"
         }
     ]
+
+    readonly property var autoPositions: [[0, 0], [1, 0], [2, 0], [0, 1], [2, 1], [0, 2], [1, 2], [2, 2]]
 
     property var values: StateService.get("clock", {})
 
@@ -76,10 +105,20 @@ Singleton {
         return Theme.primary;
     }
 
+    function hash(str) {
+        let h = 5381;
+        for (let i = 0; i < str.length; i++)
+            h = ((h * 33) ^ str.charCodeAt(i)) >>> 0;
+        return h;
+    }
+
+    readonly property bool randomizePosition: get("randomizePosition")
+    readonly property var autoPosition: autoPositions[hash(WallpaperConfig.currentWallpaper.toString()) % autoPositions.length]
+
     readonly property bool enabled: get("enabled")
     readonly property int size: get("size")
-    readonly property int hAlign: get("hAlign")
-    readonly property int vAlign: get("vAlign")
+    readonly property int hAlign: randomizePosition ? autoPosition[0] : get("hAlign")
+    readonly property int vAlign: randomizePosition ? autoPosition[1] : get("vAlign")
     readonly property int margin: get("margin")
     readonly property int orientation: get("orientation")
     readonly property bool use24Hour: get("use24Hour")

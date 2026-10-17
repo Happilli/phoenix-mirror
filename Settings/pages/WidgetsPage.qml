@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import Ryu.Extraa
+import Ryu.Widgets
 import qs.services.theme
 import qs.configuration.Widgets
 import qs.Settings.components
@@ -20,8 +21,16 @@ SettingsPage {
             onToggled: value => ClockConfig.set("enabled", value)
         }
 
-        ChoiceRow {
+        SwitchRow {
             enabled: ClockConfig.enabled
+            label: "Randomize position"
+            description: "Pick a different spot for each wallpaper"
+            checked: ClockConfig.randomizePosition
+            onToggled: value => ClockConfig.set("randomizePosition", value)
+        }
+
+        ChoiceRow {
+            enabled: ClockConfig.enabled && !ClockConfig.randomizePosition
             label: "Horizontal position"
             labels: ["Left", "Center", "Right"]
             currentIndex: ClockConfig.hAlign
@@ -29,7 +38,7 @@ SettingsPage {
         }
 
         ChoiceRow {
-            enabled: ClockConfig.enabled
+            enabled: ClockConfig.enabled && !ClockConfig.randomizePosition
             label: "Vertical position"
             labels: ["Top", "Center", "Bottom"]
             currentIndex: ClockConfig.vAlign
