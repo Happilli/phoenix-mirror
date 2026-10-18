@@ -13,6 +13,18 @@ Item {
 
     property real enter: 0
 
+    function difficultyColor(d) {
+        switch (d.toLowerCase()) {
+        case "easy":
+            return Theme.primary;
+        case "medium":
+            return Theme.tertiary;
+        case "hard":
+            return Theme.error;
+        }
+        return Theme.onSurfaceVariantColor;
+    }
+
     anchors.centerIn: parent
     implicitWidth: contentWidth + pad * 2
     implicitHeight: column.implicitHeight + pad * 2
@@ -94,26 +106,48 @@ Item {
                 opacity: 0.85
             }
         }
-        Rectangle {
-            visible: DailyWarService.languageName !== ""
-            width: chipRow.implicitWidth + 24
-            height: 30
-            radius: 10
-            color: Theme.surfaceContainerHighest
-            border.width: 1
-            border.color: Qt.alpha(Theme.primary, 0.2)
 
-            Row {
-                id: chipRow
-                anchors.centerIn: parent
-                spacing: 5
+        Row {
+            spacing: 8
+            visible: DailyWarService.languageName !== "" || DailyWarService.difficulty !== ""
+
+            Rectangle {
+                visible: DailyWarService.languageName !== ""
+                width: langText.implicitWidth + 24
+                height: 30
+                radius: 10
+                color: Theme.surfaceContainerHighest
+                border.width: 1
+                border.color: Qt.alpha(Theme.primary, 0.2)
 
                 Text {
-                    anchors.verticalCenter: parent.verticalCenter
+                    id: langText
+                    anchors.centerIn: parent
                     text: DailyWarService.languageName
                     font.pixelSize: 12
                     font.weight: Font.DemiBold
                     color: Theme.primary
+                }
+            }
+
+            Rectangle {
+                id: diffChip
+                readonly property color tone: root.difficultyColor(DailyWarService.difficulty)
+                visible: DailyWarService.difficulty !== ""
+                width: diffText.implicitWidth + 24
+                height: 30
+                radius: 10
+                color: Qt.alpha(tone, 0.15)
+                border.width: 1
+                border.color: Qt.alpha(tone, 0.4)
+
+                Text {
+                    id: diffText
+                    anchors.centerIn: parent
+                    text: DailyWarService.difficulty
+                    font.pixelSize: 12
+                    font.weight: Font.DemiBold
+                    color: diffChip.tone
                 }
             }
         }
