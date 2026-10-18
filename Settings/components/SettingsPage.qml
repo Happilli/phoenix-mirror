@@ -5,19 +5,9 @@ Item {
     id: root
 
     property string title: ""
-    property real enter: 0
 
     default property alias content: body.data
     property alias header: headerSlot.data
-
-    Component.onCompleted: enter = 1
-
-    Behavior on enter {
-        NumberAnimation {
-            duration: 260
-            easing.type: Easing.OutCubic
-        }
-    }
 
     Column {
         id: topper
@@ -25,7 +15,6 @@ Item {
         y: 28
         width: parent.width - 56
         spacing: 18
-        opacity: root.enter
 
         Text {
             text: root.title
@@ -52,7 +41,6 @@ Item {
         contentHeight: body.implicitHeight + 28
         clip: true
         boundsBehavior: Flickable.StopAtBounds
-        opacity: root.enter
 
         Column {
             id: body

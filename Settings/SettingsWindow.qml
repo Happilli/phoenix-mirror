@@ -12,8 +12,10 @@ Scope {
 
         FloatingWindow {
             title: "Phoenix Settings"
-            implicitWidth: 980
-            implicitHeight: 700
+            implicitWidth: 1200
+            implicitHeight: 1000
+            minimumSize: Qt.size(implicitWidth, implicitHeight)
+            maximumSize: Qt.size(implicitWidth, implicitHeight)
             color: Theme.background
 
             onVisibleChanged: if (!visible)
