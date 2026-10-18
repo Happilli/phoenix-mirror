@@ -1,3 +1,4 @@
+//@ pragma DropExpensiveFonts
 import Quickshell
 import qs.layers
 import qs.ipc

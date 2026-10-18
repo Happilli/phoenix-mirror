@@ -1,10 +1,12 @@
 import QtQuick
+import Quickshell.Widgets
 import qs.services.theme
 
 Item {
     id: root
 
     property string title: ""
+    readonly property real cardRadius: 14
 
     default property alias content: body.data
     property alias header: headerSlot.data
@@ -31,22 +33,29 @@ Item {
         }
     }
 
-    Flickable {
+    ClippingRectangle {
         anchors.top: topper.bottom
         anchors.topMargin: 18
-        anchors.left: parent.left
-        anchors.right: parent.right
         anchors.bottom: parent.bottom
-        contentWidth: width
-        contentHeight: body.implicitHeight + 28
-        clip: true
-        boundsBehavior: Flickable.StopAtBounds
+        anchors.bottomMargin: 20
+        anchors.left: parent.left
+        anchors.leftMargin: 28
+        anchors.right: parent.right
+        anchors.rightMargin: 28
+        radius: root.cardRadius
+        color: "transparent"
 
-        Column {
-            id: body
-            x: 28
-            width: parent.width - 56
-            spacing: 14
+        Flickable {
+            anchors.fill: parent
+            contentWidth: width
+            contentHeight: body.implicitHeight
+            boundsBehavior: Flickable.StopAtBounds
+
+            Column {
+                id: body
+                width: parent.width
+                spacing: 14
+            }
         }
     }
 }
