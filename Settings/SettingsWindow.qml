@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
+import Quickshell.Widgets
 import qs.services.theme
 import qs.configuration.Settings
 import qs.Settings.pages
@@ -37,12 +38,21 @@ Scope {
                     height: parent.height
                 }
 
-                Loader {
+                ClippingRectangle {
                     anchors.left: sidebar.right
                     anchors.right: parent.right
                     anchors.top: parent.top
                     anchors.bottom: parent.bottom
-                    sourceComponent: widgetsPage
+                    anchors.topMargin: 12
+                    anchors.rightMargin: 12
+                    anchors.bottomMargin: 12
+                    radius: 28
+                    color: Theme.surfaceContainer
+
+                    Loader {
+                        anchors.fill: parent
+                        sourceComponent: widgetsPage
+                    }
                 }
             }
         }

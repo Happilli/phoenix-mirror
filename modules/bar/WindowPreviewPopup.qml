@@ -61,10 +61,11 @@ Item {
             const mon = mons.find(m => m.id === ws.monitorId);
             const mo = mon ? mon.lastIpcObject : null;
             const scale = mo && mo.scale ? mo.scale : 1;
-            ws.mx = mo && mo.x !== undefined ? mo.x : 0;
-            ws.my = mo && mo.y !== undefined ? mo.y : 0;
-            ws.mw = mo && mo.width ? mo.width / scale : 1920;
-            ws.mh = mo && mo.height ? mo.height / scale : 1080;
+            const rs = mo && mo.reserved ? mo.reserved : [0, 0, 0, 0];
+            ws.mx = (mo && mo.x !== undefined ? mo.x : 0) + rs[0];
+            ws.my = (mo && mo.y !== undefined ? mo.y : 0) + rs[1];
+            ws.mw = (mo && mo.width ? mo.width / scale : 1920) - rs[0] - rs[2];
+            ws.mh = (mo && mo.height ? mo.height / scale : 1080) - rs[1] - rs[3];
             out.push(ws);
         }
         out.sort((a, b) => a.id - b.id);
@@ -92,19 +93,17 @@ Item {
     Repeater {
         model: root.miniatures
 
-        delegate: ClippingRectangle {
+        delegate: Item {
             id: mini
             required property var modelData
             required property int index
 
             readonly property real s: root.miniW / modelData.mw
-
+            clip: true
             x: index * (root.miniW + root.spacing)
             y: 0
             width: root.miniW
             height: modelData.mh * s
-            radius: 12
-            color: Theme.surfaceContainerHighest
 
             Repeater {
                 model: mini.modelData.wins
@@ -117,10 +116,11 @@ Item {
                     y: (modelData.y - mini.modelData.my) * mini.s
                     width: Math.max(4, modelData.w * mini.s)
                     height: Math.max(4, modelData.h * mini.s)
-                    radius: 6
                     color: Theme.background
                     opacity: modelData.mine ? 1 : 0.55
                     z: modelData.floating ? 1 : 0
+                    border.width: 1
+                    border.color: Theme.outlineVariant
 
                     ScreencopyView {
                         readonly property real sw: implicitWidth > 0 ? implicitWidth : 16
