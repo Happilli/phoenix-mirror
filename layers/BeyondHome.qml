@@ -25,6 +25,10 @@ Variants {
                 clipShown = true;
                 clipGrab = true;
                 grabTimer.restart();
+            } else {
+                clipShown = false;
+                clipGrab = false;
+                grabTimer.stop();
             }
         }
 
@@ -83,7 +87,6 @@ Variants {
                 active: screenScope.clipShown
                 sourceComponent: ClipboardPopup {
                     open: screenScope.clipOpen
-                    onClosed: screenScope.clipShown = false
                 }
             }
 

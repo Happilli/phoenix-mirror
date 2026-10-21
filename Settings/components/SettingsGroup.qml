@@ -1,15 +1,13 @@
 import QtQuick
 import qs.services.theme
 
-Rectangle {
+Item {
     id: root
 
     default property alias entries: col.data
 
     width: parent ? parent.width : 0
     height: col.implicitHeight
-    radius: 14
-    color: Theme.surfaceContainerHighest
 
     component Entry: Item {
         id: entry
@@ -18,21 +16,8 @@ Rectangle {
         property string description: ""
         default property alias control: slot.data
 
-        readonly property bool isLast: parent && parent.children[parent.children.length - 1] === entry
-
         width: parent ? parent.width : 0
         height: Math.max(68, textCol.implicitHeight + 28, slot.height + 28)
-
-        Rectangle {
-            visible: entry.y > 0
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.top: parent.top
-            anchors.leftMargin: 20
-            anchors.rightMargin: 20
-            height: 1
-            color: Qt.alpha(Theme.primary, 0.12)
-        }
 
         Column {
             id: textCol

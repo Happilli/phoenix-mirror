@@ -22,7 +22,7 @@ SettingsPage {
 
             MaterialSwitch {
                 checked: ClockConfig.enabled
-                trackColor: Theme.surfaceContainer
+                trackColor: Theme.surfaceContainerHighest
                 checkedTrackColor: Theme.primary
                 handleColor: Theme.onSurfaceVariantColor
                 checkedHandleColor: Theme.onPrimaryColor
@@ -41,7 +41,7 @@ SettingsPage {
                 variant: MaterialButtonGroup.Connected
                 sizeStyle: MaterialButtonGroup.ExtraSmall
                 currentIndex: ClockConfig.colorOptions.findIndex(o => o.key === ClockConfig.colorKey)
-                color: Theme.surfaceContainer
+                color: Theme.surfaceContainerHighest
                 checkedColor: Theme.primary
                 textColor: Theme.onSurfaceVariantColor
                 checkedTextColor: Theme.onPrimaryColor
@@ -68,7 +68,7 @@ SettingsPage {
                 value: ClockConfig.size
                 showStops: false
                 showValueIndicator: false
-                trackColor: Theme.surfaceContainer
+                trackColor: Theme.surfaceContainerHighest
                 color: Theme.primary
                 handleColor: Theme.primary
 
@@ -88,7 +88,7 @@ SettingsPage {
                 variant: MaterialButtonGroup.Connected
                 sizeStyle: MaterialButtonGroup.ExtraSmall
                 currentIndex: ClockConfig.orientation
-                color: Theme.surfaceContainer
+                color: Theme.surfaceContainerHighest
                 checkedColor: Theme.primary
                 textColor: Theme.onSurfaceVariantColor
                 checkedTextColor: Theme.onPrimaryColor
@@ -115,7 +115,7 @@ SettingsPage {
                 value: ClockConfig.fontWeight
                 showStops: false
                 showValueIndicator: false
-                trackColor: Theme.surfaceContainer
+                trackColor: Theme.surfaceContainerHighest
                 color: Theme.primary
                 handleColor: Theme.primary
 
@@ -129,7 +129,7 @@ SettingsPage {
 
             MaterialSwitch {
                 checked: ClockConfig.use24Hour
-                trackColor: Theme.surfaceContainer
+                trackColor: Theme.surfaceContainerHighest
                 checkedTrackColor: Theme.primary
                 handleColor: Theme.onSurfaceVariantColor
                 checkedHandleColor: Theme.onPrimaryColor
@@ -145,7 +145,7 @@ SettingsPage {
 
             MaterialSwitch {
                 checked: ClockConfig.showAmPm
-                trackColor: Theme.surfaceContainer
+                trackColor: Theme.surfaceContainerHighest
                 checkedTrackColor: Theme.primary
                 handleColor: Theme.onSurfaceVariantColor
                 checkedHandleColor: Theme.onPrimaryColor
@@ -165,7 +165,7 @@ SettingsPage {
                 variant: MaterialButtonGroup.Connected
                 sizeStyle: MaterialButtonGroup.ExtraSmall
                 currentIndex: ClockConfig.amPmStyle
-                color: Theme.surfaceContainer
+                color: Theme.surfaceContainerHighest
                 checkedColor: Theme.primary
                 textColor: Theme.onSurfaceVariantColor
                 checkedTextColor: Theme.onPrimaryColor
@@ -184,7 +184,7 @@ SettingsPage {
 
             MaterialSwitch {
                 checked: ClockConfig.showSeparator
-                trackColor: Theme.surfaceContainer
+                trackColor: Theme.surfaceContainerHighest
                 checkedTrackColor: Theme.primary
                 handleColor: Theme.onSurfaceVariantColor
                 checkedHandleColor: Theme.onPrimaryColor
@@ -201,7 +201,7 @@ SettingsPage {
 
             MaterialSwitch {
                 checked: ClockConfig.randomizePosition
-                trackColor: Theme.surfaceContainer
+                trackColor: Theme.surfaceContainerHighest
                 checkedTrackColor: Theme.primary
                 handleColor: Theme.onSurfaceVariantColor
                 checkedHandleColor: Theme.onPrimaryColor
@@ -235,7 +235,7 @@ SettingsPage {
                         radius: 8
                         border.width: 2
                         border.color: Theme.outlineVariant
-                        color: selected ? Theme.primary : (area.containsMouse && !ClockConfig.randomizePosition ? Theme.surfaceBright : Theme.surfaceContainer)
+                        color: selected ? Theme.primary : (area.containsMouse && !ClockConfig.randomizePosition ? Theme.surfaceBright : Theme.surfaceContainerHighest)
 
                         MouseArea {
                             id: area
@@ -268,7 +268,7 @@ SettingsPage {
                 value: ClockConfig.margin
                 showStops: false
                 showValueIndicator: false
-                trackColor: Theme.surfaceContainer
+                trackColor: Theme.surfaceContainerHighest
                 color: Theme.primary
                 handleColor: Theme.primary
 
@@ -283,7 +283,7 @@ SettingsPage {
                 {
                     key: "gap",
                     title: "Digit gap",
-                    description: "Space cut between stacked digits",
+                    description: "Space cut between touching digits",
                     from: 0,
                     to: 0.15,
                     horizontal: false
@@ -341,7 +341,7 @@ SettingsPage {
                     value: ClockConfig.get(tune.modelData.key)
                     showStops: false
                     showValueIndicator: false
-                    trackColor: Theme.surfaceContainer
+                    trackColor: Theme.surfaceContainerHighest
                     color: Theme.primary
                     handleColor: Theme.primary
 
@@ -359,7 +359,7 @@ SettingsPage {
                 sizeStyle: MaterialIconButton.Small
                 widthStyle: MaterialIconButton.Wide
                 iconText: "\uf2ea"
-                color: Theme.surfaceContainer
+                color: Theme.surfaceContainerHighest
                 iconColor: Theme.error
                 onClicked: ClockConfig.reset()
             }

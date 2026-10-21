@@ -11,6 +11,7 @@ Item {
 
     property bool open: true
     property real shownHeight: 0
+    property int hoveredIndex: -1
 
     signal closed
 
@@ -44,7 +45,40 @@ Item {
     width: 440
     height: Math.max(0, shownHeight)
 
+    function sync() {
+        const next = entries;
+        const keep = new Set(next);
+        for (let i = shown.count - 1; i >= 0; i--) {
+            if (!keep.has(shown.get(i).entry))
+                shown.remove(i);
+        }
+        for (let i = 0; i < next.length; i++) {
+            if (i < shown.count && shown.get(i).entry === next[i])
+                continue;
+            let found = -1;
+            for (let j = i + 1; j < shown.count; j++) {
+                if (shown.get(j).entry === next[i]) {
+                    found = j;
+                    break;
+                }
+            }
+            if (found >= 0)
+                shown.move(found, i, 1);
+            else
+                shown.insert(i, {
+                    "entry": next[i]
+                });
+        }
+        while (shown.count > next.length)
+            shown.remove(shown.count - 1);
+    }
+
+    ListModel {
+        id: shown
+    }
+
     Behavior on shownHeight {
+        enabled: root.open
         SpringAnimation {
             spring: 3
             damping: 0.25
@@ -59,10 +93,16 @@ Item {
             closed();
     }
 
+    onEntriesChanged: {
+        hoveredIndex = -1;
+        sync();
+    }
+
     Component.onCompleted: {
         board.fetchHistory();
         search.forceActiveFocus();
         shownHeight = wantHeight;
+        sync();
     }
 
     Shortcut {
@@ -89,9 +129,9 @@ Item {
 
         Item {
             id: body
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.verticalCenter: parent.verticalCenter
-            width: parent.width
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
             height: root.fullHeight
 
             Item {
@@ -149,34 +189,123 @@ Item {
                 clip: true
                 spacing: root.rowGap
                 boundsBehavior: Flickable.StopAtBounds
-                model: root.entries
+                keyNavigationEnabled: false
+                highlightFollowsCurrentItem: false
+                currentIndex: -1
+                model: shown
+
+                add: Transition {
+                    ParallelAnimation {
+                        NumberAnimation {
+                            property: "opacity"
+                            from: 0
+                            to: 1
+                            duration: 180
+                        }
+                        NumberAnimation {
+                            property: "scale"
+                            from: 0.94
+                            to: 1
+                            duration: 180
+                            easing.type: Easing.OutCubic
+                        }
+                    }
+                }
+
+                remove: Transition {
+                    ParallelAnimation {
+                        NumberAnimation {
+                            property: "opacity"
+                            to: 0
+                            duration: 140
+                        }
+                        NumberAnimation {
+                            property: "scale"
+                            to: 0.94
+                            duration: 140
+                            easing.type: Easing.OutCubic
+                        }
+                    }
+                }
+
+                displaced: Transition {
+                    NumberAnimation {
+                        property: "y"
+                        duration: 200
+                        easing.type: Easing.OutCubic
+                    }
+                }
+
+                highlight: Rectangle {
+                    id: pill
+
+                    readonly property bool tracking: root.hoveredIndex >= 0 && list.currentItem !== null
+
+                    y: list.currentItem ? list.currentItem.y : 0
+                    width: list.width
+                    height: list.currentItem ? list.currentItem.height : 0
+                    radius: 14
+                    color: Theme.surfaceContainerHighest
+                    opacity: tracking ? 1 : 0
+
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: 120
+                        }
+                    }
+
+                    Behavior on y {
+                        enabled: pill.opacity > 0.01
+                        SpringAnimation {
+                            spring: 5
+                            damping: 0.32
+                            epsilon: 0.25
+                        }
+                    }
+
+                    Behavior on height {
+                        enabled: pill.opacity > 0.01
+                        SpringAnimation {
+                            spring: 5
+                            damping: 0.32
+                            epsilon: 0.25
+                        }
+                    }
+                }
 
                 delegate: Item {
                     id: row
-                    required property string modelData
+                    required property string entry
+                    required property int index
 
-                    readonly property bool isImage: board.isImage(modelData)
+                    readonly property bool isImage: board.isImage(entry)
+                    readonly property bool hovered: root.hoveredIndex === index
                     property string imageUrl: ""
 
                     width: list.width
                     height: isImage ? root.imageRow : root.textRow
 
                     Component.onCompleted: if (isImage)
-                        imageUrl = board.tempImagePath(modelData)
+                        imageUrl = board.tempImagePath(entry)
 
                     Connections {
                         target: board
 
                         function onImageReady(entry, url) {
-                            if (entry === row.modelData)
+                            if (entry === row.entry)
                                 row.imageUrl = url;
                         }
                     }
 
-                    Rectangle {
-                        anchors.fill: parent
-                        radius: 14
-                        color: area.containsMouse ? Theme.surfaceContainerHighest : Theme.surfaceContainer
+                    HoverHandler {
+                        onHoveredChanged: {
+                            if (hovered) {
+                                root.hoveredIndex = row.index;
+                                list.currentIndex = row.index;
+                            } else if (root.hoveredIndex === row.index) {
+                                root.hoveredIndex = -1;
+                            }
+                        }
                     }
 
                     ClippingRectangle {
@@ -202,12 +331,26 @@ Item {
                         }
                     }
 
-                    MouseArea {
-                        id: area
+                    Rectangle {
+                        visible: row.isImage
                         anchors.fill: parent
-                        hoverEnabled: true
+                        radius: 14
+                        color: "transparent"
+                        border.width: 2
+                        border.color: Theme.primary
+                        opacity: row.hovered ? 1 : 0
+
+                        Behavior on opacity {
+                            NumberAnimation {
+                                duration: 120
+                            }
+                        }
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
-                        onClicked: board.copyItem(row.modelData)
+                        onClicked: board.copyItem(row.entry)
                     }
 
                     Text {
@@ -217,12 +360,12 @@ Item {
                         anchors.right: parent.right
                         anchors.rightMargin: 48
                         anchors.verticalCenter: parent.verticalCenter
-                        text: board.previewText(row.modelData, 160)
+                        text: board.previewText(row.entry, 160)
                         wrapMode: Text.Wrap
                         maximumLineCount: 2
                         elide: Text.ElideRight
                         font.pixelSize: 13
-                        color: area.containsMouse ? Theme.primary : Theme.onSurfaceVariantColor
+                        color: row.hovered ? Theme.primary : Theme.onSurfaceVariantColor
                     }
 
                     MaterialIconButton {
@@ -235,7 +378,7 @@ Item {
                         iconText: "\uf00d"
                         iconSize: 14
                         iconColor: Theme.onSurfaceVariantColor
-                        onClicked: board.deleteItem(row.modelData)
+                        onClicked: board.deleteItem(row.entry)
                     }
                 }
             }
