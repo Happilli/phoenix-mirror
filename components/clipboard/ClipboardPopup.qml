@@ -9,11 +9,8 @@ import qs.configuration.Clipboard
 Item {
     id: root
 
-    property bool open: true
     property real shownHeight: 0
     property int hoveredIndex: -1
-
-    signal closed
 
     readonly property real pad: 12
     readonly property real searchScale: 0.85
@@ -40,7 +37,7 @@ Item {
         return h + rowGap * (items.length - 1);
     }
     readonly property real fullHeight: Math.min(maxHeight, pad + 48 + 8 + contentHeight + pad)
-    readonly property real wantHeight: open ? fullHeight : 0
+    readonly property real wantHeight: fullHeight
 
     width: 440
     height: Math.max(0, shownHeight)
@@ -78,20 +75,14 @@ Item {
     }
 
     Behavior on shownHeight {
-        enabled: root.open
         SpringAnimation {
             spring: 3
-            damping: 0.25
-            epsilon: 0.25
+            damping: 0.23
+            epsilon: 0.33
         }
     }
 
     onWantHeightChanged: shownHeight = wantHeight
-
-    onShownHeightChanged: {
-        if (!open && shownHeight <= 1)
-            closed();
-    }
 
     onEntriesChanged: {
         hoveredIndex = -1;

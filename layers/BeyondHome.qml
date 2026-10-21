@@ -50,7 +50,7 @@ Variants {
                 item: screenScope.selecting ? picker : shot
 
                 Region {
-                    item: clipLoader
+                    item: clipLoader.item as Item
                 }
 
                 Region {
@@ -85,9 +85,7 @@ Variants {
                 id: clipLoader
                 anchors.centerIn: parent
                 active: screenScope.clipShown
-                sourceComponent: ClipboardPopup {
-                    open: screenScope.clipOpen
-                }
+                sourceComponent: ClipboardPopup {}
             }
 
             ScreenshotPopup {
