@@ -14,7 +14,7 @@ Item {
         text: "\udb86\udc42"
         font.pixelSize: 32
         font.bold: true
-        color: root.open ? Theme.primary : Theme.onSurfaceVariantColor
+        color: root.open ? Theme.background : Theme.onSurfaceVariantColor
 
         Behavior on color {
             ColorAnimation {

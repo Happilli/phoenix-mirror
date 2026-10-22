@@ -35,10 +35,12 @@ Item {
             return startLoader.item;
         if (target === dailyWar)
             return warLoader.item;
+        if (target === mouthButton)
+            return mouthLoader.item;
         return null;
     }
 
-    readonly property bool popupShown: notchOpen && (target === controls || target === powerProfile || target === datetime || target === appSlot || target === nightMode || target === mediaButton || target === startMenu || target === dailyWar)
+    readonly property bool popupShown: notchOpen && (target === controls || target === powerProfile || target === datetime || target === appSlot || target === nightMode || target === mediaButton || target === startMenu || target === dailyWar || target === mouthButton)
     readonly property Item hoveredItem: {
         if (powerHover.hovered)
             return powerProfile;
@@ -56,6 +58,8 @@ Item {
             return mediaButton;
         if (nightHover.hovered)
             return nightMode;
+        if (mouthHover.hovered)
+            return mouthButton;
         if (startHover.hovered)
             return startMenu;
         if (host.hovered)
@@ -212,10 +216,21 @@ Item {
                 id: startHover
             }
         }
+        Mouth {
+            id: mouthButton
+            open: root.notchOpen && root.target === mouthButton
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.left: startMenu.right
+            anchors.verticalCenterOffset: root.radius / 2
+            anchors.leftMargin: root.itemGap
+            HoverHandler {
+                id: mouthHover
+            }
+        }
         NightModeButton {
             id: nightMode
             anchors.verticalCenter: parent.verticalCenter
-            anchors.left: startMenu.right
+            anchors.left: mouthButton.right
             anchors.verticalCenterOffset: root.radius / 2
             anchors.leftMargin: root.itemGap
             HoverHandler {
@@ -413,6 +428,15 @@ Item {
             active: root.notchOpen && root.target === mediaButton
             sourceComponent: MediaPopup {
                 active: true
+            }
+        }
+        Loader {
+            id: mouthLoader
+            anchors.centerIn: parent
+            active: root.notchOpen && root.target === mouthButton
+            sourceComponent: MouthPopup {
+                active: true
+                onCloseRequested: root.notchOpen = false
             }
         }
         Loader {

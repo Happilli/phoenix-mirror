@@ -30,7 +30,7 @@ Item {
         text: "\uf001"
         font.pixelSize: 20
         font.bold: true
-        color: (root.open || (MediaService.hasPlayer && MediaService.isPlaying)) ? Theme.primary : Theme.onSurfaceVariantColor
+        color: Theme.onSurfaceVariantColor
     }
 
     Row {

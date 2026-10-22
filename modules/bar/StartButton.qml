@@ -1,13 +1,15 @@
 import QtQuick
 import qs.services.theme
 
-Item {
+Rectangle {
     id: root
 
     property bool open: false
 
     implicitWidth: 40
     implicitHeight: 40
+    radius: height / 2
+    color: Theme.background
 
     Text {
         anchors.centerIn: parent

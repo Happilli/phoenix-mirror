@@ -12,7 +12,7 @@ Item {
         text: NightModeService.active ? "\uf186" : "\udb81\udda8"
         font.pixelSize: 22
         font.bold: true
-        color: NightModeService.active ? Theme.primary : Theme.onSurfaceVariantColor
+        color: Theme.onSurfaceVariantColor
 
         Behavior on color {
             ColorAnimation {

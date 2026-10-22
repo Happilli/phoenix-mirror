@@ -359,17 +359,30 @@ Item {
                         color: row.hovered ? Theme.primary : Theme.onSurfaceVariantColor
                     }
 
-                    MaterialIconButton {
+                    Text {
+                        id: deleteIcon
                         anchors.right: parent.right
-                        anchors.rightMargin: 8
+                        anchors.rightMargin: 16
                         anchors.verticalCenter: parent.verticalCenter
-                        type: MaterialIconButton.Standard
-                        shape: MaterialIconButton.Round
-                        sizeStyle: MaterialIconButton.ExtraSmall
-                        iconText: "\uf00d"
-                        iconSize: 14
-                        iconColor: Theme.onSurfaceVariantColor
-                        onClicked: board.deleteItem(row.entry)
+                        text: "\uf00d"
+                        font.pixelSize: 14
+                        color: Theme.error
+                        opacity: deleteArea.containsMouse ? 1 : 0.7
+
+                        Behavior on opacity {
+                            NumberAnimation {
+                                duration: 120
+                            }
+                        }
+
+                        MouseArea {
+                            id: deleteArea
+                            anchors.fill: parent
+                            anchors.margins: -8
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: board.deleteItem(row.entry)
+                        }
                     }
                 }
             }

@@ -36,6 +36,6 @@ Item {
         iconSize: 24
         iconColor: PowerProfiles.profile === PowerProfile.Performance ? Theme.primary : Theme.onSurfaceVariantColor
         onClicked: root.cycle()
-        color: Theme.surfaceContainerHighest
+        color: Theme.background
     }
 }
