@@ -9,6 +9,9 @@ Item {
 
     required property bool active
 
+    property int hoveredIndex: -1
+    property bool pressing: false
+
     readonly property var items: {
         const apps = DesktopEntries.applications.values.filter(e => !e.noDisplay).sort((a, b) => a.name.localeCompare(b.name));
         const out = [];
@@ -38,6 +41,9 @@ Item {
     visible: active
 
     onActiveChanged: if (!active) {
+        root.hoveredIndex = -1;
+        root.pressing = false;
+        list.currentIndex = -1;
         list.positionViewAtBeginning();
         list.targetY = list.originY;
     }
@@ -47,6 +53,9 @@ Item {
         anchors.fill: parent
         clip: true
         boundsBehavior: Flickable.StopAtBounds
+        keyNavigationEnabled: false
+        highlightFollowsCurrentItem: false
+        currentIndex: -1
         cacheBuffer: 400
 
         property real targetY: 0
@@ -80,15 +89,76 @@ Item {
             objectProp: "key"
         }
 
+        highlight: Rectangle {
+            id: pill
+
+            readonly property bool tracking: root.hoveredIndex >= 0 && list.currentItem !== null
+
+            x: 2
+            y: list.currentItem ? list.currentItem.y + 2 : 0
+            width: list.width - 4
+            height: list.currentItem ? list.currentItem.height - 4 : 0
+            radius: 12
+            color: Theme.surfaceContainerHighest
+            opacity: tracking ? 1 : 0
+            scale: root.pressing ? 0.96 : 1.0
+
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: 120
+                }
+            }
+
+            Behavior on y {
+                enabled: pill.opacity > 0.01
+                SpringAnimation {
+                    spring: 5
+                    damping: 0.32
+                    epsilon: 0.25
+                }
+            }
+
+            Behavior on height {
+                enabled: pill.opacity > 0.01
+                SpringAnimation {
+                    spring: 5
+                    damping: 0.32
+                    epsilon: 0.25
+                }
+            }
+
+            Behavior on scale {
+                SpringAnimation {
+                    spring: 5
+                    damping: 0.4
+                    epsilon: 0.005
+                }
+            }
+        }
+
         delegate: Item {
             id: row
             required property var modelData
+            required property int index
 
             readonly property bool header: modelData.header
             readonly property var entry: modelData.entry
+            readonly property bool hovered: root.hoveredIndex === index
 
             width: list.width
             height: header ? 36 : 44
+
+            HoverHandler {
+                enabled: !row.header
+                onHoveredChanged: {
+                    if (hovered) {
+                        root.hoveredIndex = row.index;
+                        list.currentIndex = row.index;
+                    } else if (root.hoveredIndex === row.index) {
+                        root.hoveredIndex = -1;
+                    }
+                }
+            }
 
             Text {
                 visible: row.header
@@ -104,30 +174,6 @@ Item {
             Item {
                 anchors.fill: parent
                 visible: !row.header
-
-                Rectangle {
-                    id: pill
-                    anchors.fill: parent
-                    anchors.margins: 2
-                    radius: 12
-                    color: area.containsMouse ? Theme.surfaceContainerHighest : Qt.alpha(Theme.surfaceContainerHighest, 0)
-                    scale: area.pressed ? 0.96 : 1.0
-
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: 150
-                            easing.type: Easing.OutCubic
-                        }
-                    }
-
-                    Behavior on scale {
-                        SpringAnimation {
-                            spring: 5
-                            damping: 0.4
-                            epsilon: 0.005
-                        }
-                    }
-                }
 
                 IconImage {
                     id: icon
@@ -151,14 +197,15 @@ Item {
                     elide: Text.ElideRight
                     font.pixelSize: 13
                     font.weight: Font.Medium
-                    color: area.containsMouse ? Theme.primary : Theme.onSurfaceVariantColor
+                    color: row.hovered ? Theme.primary : Theme.onSurfaceVariantColor
                 }
 
                 MouseArea {
                     id: area
-                    anchors.fill: pill
-                    hoverEnabled: true
+                    anchors.fill: parent
+                    anchors.margins: 2
                     cursorShape: Qt.PointingHandCursor
+                    onPressedChanged: root.pressing = pressed
                     onClicked: row.entry.runInTerminal ? Quickshell.execDetached(["kitty", "-e"].concat(Array.from(row.entry.command))) : row.entry.execute()
                 }
             }
