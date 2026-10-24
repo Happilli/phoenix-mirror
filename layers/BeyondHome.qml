@@ -5,8 +5,10 @@ import Quickshell.Wayland
 import qs.components.screenshot
 import qs.components.notifications
 import qs.components.clipboard
+import qs.components.polkit
 import qs.configuration.Screenshot
 import qs.configuration.Clipboard
+import qs.services.polkit
 
 Variants {
     model: Quickshell.screens
@@ -17,8 +19,10 @@ Variants {
 
         readonly property bool selecting: ScreenshotConfig.selecting && ScreenshotConfig.selectScreen === modelData.name
         readonly property bool clipOpen: ClipboardConfig.open && ClipboardConfig.screenName === modelData.name
+        readonly property bool polkitOpen: PolkitService.shown && ScreenshotConfig.focusedName() === modelData.name
         property bool clipShown: false
         property bool clipGrab: false
+        property bool polkitGrab: false
 
         onClipOpenChanged: {
             if (clipOpen) {
@@ -32,10 +36,26 @@ Variants {
             }
         }
 
+        onPolkitOpenChanged: {
+            if (polkitOpen) {
+                polkitGrab = true;
+                polkitTimer.restart();
+            } else {
+                polkitGrab = false;
+                polkitTimer.stop();
+            }
+        }
+
         Timer {
             id: grabTimer
             interval: 200
             onTriggered: screenScope.clipGrab = false
+        }
+
+        Timer {
+            id: polkitTimer
+            interval: 200
+            onTriggered: screenScope.polkitGrab = false
         }
 
         WlrLayershell {
@@ -45,7 +65,7 @@ Variants {
             layer: WlrLayer.Overlay
             exclusiveZone: -1
             color: "transparent"
-            keyboardFocus: screenScope.selecting ? WlrKeyboardFocus.Exclusive : (screenScope.clipOpen ? (screenScope.clipGrab ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.OnDemand) : WlrKeyboardFocus.None)
+            keyboardFocus: screenScope.polkitOpen ? (screenScope.polkitGrab ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.OnDemand) : (screenScope.selecting ? WlrKeyboardFocus.Exclusive : (screenScope.clipOpen ? (screenScope.clipGrab ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.OnDemand) : WlrKeyboardFocus.None))
             mask: Region {
                 item: screenScope.selecting ? picker : shot
 
@@ -55,6 +75,10 @@ Variants {
 
                 Region {
                     item: notif
+                }
+
+                Region {
+                    item: polkitLoader.item as Item
                 }
             }
 
@@ -86,6 +110,13 @@ Variants {
                 anchors.centerIn: parent
                 active: screenScope.clipShown
                 sourceComponent: ClipboardPopup {}
+            }
+
+            Loader {
+                id: polkitLoader
+                anchors.centerIn: parent
+                active: screenScope.polkitOpen
+                sourceComponent: PolkitCard {}
             }
 
             ScreenshotPopup {
