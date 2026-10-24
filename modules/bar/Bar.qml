@@ -35,12 +35,10 @@ Item {
             return startLoader.item;
         if (target === dailyWar)
             return warLoader.item;
-        if (target === mouthButton)
-            return mouthLoader.item;
         return null;
     }
 
-    readonly property bool popupShown: notchOpen && (target === controls || target === powerProfile || target === datetime || target === appSlot || target === nightMode || target === mediaButton || target === startMenu || target === dailyWar || target === mouthButton)
+    readonly property bool popupShown: notchOpen && (target === controls || target === powerProfile || target === datetime || target === appSlot || target === nightMode || target === mediaButton || target === startMenu || target === dailyWar)
     readonly property Item hoveredItem: {
         if (powerHover.hovered)
             return powerProfile;
@@ -58,8 +56,6 @@ Item {
             return mediaButton;
         if (nightHover.hovered)
             return nightMode;
-        if (mouthHover.hovered)
-            return mouthButton;
         if (startHover.hovered)
             return startMenu;
         if (host.hovered)
@@ -105,25 +101,42 @@ Item {
             epsilon: 0.25
         }
     }
+    property real appOffset: openedApp.lastX
+    Behavior on appOffset {
+        enabled: root.notchOpen && root.target === appSlot
+        SpringAnimation {
+            spring: 3
+            damping: 0.4
+            epsilon: 0.25
+        }
+    }
 
-    property real l2: targetX - notchPadding
-    property real l3: targetX + target.width + notchPadding
-    Behavior on l2 {
-        enabled: root.notchOpen
+    readonly property real spanL: targetX - notchPadding
+    readonly property real spanR: targetX + target.width + notchPadding
+
+    property bool lagAnimated: true
+    property real lagL: 0
+    property real lagR: 0
+
+    Behavior on lagL {
+        enabled: root.lagAnimated
         SpringAnimation {
             spring: 3
             damping: 0.4
             epsilon: 0.25
         }
     }
-    Behavior on l3 {
-        enabled: root.notchOpen
+    Behavior on lagR {
+        enabled: root.lagAnimated
         SpringAnimation {
             spring: 3
             damping: 0.4
             epsilon: 0.25
         }
     }
+
+    readonly property real l2: spanL + lagL
+    readonly property real l3: spanR + lagR
 
     readonly property real fullFloorY: Math.min(controls.y + controls.height + notchPadding, height)
     readonly property real permanentDepth: Math.max(0, fullFloorY - radius)
@@ -158,7 +171,7 @@ Item {
         for (const c of cuts) {
             const f = R + c.d;
             const rt = Math.min(notchRadius, c.d / 2);
-            const rb = Math.min(notchRadiusBottom, Math.max(0, c.d - rt));
+            const rb = Math.min(notchRadiusBottom, (c.r - c.l) / 2, Math.max(0, c.d - rt));
             p += ` L ${c.l - rt} ${R} Q ${c.l} ${R} ${c.l} ${R + rt}`;
             p += ` L ${c.l} ${f - rb} Q ${c.l} ${f} ${c.l + rb} ${f}`;
             p += ` L ${c.r - rb} ${f} Q ${c.r} ${f} ${c.r} ${f - rb}`;
@@ -172,7 +185,16 @@ Item {
 
     onHoveredItemChanged: {
         if (hoveredItem) {
+            const keep = notchOpen;
+            const oldL = l2;
+            const oldR = l3;
             target = hoveredItem;
+            lagAnimated = false;
+            lagL = keep ? oldL - spanL : 0;
+            lagR = keep ? oldR - spanR : 0;
+            lagAnimated = true;
+            lagL = 0;
+            lagR = 0;
             closeTimer.stop();
             notchOpen = true;
         } else {
@@ -180,9 +202,13 @@ Item {
         }
     }
 
+    HoverHandler {
+        id: barHover
+    }
+
     Timer {
         id: closeTimer
-        interval: 80
+        interval: barHover.hovered ? 260 : 100
         onTriggered: root.notchOpen = false
     }
 
@@ -212,30 +238,13 @@ Item {
             anchors.left: workspace.right
             anchors.verticalCenterOffset: root.radius / 2
             anchors.leftMargin: root.itemGap
-            HoverHandler {
-                id: startHover
-            }
-        }
-        Mouth {
-            id: mouthButton
-            open: root.notchOpen && root.target === mouthButton
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.left: startMenu.right
-            anchors.verticalCenterOffset: root.radius / 2
-            anchors.leftMargin: root.itemGap
-            HoverHandler {
-                id: mouthHover
-            }
         }
         NightModeButton {
             id: nightMode
             anchors.verticalCenter: parent.verticalCenter
-            anchors.left: mouthButton.right
+            anchors.left: startMenu.right
             anchors.verticalCenterOffset: root.radius / 2
             anchors.leftMargin: root.itemGap
-            HoverHandler {
-                id: nightHover
-            }
         }
         MediaButton {
             id: mediaButton
@@ -244,9 +253,6 @@ Item {
             anchors.left: nightMode.right
             anchors.verticalCenterOffset: root.radius / 2
             anchors.leftMargin: root.itemGap
-            HoverHandler {
-                id: mediaHover
-            }
         }
         OpenedApp {
             id: openedApp
@@ -257,8 +263,8 @@ Item {
         }
         Item {
             id: appSlot
-            x: openedApp.x + openedApp.lastX
-            width: 32
+            x: openedApp.x + root.appOffset
+            width: 40
         }
         Battery {
             id: battery
@@ -276,6 +282,41 @@ Item {
             width: datetime.width
             height: 40
         }
+
+        Item {
+            id: startHit
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.verticalCenterOffset: root.radius / 2
+            x: startMenu.x - root.itemGap
+            width: startMenu.width + root.itemGap + root.itemGap / 2
+            height: 40
+            HoverHandler {
+                id: startHover
+            }
+        }
+        Item {
+            id: nightHit
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.verticalCenterOffset: root.radius / 2
+            x: nightMode.x - root.itemGap / 2
+            width: nightMode.width + root.itemGap
+            height: 40
+            HoverHandler {
+                id: nightHover
+            }
+        }
+        Item {
+            id: mediaHit
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.verticalCenterOffset: root.radius / 2
+            x: mediaButton.x - root.itemGap / 2
+            width: mediaButton.width + root.itemGap + root.itemGap / 2
+            height: 40
+            HoverHandler {
+                id: mediaHover
+            }
+        }
+
         Item {
             id: dateHit
             anchors.verticalCenter: parent.verticalCenter
@@ -341,10 +382,9 @@ Item {
         Item {
             id: warHit
             anchors.verticalCenter: parent.verticalCenter
-            anchors.right: dateSlot.left
             anchors.verticalCenterOffset: root.radius / 2
-            anchors.rightMargin: root.itemGap + controls.width + root.itemGap + root.dateOffset
-            width: dailyWar.width
+            x: dailyWar.x
+            width: dailyWar.width + root.itemGap
             height: 40
             HoverHandler {
                 id: warHover
@@ -353,10 +393,9 @@ Item {
         Item {
             id: powerHit
             anchors.verticalCenter: parent.verticalCenter
-            anchors.right: dateSlot.left
             anchors.verticalCenterOffset: root.radius / 2
-            anchors.rightMargin: root.itemGap + controls.width + root.itemGap + dailyWar.width + root.itemGap + root.dateOffset
-            width: powerProfile.width
+            x: powerProfile.x - root.itemGap / 2
+            width: powerProfile.width + root.itemGap
             height: 40
             HoverHandler {
                 id: powerHover
@@ -428,15 +467,6 @@ Item {
             active: root.notchOpen && root.target === mediaButton
             sourceComponent: MediaPopup {
                 active: true
-            }
-        }
-        Loader {
-            id: mouthLoader
-            anchors.centerIn: parent
-            active: root.notchOpen && root.target === mouthButton
-            sourceComponent: MouthPopup {
-                active: true
-                onCloseRequested: root.notchOpen = false
             }
         }
         Loader {

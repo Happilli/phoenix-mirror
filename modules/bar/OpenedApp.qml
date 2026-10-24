@@ -56,14 +56,20 @@ Row {
             readonly property var instances: modelData.toplevels
             readonly property bool anyActive: instances.some(t => t.activated)
 
-            width: 32
-            height: 32
+            width: 40
+            height: 40
+
+            Rectangle {
+                anchors.fill: parent
+                radius: height / 2
+                color: Theme.background
+            }
 
             IconImage {
                 id: appIcon
                 anchors.centerIn: parent
                 source: cell.modelData.icon
-                implicitSize: 20
+                implicitSize: 22
                 opacity: cell.anyActive ? 1 : 0.5
                 Behavior on opacity {
                     NumberAnimation {
@@ -81,7 +87,7 @@ Row {
 
                     readonly property int total: cell.instances.length
                     readonly property real angle: (Math.PI * 2 / Math.max(total, 1)) * index + Math.PI / 2
-                    readonly property real orbit: 13
+                    readonly property real orbit: 16
 
                     width: 4
                     height: 4

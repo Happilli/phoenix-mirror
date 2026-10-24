@@ -1,4 +1,5 @@
 import QtQuick
+import Ryu.Extraa
 import qs.services.theme
 import qs.services.nightmode
 
@@ -7,23 +8,14 @@ Item {
     implicitWidth: 40
     implicitHeight: 40
 
-    Text {
-        anchors.centerIn: parent
-        text: NightModeService.active ? "\uf186" : "\udb81\udda8"
-        font.pixelSize: 22
-        font.bold: true
-        color: Theme.onSurfaceVariantColor
-
-        Behavior on color {
-            ColorAnimation {
-                duration: 150
-            }
-        }
-    }
-
-    MouseArea {
+    MaterialIconButton {
         anchors.fill: parent
-        cursorShape: Qt.PointingHandCursor
+        type: MaterialIconButton.Standard
+        shape: MaterialIconButton.Round
+        iconText: NightModeService.active ? "\uf186" : "\udb81\udda8"
+        iconSize: 22
+        iconColor: NightModeService.active ? Theme.primary : Theme.onSurfaceVariantColor
         onClicked: NightModeService.toggle()
+        color: Theme.background
     }
 }
