@@ -9,32 +9,23 @@ Item {
 
     required property bool active
 
-    readonly property int listWidth: 300
-    readonly property int listHeight: 480
-    readonly property int rowHeight: 44
-    readonly property int headerHeight: 36
-
-    property int hovered: -1
-
-    readonly property var allApps: {
-        const list = DesktopEntries.applications.values.filter(e => !e.noDisplay);
-        return list.slice().sort((a, b) => a.name.localeCompare(b.name));
-    }
-
     readonly property var items: {
+        const apps = DesktopEntries.applications.values.filter(e => !e.noDisplay).sort((a, b) => a.name.localeCompare(b.name));
         const out = [];
         let last = "";
-        for (const e of allApps) {
+        for (const e of apps) {
             const c = e.name.charAt(0).toUpperCase();
             const letter = /[A-Z]/.test(c) ? c : "#";
             if (letter !== last) {
                 out.push({
+                    key: "#" + letter,
                     header: true,
                     label: letter
                 });
                 last = letter;
             }
             out.push({
+                key: e.id,
                 header: false,
                 entry: e
             });
@@ -42,139 +33,134 @@ Item {
         return out;
     }
 
-    function iconOf(entry) {
-        const name = entry.icon ?? "";
-        if (name.startsWith("/"))
-            return "file://" + name;
-        return Quickshell.iconPath(name, "application-x-executable");
-    }
-
-    function launch(entry) {
-        if (entry.runInTerminal)
-            Quickshell.execDetached(["kitty", "-e"].concat(Array.from(entry.command)));
-        else
-            entry.execute();
-    }
+    implicitWidth: 300
+    implicitHeight: 480
+    visible: active
 
     onActiveChanged: if (!active) {
-        hovered = -1;
         list.positionViewAtBeginning();
+        list.targetY = list.originY;
     }
-
-    implicitWidth: listWidth
-    implicitHeight: listHeight
-    visible: active
 
     ListView {
         id: list
         anchors.fill: parent
         clip: true
         boundsBehavior: Flickable.StopAtBounds
-        keyNavigationEnabled: false
-        highlightFollowsCurrentItem: false
-        currentIndex: -1
-        model: root.items
+        cacheBuffer: 400
 
-        highlight: Rectangle {
-            id: pill
+        property real targetY: 0
 
-            x: 2
-            y: list.currentItem ? list.currentItem.y + 2 : 0
-            width: list.width - 4
-            height: list.currentItem ? list.currentItem.height - 4 : 0
-            radius: 12
-            color: Theme.surfaceContainerHighest
-            opacity: root.hovered >= 0 && list.currentItem !== null ? 1 : 0
-
-            Behavior on opacity {
-                NumberAnimation {
-                    duration: 120
-                }
+        Behavior on contentY {
+            enabled: !list.dragging && !list.flicking
+            SpringAnimation {
+                spring: 3.2
+                damping: 0.32
+                mass: 0.9
+                epsilon: 0.25
             }
+        }
 
-            Behavior on y {
-                enabled: pill.opacity > 0.01
-                SpringAnimation {
-                    spring: 5
-                    damping: 0.32
-                    epsilon: 0.25
-                }
-            }
+        onMovementStarted: targetY = contentY
+        onMovementEnded: targetY = contentY
 
-            Behavior on height {
-                enabled: pill.opacity > 0.01
-                SpringAnimation {
-                    spring: 5
-                    damping: 0.32
-                    epsilon: 0.25
-                }
+        WheelHandler {
+            target: null
+            acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+            onWheel: event => {
+                const delta = event.pixelDelta.y !== 0 ? event.pixelDelta.y * 1.4 : event.angleDelta.y * 0.9;
+                const maxY = Math.max(list.originY, list.originY + list.contentHeight - list.height);
+                list.targetY = Math.max(list.originY, Math.min(maxY, list.targetY - delta));
+                list.contentY = list.targetY;
             }
+        }
+
+        model: ScriptModel {
+            values: root.items
+            objectProp: "key"
         }
 
         delegate: Item {
             id: row
             required property var modelData
-            required property int index
 
-            readonly property bool isHeader: modelData.header === true
-            readonly property bool selected: root.hovered === index
+            readonly property bool header: modelData.header
+            readonly property var entry: modelData.entry
 
             width: list.width
-            height: isHeader ? root.headerHeight : root.rowHeight
-
-            HoverHandler {
-                enabled: !row.isHeader
-                onHoveredChanged: {
-                    if (hovered) {
-                        root.hovered = row.index;
-                        list.currentIndex = row.index;
-                    } else if (root.hovered === row.index) {
-                        root.hovered = -1;
-                    }
-                }
-            }
+            height: header ? 36 : 44
 
             Text {
-                visible: row.isHeader
+                visible: row.header
                 anchors.left: parent.left
                 anchors.leftMargin: 16
                 anchors.verticalCenter: parent.verticalCenter
-                text: row.isHeader ? row.modelData.label : ""
+                text: row.modelData.label ?? ""
                 font.pixelSize: 13
                 font.weight: Font.DemiBold
                 color: Theme.primary
             }
 
-            IconImage {
-                id: icon
-                visible: !row.isHeader
-                anchors.left: parent.left
-                anchors.leftMargin: 16
-                anchors.verticalCenter: parent.verticalCenter
-                implicitSize: 28
-                source: row.isHeader ? "" : root.iconOf(row.modelData.entry)
-            }
-
-            Text {
-                visible: !row.isHeader
-                anchors.left: icon.right
-                anchors.leftMargin: 14
-                anchors.right: parent.right
-                anchors.rightMargin: 14
-                anchors.verticalCenter: parent.verticalCenter
-                text: row.isHeader ? "" : row.modelData.entry.name
-                elide: Text.ElideRight
-                font.pixelSize: 13
-                font.weight: Font.Medium
-                color: row.selected ? Theme.primary : Theme.onSurfaceVariantColor
-            }
-
-            MouseArea {
+            Item {
                 anchors.fill: parent
-                enabled: !row.isHeader
-                hoverEnabled: true
-                cursorShape: containsMouse ? Qt.PointingHandCursor : Qt.ArrowCursor
-                onClicked: root.launch(row.modelData.entry)
+                visible: !row.header
+
+                Rectangle {
+                    id: pill
+                    anchors.fill: parent
+                    anchors.margins: 2
+                    radius: 12
+                    color: area.containsMouse ? Theme.surfaceContainerHighest : Qt.alpha(Theme.surfaceContainerHighest, 0)
+                    scale: area.pressed ? 0.96 : 1.0
+
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 150
+                            easing.type: Easing.OutCubic
+                        }
+                    }
+
+                    Behavior on scale {
+                        SpringAnimation {
+                            spring: 5
+                            damping: 0.4
+                            epsilon: 0.005
+                        }
+                    }
+                }
+
+                IconImage {
+                    id: icon
+                    anchors.left: parent.left
+                    anchors.leftMargin: 16
+                    anchors.verticalCenter: parent.verticalCenter
+                    implicitSize: 28
+                    source: {
+                        const n = row.entry?.icon ?? "";
+                        return n.startsWith("/") ? "file://" + n : Quickshell.iconPath(n, "application-x-executable");
+                    }
+                }
+
+                Text {
+                    anchors.left: icon.right
+                    anchors.leftMargin: 14
+                    anchors.right: parent.right
+                    anchors.rightMargin: 14
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: row.entry?.name ?? ""
+                    elide: Text.ElideRight
+                    font.pixelSize: 13
+                    font.weight: Font.Medium
+                    color: area.containsMouse ? Theme.primary : Theme.onSurfaceVariantColor
+                }
+
+                MouseArea {
+                    id: area
+                    anchors.fill: pill
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: row.entry.runInTerminal ? Quickshell.execDetached(["kitty", "-e"].concat(Array.from(row.entry.command))) : row.entry.execute()
+                }
             }
         }
     }
