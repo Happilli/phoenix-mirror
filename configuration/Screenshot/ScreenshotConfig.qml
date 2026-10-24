@@ -11,6 +11,7 @@ Singleton {
     property bool capturing: false
     property bool silent: false
     property bool regionMode: false
+    property bool lassoMode: false
     property bool selecting: false
     property string selectScreen: ""
     property string selectSource: ""
@@ -66,6 +67,7 @@ Singleton {
     function captureFocused() {
         const name = focusedName();
         regionMode = false;
+        lassoMode = false;
         selectPurpose = "screenshot";
         return name !== "" && begin([name], false);
     }
@@ -73,6 +75,15 @@ Singleton {
     function captureRegion() {
         const name = focusedName();
         regionMode = true;
+        lassoMode = false;
+        selectPurpose = "screenshot";
+        return name !== "" && begin([name], false);
+    }
+
+    function captureLasso() {
+        const name = focusedName();
+        regionMode = true;
+        lassoMode = true;
         selectPurpose = "screenshot";
         return name !== "" && begin([name], false);
     }
@@ -80,6 +91,7 @@ Singleton {
     function captureRegionForRecording() {
         const name = focusedName();
         regionMode = true;
+        lassoMode = false;
         selectPurpose = "record";
         return name !== "" && begin([name], false);
     }
@@ -90,6 +102,7 @@ Singleton {
         const screen = selectScreen;
         selecting = false;
         regionMode = false;
+        lassoMode = false;
         selectPurpose = "screenshot";
         if (purpose === "record") {
             Quickshell.execDetached(["rm", "-f", source]);
@@ -97,10 +110,23 @@ Singleton {
                 regionPicked(screen, rect);
             }
         } else if (geom !== "") {
-            ScreenshotService.present(screen, source, geom);
+            ScreenshotService.present(screen, source, geom, "");
         } else {
             Quickshell.execDetached(["rm", "-f", source]);
         }
+    }
+
+    function finishLasso(geom, poly) {
+        const source = selectSource;
+        const screen = selectScreen;
+        selecting = false;
+        regionMode = false;
+        lassoMode = false;
+        selectPurpose = "screenshot";
+        if (geom !== "" && poly !== "")
+            ScreenshotService.present(screen, source, geom, poly);
+        else
+            Quickshell.execDetached(["rm", "-f", source]);
     }
 
     onCaptured: (screenName, path) => {
@@ -113,7 +139,7 @@ Singleton {
             selecting = true;
             return;
         }
-        ScreenshotService.present(screenName, path, "");
+        ScreenshotService.present(screenName, path, "", "");
     }
 
     Timer {

@@ -28,16 +28,19 @@ Singleton {
         path = file;
     }
 
-    function present(name, source, crop) {
+    function present(name, source, crop, poly) {
         if (mover.running || convert.running) {
             return;
         }
         pendingScreen = name;
         pendingSource = source;
-        pendingOut = PathService.runtime + "/phoenix-shot-" + Date.now() + ".bmp";
+        pendingOut = PathService.runtime + "/phoenix-shot-" + Date.now() + (poly ? ".png" : ".bmp");
         if (crop === "") {
             mover.command = ["mv", "-f", source, pendingOut];
             mover.running = true;
+        } else if (poly) {
+            convert.command = ["magick", source, "(", "+clone", "-fill", "black", "-colorize", "100", "-fill", "white", "-draw", "polygon " + poly, ")", "-alpha", "off", "-compose", "CopyOpacity", "-composite", "-crop", crop, "+repage", pendingOut];
+            convert.running = true;
         } else {
             convert.command = ["magick", source, "-crop", crop, "+repage", pendingOut];
             convert.running = true;
@@ -48,7 +51,8 @@ Singleton {
         if (!active || savedPath !== "" || store.running) {
             return;
         }
-        target = dir + "/screenshot_" + Qt.formatDateTime(new Date(), "yyyy-MM-dd_hh-mm-ss") + ".jpg";
+        const ext = path.endsWith(".png") ? ".png" : ".jpg";
+        target = dir + "/screenshot_" + Qt.formatDateTime(new Date(), "yyyy-MM-dd_hh-mm-ss") + ext;
         store.command = ["sh", "-c", 'mkdir -p "$(dirname "$2")" && magick "$1" -quality 90 "$2"', "sh", path, target];
         store.running = true;
     }

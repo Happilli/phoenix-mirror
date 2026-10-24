@@ -7,10 +7,10 @@ import Quickshell
 Scope {
     id: root
 
-    property bool wantRegion: false
+    property string mode: "full"
 
-    function start(region) {
-        wantRegion = region;
+    function start(m) {
+        mode = m;
         if (ScreenshotService.active) {
             ScreenshotService.dismiss();
             delay.restart();
@@ -20,7 +20,12 @@ Scope {
     }
 
     function go() {
-        wantRegion ? ScreenshotConfig.captureRegion() : ScreenshotConfig.captureFocused();
+        if (mode === "lasso")
+            ScreenshotConfig.captureLasso();
+        else if (mode === "region")
+            ScreenshotConfig.captureRegion();
+        else
+            ScreenshotConfig.captureFocused();
     }
 
     Timer {
@@ -33,11 +38,15 @@ Scope {
         target: "screenshot"
 
         function full(): void {
-            root.start(false);
+            root.start("full");
         }
 
         function region(): void {
-            root.start(true);
+            root.start("region");
+        }
+
+        function lasso(): void {
+            root.start("lasso");
         }
     }
 }
