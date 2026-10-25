@@ -86,7 +86,7 @@ Item {
                 Image {
                     anchors.fill: parent
                     source: root.last !== "" ? "file://" + root.last : ""
-                    fillMode: Image.PreserveAspectCrop
+                    fillMode: Image.PreserveAspectFit
                     asynchronous: true
                     cache: false
                 }

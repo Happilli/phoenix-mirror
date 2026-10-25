@@ -16,16 +16,17 @@ Item {
         property string description: ""
         default property alias control: slot.data
 
+        readonly property bool stacked: width < 560
+        readonly property real pad: 20
+
         width: parent ? parent.width : 0
-        height: Math.max(68, textCol.implicitHeight + 28, slot.height + 28)
+        height: stacked ? textCol.implicitHeight + slot.height + (slot.height > 0 ? 12 : 0) + 28 : Math.max(68, textCol.implicitHeight + 28, slot.height + 28)
 
         Column {
             id: textCol
-            anchors.left: parent.left
-            anchors.leftMargin: 20
-            anchors.right: slot.left
-            anchors.rightMargin: 16
-            anchors.verticalCenter: parent.verticalCenter
+            x: entry.pad
+            y: entry.stacked ? 14 : (entry.height - height) / 2
+            width: entry.stacked ? entry.width - entry.pad * 2 : Math.max(0, entry.width - entry.pad * 2 - slot.width - 16)
             spacing: 2
 
             Text {
@@ -50,12 +51,20 @@ Item {
 
         Item {
             id: slot
-            anchors.right: parent.right
-            anchors.rightMargin: 20
-            anchors.verticalCenter: parent.verticalCenter
+
+            readonly property real limit: entry.stacked ? entry.width - entry.pad * 2 : Math.max(160, (entry.width - entry.pad * 2) * 0.55)
+
+            x: entry.stacked ? entry.pad : entry.width - entry.pad - width
+            y: entry.stacked ? textCol.y + textCol.implicitHeight + 12 : (entry.height - height) / 2
             width: childrenRect.width
             height: childrenRect.height
         }
+    }
+
+    Rectangle {
+        anchors.fill: parent
+        radius: 14
+        color: Theme.surfaceContainerLow
     }
 
     Column {

@@ -1,18 +1,15 @@
 import QtQuick
-import Quickshell
 import Ryu.Extraa
 import qs.services.theme
 import qs.configuration.Widgets
 import qs.Settings.components
 
 SettingsPage {
+    id: page
     title: "Widgets"
 
     header: DesktopPreview {
-        readonly property real screenWidth: Quickshell.screens[0]?.width ?? 1920
-        readonly property bool large: parent.width / screenWidth > 0.6
-
-        width: large ? 800 : parent.width
+        width: Math.min(parent.width, 720, page.headerMaxHeight * aspect)
     }
 
     SettingsGroup {
@@ -20,13 +17,8 @@ SettingsPage {
             title: "Show clock"
             description: "Display the clock on your desktop wallpaper"
 
-            MaterialSwitch {
+            SettingsSwitch {
                 checked: ClockConfig.enabled
-                trackColor: Theme.surfaceContainerHighest
-                checkedTrackColor: Theme.primary
-                handleColor: Theme.onSurfaceVariantColor
-                checkedHandleColor: Theme.onPrimaryColor
-                borderColor: Theme.outline
                 onToggled: ClockConfig.set("enabled", checked)
             }
         }
@@ -35,21 +27,10 @@ SettingsPage {
             title: "Color"
             description: "Tint of the clock digits"
 
-            MaterialButtonGroup {
+            SettingsChoice {
                 labels: ClockConfig.colorOptions.map(o => o.label)
-                selectionMode: MaterialButtonGroup.Single
-                variant: MaterialButtonGroup.Connected
-                sizeStyle: MaterialButtonGroup.ExtraSmall
                 currentIndex: ClockConfig.colorOptions.findIndex(o => o.key === ClockConfig.colorKey)
-                color: Theme.surfaceContainerHighest
-                checkedColor: Theme.primary
-                textColor: Theme.onSurfaceVariantColor
-                checkedTextColor: Theme.onPrimaryColor
-
-                onToggled: (index, checked) => {
-                    if (checked)
-                        ClockConfig.set("colorKey", ClockConfig.colorOptions[index].key);
-                }
+                onPicked: index => ClockConfig.set("colorKey", ClockConfig.colorOptions[index].key)
             }
         }
 
@@ -57,21 +38,10 @@ SettingsPage {
             title: "Size"
             description: "Overall size of the clock"
 
-            MaterialSlider {
-                width: 300
+            SettingsSlider {
                 from: 120
                 to: 600
-                sizeStyle: MaterialSlider.Small
-                outerRadius: 8
-                handleGap: 3
-                innerRadius: 2
                 value: ClockConfig.size
-                showStops: false
-                showValueIndicator: false
-                trackColor: Theme.surfaceContainerHighest
-                color: Theme.primary
-                handleColor: Theme.primary
-
                 onMoved: ClockConfig.set("size", Math.round(value))
             }
         }
@@ -82,21 +52,10 @@ SettingsPage {
             title: "Orientation"
             description: "Stack the digits or place them side by side"
 
-            MaterialButtonGroup {
+            SettingsChoice {
                 labels: ["Vertical", "Horizontal"]
-                selectionMode: MaterialButtonGroup.Single
-                variant: MaterialButtonGroup.Connected
-                sizeStyle: MaterialButtonGroup.ExtraSmall
                 currentIndex: ClockConfig.orientation
-                color: Theme.surfaceContainerHighest
-                checkedColor: Theme.primary
-                textColor: Theme.onSurfaceVariantColor
-                checkedTextColor: Theme.onPrimaryColor
-
-                onToggled: (index, checked) => {
-                    if (checked)
-                        ClockConfig.set("orientation", index);
-                }
+                onPicked: index => ClockConfig.set("orientation", index)
             }
         }
 
@@ -104,21 +63,10 @@ SettingsPage {
             title: "Font weight"
             description: "Thickness of the digits"
 
-            MaterialSlider {
-                width: 300
+            SettingsSlider {
                 from: 100
                 to: 900
-                sizeStyle: MaterialSlider.Small
-                outerRadius: 8
-                handleGap: 3
-                innerRadius: 2
                 value: ClockConfig.fontWeight
-                showStops: false
-                showValueIndicator: false
-                trackColor: Theme.surfaceContainerHighest
-                color: Theme.primary
-                handleColor: Theme.primary
-
                 onMoved: ClockConfig.set("fontWeight", Math.round(value))
             }
         }
@@ -127,13 +75,8 @@ SettingsPage {
             title: "24-hour time"
             description: "Turn off to use 12-hour time"
 
-            MaterialSwitch {
+            SettingsSwitch {
                 checked: ClockConfig.use24Hour
-                trackColor: Theme.surfaceContainerHighest
-                checkedTrackColor: Theme.primary
-                handleColor: Theme.onSurfaceVariantColor
-                checkedHandleColor: Theme.onPrimaryColor
-                borderColor: Theme.outline
                 onToggled: ClockConfig.set("use24Hour", checked)
             }
         }
@@ -143,13 +86,8 @@ SettingsPage {
             title: "Show AM/PM"
             description: "Display the period next to the time"
 
-            MaterialSwitch {
+            SettingsSwitch {
                 checked: ClockConfig.showAmPm
-                trackColor: Theme.surfaceContainerHighest
-                checkedTrackColor: Theme.primary
-                handleColor: Theme.onSurfaceVariantColor
-                checkedHandleColor: Theme.onPrimaryColor
-                borderColor: Theme.outline
                 onToggled: ClockConfig.set("showAmPm", checked)
             }
         }
@@ -159,21 +97,10 @@ SettingsPage {
             title: "AM/PM position"
             description: "Where the period sits relative to the digits"
 
-            MaterialButtonGroup {
+            SettingsChoice {
                 labels: ["Beside", "Below", "Superscript"]
-                selectionMode: MaterialButtonGroup.Single
-                variant: MaterialButtonGroup.Connected
-                sizeStyle: MaterialButtonGroup.ExtraSmall
                 currentIndex: ClockConfig.amPmStyle
-                color: Theme.surfaceContainerHighest
-                checkedColor: Theme.primary
-                textColor: Theme.onSurfaceVariantColor
-                checkedTextColor: Theme.onPrimaryColor
-
-                onToggled: (index, checked) => {
-                    if (checked)
-                        ClockConfig.set("amPmStyle", index);
-                }
+                onPicked: index => ClockConfig.set("amPmStyle", index)
             }
         }
 
@@ -182,13 +109,8 @@ SettingsPage {
             title: "Separator"
             description: "Show the colon between hours and minutes"
 
-            MaterialSwitch {
+            SettingsSwitch {
                 checked: ClockConfig.showSeparator
-                trackColor: Theme.surfaceContainerHighest
-                checkedTrackColor: Theme.primary
-                handleColor: Theme.onSurfaceVariantColor
-                checkedHandleColor: Theme.onPrimaryColor
-                borderColor: Theme.outline
                 onToggled: ClockConfig.set("showSeparator", checked)
             }
         }
@@ -199,13 +121,8 @@ SettingsPage {
             title: "Randomize position"
             description: "Pick a spot based on the current wallpaper"
 
-            MaterialSwitch {
+            SettingsSwitch {
                 checked: ClockConfig.randomizePosition
-                trackColor: Theme.surfaceContainerHighest
-                checkedTrackColor: Theme.primary
-                handleColor: Theme.onSurfaceVariantColor
-                checkedHandleColor: Theme.onPrimaryColor
-                borderColor: Theme.outline
                 onToggled: ClockConfig.set("randomizePosition", checked)
             }
         }
@@ -257,21 +174,10 @@ SettingsPage {
             title: "Margin"
             description: "Distance from the screen edges"
 
-            MaterialSlider {
-                width: 300
+            SettingsSlider {
                 from: 0
                 to: 200
-                sizeStyle: MaterialSlider.Small
-                outerRadius: 8
-                handleGap: 3
-                innerRadius: 2
                 value: ClockConfig.margin
-                showStops: false
-                showValueIndicator: false
-                trackColor: Theme.surfaceContainerHighest
-                color: Theme.primary
-                handleColor: Theme.primary
-
                 onMoved: ClockConfig.set("margin", Math.round(value))
             }
         }
@@ -330,21 +236,10 @@ SettingsPage {
                 title: modelData.title
                 description: modelData.description
 
-                MaterialSlider {
-                    width: 300
+                SettingsSlider {
                     from: tune.modelData.from
                     to: tune.modelData.to
-                    sizeStyle: MaterialSlider.Small
-                    outerRadius: 8
-                    handleGap: 3
-                    innerRadius: 2
                     value: ClockConfig.get(tune.modelData.key)
-                    showStops: false
-                    showValueIndicator: false
-                    trackColor: Theme.surfaceContainerHighest
-                    color: Theme.primary
-                    handleColor: Theme.primary
-
                     onMoved: ClockConfig.set(tune.modelData.key, Math.round(value * 1000) / 1000)
                 }
             }

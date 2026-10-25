@@ -1,11 +1,11 @@
 import Qt.labs.folderlistmodel
-import qs.services.paths
+import qs.configuration.Wallpaper
 
 FolderListModel {
     signal loaded
 
-    folder: "file://" + PathService.home + "/Pictures"
-    nameFilters: ["*.jpeg", "*.jpg"]
+    folder: "file://" + WallpaperConfig.folder
+    nameFilters: ["*.jpeg", "*.jpg", "*.png", "*.webp"]
     showDirs: false
     sortField: FolderListModel.Name
 

@@ -7,16 +7,18 @@ Item {
 
     property string title: ""
     readonly property real cardRadius: 14
+    readonly property real margin: width < 720 ? 16 : 28
+    readonly property real headerMaxHeight: height * 0.36
 
     default property alias content: body.data
     property alias header: headerSlot.data
 
     Column {
         id: topper
-        x: 28
-        y: 28
-        width: parent.width - 56
-        spacing: 18
+        x: root.margin
+        y: root.margin
+        width: parent.width - root.margin * 2
+        spacing: 16
 
         Text {
             text: root.title
@@ -35,13 +37,13 @@ Item {
 
     ClippingRectangle {
         anchors.top: topper.bottom
-        anchors.topMargin: 18
+        anchors.topMargin: 16
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: 20
+        anchors.bottomMargin: root.margin
         anchors.left: parent.left
-        anchors.leftMargin: 28
+        anchors.leftMargin: root.margin
         anchors.right: parent.right
-        anchors.rightMargin: 28
+        anchors.rightMargin: root.margin
         radius: root.cardRadius
         color: "transparent"
 

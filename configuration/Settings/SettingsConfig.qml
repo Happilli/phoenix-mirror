@@ -9,8 +9,12 @@ QtObject {
         {
             key: "widgets",
             headline: "Widgets",
-            // supporting: "Desktop clock",
             leadingIcon: "\uf009"
+        },
+        {
+            key: "wallpaper",
+            headline: "Wallpaper",
+            leadingIcon: "\uf03e"
         }
     ]
 

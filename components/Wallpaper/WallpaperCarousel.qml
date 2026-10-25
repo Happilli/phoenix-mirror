@@ -8,7 +8,7 @@ Item {
     id: root
 
     property int current: 0
-    property real position: current
+    property real position: 0
     property real scroll: 0
     property bool animate: false
 
@@ -66,20 +66,25 @@ Item {
 
     function syncToCurrent() {
         const target = WallpaperConfig.currentWallpaper.toString();
+        let found = 0;
         for (let i = 0; i < walls.count; i++) {
             if ("file://" + walls.get(i, "filePath") === target) {
-                current = i;
+                found = i;
                 break;
             }
         }
-        animate = true;
+        animate = false;
+        current = found;
+        position = found;
         ready = true;
+        settle.restart();
     }
     function select(index) {
         if (index < 0 || index === current || index >= walls.count) {
             return;
         }
         current = index;
+        position = index;
         WallpaperConfig.setWallpaper(walls.get(index, "filePath"));
         Theme.generate();
     }
@@ -91,6 +96,19 @@ Item {
             epsilon: 0.005
         }
     }
+    Timer {
+        id: settle
+        interval: 120
+        onTriggered: root.animate = true
+    }
+    Connections {
+        target: WallpaperConfig
+
+        function onCurrentWallpaperChanged() {
+            if (walls.count > 0 && walls.get(root.current, "filePath") !== undefined && "file://" + walls.get(root.current, "filePath") !== WallpaperConfig.currentWallpaper.toString())
+                root.syncToCurrent();
+        }
+    }
     WallpaperModel {
         id: walls
         onLoaded: root.syncToCurrent()
@@ -99,7 +117,7 @@ Item {
         anchors.fill: parent
         acceptedButtons: Qt.NoButton
         onWheel: wheel => {
-            root.scroll -= wheel.pixelDelta.x;
+            root.scroll -= wheel.pixelDelta.x !== 0 ? wheel.pixelDelta.x : wheel.angleDelta.y / 2;
             if (root.scroll >= 50) {
                 root.select(root.current + 1);
                 root.scroll = 0;

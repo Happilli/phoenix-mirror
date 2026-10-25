@@ -11,6 +11,7 @@ Item {
     readonly property var screenObj: Quickshell.screens[0] ?? null
     readonly property real sw: screenObj ? screenObj.width : 1920
     readonly property real sh: screenObj ? screenObj.height : 1080
+    readonly property real aspect: sw / sh
     readonly property real k: width > 0 ? width / sw : 1
 
     height: sh * k

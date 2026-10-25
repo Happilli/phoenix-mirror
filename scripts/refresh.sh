@@ -1,20 +1,16 @@
 #!/bin/bash
-# cleansing the caches with refresh trigger
 set -u
 
-CACHE_DIR="$HOME/.cache"
-CONFIG_DIR="$HOME/.config"
-HOME_DIR="$HOME"
+CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}"
+RUNTIME_DIR="${XDG_RUNTIME_DIR:-/tmp}"
 
-static_dirs=(
+cache_dirs=(
   "glycin"
   "gegl-0.4"
+  "gtk-4.0"
   "babl"
   "thumbnails"
   "ImageMagick"
-  "Microsoft"
-  "mozilla"
-  "net.imput.helium"
   "gstreamer-1.0"
   "mesa_shader_cache"
   "QtProject"
@@ -22,40 +18,34 @@ static_dirs=(
   "paru"
   "pip"
   "pipx"
-  "lutris"
+  "fontconfig"
+  "mesa_shader_cache_db"
 )
 
-for dir in "${static_dirs[@]}"; do
-  [ -d "$CACHE_DIR/$dir" ] && rm -rf "$CACHE_DIR/$dir"
+for dir in "${cache_dirs[@]}"; do
+  rm -rf "${CACHE_DIR:?}/$dir"
 done
 
 find "$CACHE_DIR" -maxdepth 1 -type f -name "event-*" -delete
 find "$CACHE_DIR" -maxdepth 1 -type d -name "qtshadercache*" -exec rm -rf {} +
 find "$CACHE_DIR" -maxdepth 1 -type d -name "umu*" -exec rm -rf {} +
 
-find "$CONFIG_DIR" -maxdepth 1 -type d -name "dconf*" -exec rm -rf {} +
-find "$CONFIG_DIR" -maxdepth 1 -type d -name "btop*" -exec rm -rf {} +
-find "$CONFIG_DIR" -maxdepth 1 -type d -name "gtk*" -exec rm -rf {} +
-find "$CONFIG_DIR" -maxdepth 1 -type d -name "pulse*" -exec rm -rf {} +
+rm -rf "$RUNTIME_DIR/clipsh"
+rm -f "$RUNTIME_DIR"/phoenix-capture-*.bmp
+find "$RUNTIME_DIR" -maxdepth 1 -type f -name "phoenix-shot-*" -mmin +10 -delete
 
-rm -rf "$HOME_DIR/.local/share/Trash/files/"*
-rm -rf "$HOME_DIR/.local/share/Trash/info/"*
-shopt -s nullglob dotglob
-for f in "$HOME_DIR"/.zcompdump-archlinux-*; do
+rm -rf "$HOME/.local/share/Trash/files/"* "$HOME/.local/share/Trash/info/"*
+
+shopt -s nullglob
+for f in "$HOME"/.zcompdump-*; do
   rm -f "$f"
 done
-for f in "$HOME_DIR"/.mariadb_histor*; do
-  rm -f "$f"
-done
-shopt -u nullglob dotglob
+shopt -u nullglob
 
-rm -rf "$HOME_DIR/.pki"
-rm -f "$HOME_DIR/.zsh_history"
-rm -f "$HOME_DIR/.sqlite_history"
-rm -f "$HOME_DIR/.bash_history"
-rm -f "$HOME_DIR/.wget-hsts"
-rm -f "$HOME_DIR/.config/mimeapps.list"
+rm -f "$HOME/.wget-hsts"
 
-find /tmp -mindepth 1 -user "$USER" -exec rm -rf {} + 2>/dev/null
-sudo journalctl --rotate
-sudo journalctl --vacuum-time=1s
+find /tmp -maxdepth 1 -mindepth 1 -user "$USER" -type f -mtime +1 -delete 2>/dev/null
+
+journalctl --user --vacuum-time=1d >/dev/null 2>&1
+
+notify-send -a "Refresh" "Caches cleared" 2>/dev/null

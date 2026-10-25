@@ -11,11 +11,16 @@ Scope {
         active: SettingsConfig.open
 
         FloatingWindow {
+            id: win
+
+            readonly property var screenObj: Quickshell.screens[0] ?? null
+            readonly property real maxW: (screenObj ? screenObj.width : 1920) * 0.9
+            readonly property real maxH: (screenObj ? screenObj.height : 1080) * 0.9
+
             title: "Phoenix Settings"
-            implicitWidth: 1200
-            implicitHeight: 1000
-            minimumSize: Qt.size(implicitWidth, implicitHeight)
-            maximumSize: Qt.size(implicitWidth, implicitHeight)
+            implicitWidth: Math.min(1200, maxW)
+            implicitHeight: Math.min(1000, maxH)
+            minimumSize: Qt.size(Math.min(640, maxW), Math.min(480, maxH))
             color: Theme.background
 
             onVisibleChanged: if (!visible)
@@ -31,12 +36,17 @@ Scope {
                 WidgetsPage {}
             }
 
+            Component {
+                id: wallpaperPage
+                WallpaperPage {}
+            }
+
             Item {
                 anchors.fill: parent
 
                 SettingsSidebar {
                     id: sidebar
-                    width: 260
+                    width: Math.max(200, Math.min(260, win.width * 0.22))
                     height: parent.height
                 }
 
@@ -53,7 +63,7 @@ Scope {
 
                     Loader {
                         anchors.fill: parent
-                        sourceComponent: widgetsPage
+                        sourceComponent: SettingsConfig.page === "wallpaper" ? wallpaperPage : widgetsPage
                     }
                 }
             }
