@@ -3,7 +3,9 @@ import Ryu.Extraa
 import qs.services.theme
 
 MaterialSlider {
+    // qmllint disable missing-property
     readonly property real avail: parent?.limit ?? 300
+    // qmllint enable missing-property
 
     width: Math.max(140, Math.min(300, avail))
     sizeStyle: MaterialSlider.Small

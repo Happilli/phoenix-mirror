@@ -1,8 +1,8 @@
 pragma Singleton
 import QtQuick
 import Quickshell
-import qs.configuration.Screenshot
 import qs.services.paths
+import qs.configuration.Screenshot
 
 Singleton {
     id: root

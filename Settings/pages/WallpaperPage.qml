@@ -66,6 +66,7 @@ SettingsPage {
             width: page.quickWidth
 
             SettingsGroup.Entry {
+                key: "wall.appearance"
                 title: "Appearance"
                 description: "Switch between dark and light mode"
 
@@ -77,6 +78,7 @@ SettingsPage {
             }
 
             SettingsGroup.Entry {
+                key: "wall.scheme"
                 title: "Color scheme"
                 description: "How colors are generated from the wallpaper"
 
@@ -113,6 +115,7 @@ SettingsPage {
             }
 
             SettingsGroup.Entry {
+                key: "wall.folder"
                 title: "Folder"
                 description: "Where wallpapers are loaded from. Press Enter to apply"
 

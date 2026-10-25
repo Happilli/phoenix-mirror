@@ -42,7 +42,9 @@ Scope {
             LockSurface {
                 anchors.fill: parent
                 context: lockContext
+                // qmllint disable missing-property redundant-optional-chaining
                 screenName: surface.screen?.name ?? ""
+                // qmllint enable missing-property redundant-optional-chaining
             }
         }
     }

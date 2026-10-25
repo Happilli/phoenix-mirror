@@ -35,6 +35,7 @@ SettingsPage {
 
             SettingsGroup.Entry {
                 id: showEntry
+                key: "clock.show"
                 title: "Show clock"
                 description: "Display the clock on your desktop wallpaper"
 
@@ -46,6 +47,7 @@ SettingsPage {
 
             SettingsGroup.Entry {
                 id: colorEntry
+                key: "clock.color"
                 title: "Color"
                 description: "Tint of the clock digits"
 
@@ -58,6 +60,7 @@ SettingsPage {
 
             SettingsGroup.Entry {
                 id: sizeEntry
+                key: "clock.size"
                 title: "Size"
                 description: "Overall size of the clock"
 
@@ -71,6 +74,7 @@ SettingsPage {
 
             SettingsGroup.Entry {
                 id: randomEntry
+                key: "clock.random"
                 title: "Randomize position"
                 description: "Pick a spot based on the current wallpaper"
 
@@ -82,6 +86,7 @@ SettingsPage {
 
             SettingsGroup.Entry {
                 id: alignEntry
+                key: "clock.alignment"
                 minHeight: page.wide ? pv.height - showEntry.height - colorEntry.height - sizeEntry.height - randomEntry.height : 0
                 title: "Alignment"
                 description: "Where the clock sits on the screen"
@@ -129,6 +134,7 @@ SettingsPage {
 
     SettingsGroup {
         SettingsGroup.Entry {
+            key: "clock.orientation"
             title: "Orientation"
             description: "Stack the digits or place them side by side"
 
@@ -140,6 +146,7 @@ SettingsPage {
         }
 
         SettingsGroup.Entry {
+            key: "clock.separator"
             visible: ClockConfig.orientation === 1
             title: "Separator"
             description: "Show the colon between hours and minutes"
@@ -151,6 +158,7 @@ SettingsPage {
         }
 
         SettingsGroup.Entry {
+            key: "clock.weight"
             title: "Font weight"
             description: "Thickness of the digits"
 
@@ -163,6 +171,7 @@ SettingsPage {
         }
 
         SettingsGroup.Entry {
+            key: "clock.24h"
             title: "24-hour time"
             description: "Turn off to use 12-hour time"
 
@@ -173,6 +182,7 @@ SettingsPage {
         }
 
         SettingsGroup.Entry {
+            key: "clock.ampm"
             visible: !ClockConfig.use24Hour
             title: "Show AM/PM"
             description: "Display the period next to the time"
@@ -184,6 +194,7 @@ SettingsPage {
         }
 
         SettingsGroup.Entry {
+            key: "clock.ampmPos"
             visible: !ClockConfig.use24Hour && ClockConfig.showAmPm
             title: "AM/PM position"
             description: "Where the period sits relative to the digits"
@@ -198,6 +209,7 @@ SettingsPage {
 
     SettingsGroup {
         SettingsGroup.Entry {
+            key: "clock.margin"
             title: "Margin"
             description: "Distance from the screen edges"
 
@@ -257,6 +269,7 @@ SettingsPage {
                 id: tune
                 required property var modelData
 
+                key: "clock." + modelData.key
                 visible: !modelData.horizontal || ClockConfig.orientation === 1
                 title: modelData.title
                 description: modelData.description
@@ -271,6 +284,7 @@ SettingsPage {
         }
 
         SettingsGroup.Entry {
+            key: "clock.reset"
             title: "Reset to defaults"
             description: "Restore every clock setting"
 

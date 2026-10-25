@@ -1,6 +1,6 @@
 import QtQuick
 import Quickshell.Widgets
-import qs.services.theme
+import qs.configuration.Settings
 
 Item {
     id: root
@@ -19,13 +19,6 @@ Item {
         y: root.margin
         width: parent.width - root.margin * 2
         spacing: 16
-
-        Text {
-            text: root.title
-            font.pixelSize: 26
-            font.weight: Font.DemiBold
-            color: Theme.onBackgroundColor
-        }
 
         Item {
             id: headerSlot
@@ -48,10 +41,15 @@ Item {
         color: "transparent"
 
         Flickable {
+            id: flick
             anchors.fill: parent
             contentWidth: width
             contentHeight: body.implicitHeight
             boundsBehavior: Flickable.StopAtBounds
+
+            Component.onCompleted: SettingsConfig.scroller = flick
+            Component.onDestruction: if (SettingsConfig.scroller === flick)
+                SettingsConfig.scroller = null
 
             Column {
                 id: body

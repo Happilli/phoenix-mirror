@@ -25,7 +25,7 @@ Rectangle {
     }
 
     component Layer: Item {
-        id: layer
+        id: batteryLayer
         property color base
         property color textColor
 
@@ -36,7 +36,7 @@ Rectangle {
             width: root.barWidth
             height: root.barHeight
             radius: height / 2
-            color: layer.base
+            color: batteryLayer.base
         }
         Row {
             spacing: 2
@@ -47,7 +47,7 @@ Rectangle {
                 text: "\udb85\udc0b"
                 font.pixelSize: 17
                 font.bold: true
-                color: layer.textColor
+                color: batteryLayer.textColor
             }
 
             Text {
@@ -55,7 +55,7 @@ Rectangle {
                 text: Math.round(root.level * 100)
                 font.pixelSize: 17
                 font.bold: true
-                color: layer.textColor
+                color: batteryLayer.textColor
             }
         }
     }
