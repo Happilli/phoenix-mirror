@@ -1,11 +1,12 @@
 import QtQuick
 import Quickshell
+import Quickshell.Widgets
 import Ryu.Widgets
 import qs.configuration.Wallpaper
 import qs.configuration.Widgets
 import qs.services.theme
 
-Item {
+ClippingRectangle {
     id: root
 
     readonly property var screenObj: Quickshell.screens[0] ?? null
@@ -15,24 +16,24 @@ Item {
     readonly property real k: width > 0 ? width / sw : 1
 
     height: sh * k
-    clip: true
+    radius: 14
+    color: Theme.surfaceContainerHighest
+    border.width: 1
+    border.color: Theme.outlineVariant
 
     Image {
         anchors.fill: parent
         source: WallpaperConfig.currentWallpaper
-        sourceSize.height: 480
+        sourceSize.height: 360
         fillMode: Image.PreserveAspectCrop
         asynchronous: true
         cache: false
     }
 
-    Rectangle {
+    Item {
         width: root.sw
         height: root.sh
         scale: root.k
-        border.width: 5
-        border.color: Theme.outlineVariant
-        color: "transparent"
         transformOrigin: Item.TopLeft
 
         Loader {

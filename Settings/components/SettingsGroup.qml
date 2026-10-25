@@ -14,13 +14,14 @@ Item {
 
         property string title: ""
         property string description: ""
+        property real minHeight: 0
         default property alias control: slot.data
 
         readonly property bool stacked: width < 560
         readonly property real pad: 20
 
         width: parent ? parent.width : 0
-        height: stacked ? textCol.implicitHeight + slot.height + (slot.height > 0 ? 12 : 0) + 28 : Math.max(68, textCol.implicitHeight + 28, slot.height + 28)
+        height: Math.max(minHeight, stacked ? textCol.implicitHeight + slot.height + (slot.height > 0 ? 12 : 0) + 28 : Math.max(68, textCol.implicitHeight + 28, slot.height + 28))
 
         Column {
             id: textCol
