@@ -51,6 +51,7 @@ Scope {
                 }
 
                 ClippingRectangle {
+                    id: stage
                     anchors.left: sidebar.right
                     anchors.right: parent.right
                     anchors.top: parent.top
@@ -61,8 +62,26 @@ Scope {
                     radius: 28
                     color: Theme.surfaceContainer
 
+                    property bool ready: false
+
+                    onWidthChanged: if (!ready)
+                        settle.restart()
+                    onHeightChanged: if (!ready)
+                        settle.restart()
+
+                    Component.onCompleted: settle.restart()
+
+                    Timer {
+                        id: settle
+                        interval: 80
+                        onTriggered: stage.ready = true
+                    }
+
                     Loader {
+                        id: pageLoader
                         anchors.fill: parent
+                        visible: stage.ready
+                        active: stage.width > 0 && stage.height > 0
                         sourceComponent: SettingsConfig.page === "wallpaper" ? wallpaperPage : widgetsPage
                     }
                 }

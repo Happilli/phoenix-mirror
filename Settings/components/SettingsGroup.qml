@@ -17,6 +17,7 @@ Item {
         property real minHeight: 0
         default property alias control: slot.data
 
+        readonly property real limit: slot.limit
         readonly property bool stacked: width < 560
         readonly property real pad: 20
 
