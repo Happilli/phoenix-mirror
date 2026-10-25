@@ -18,10 +18,11 @@ Scope {
             readonly property real maxH: (screenObj ? screenObj.height : 1080) * 0.9
 
             title: "Phoenix Settings"
-            implicitWidth: Math.min(1200, maxW)
-            implicitHeight: Math.min(1000, maxH)
-            minimumSize: Qt.size(Math.min(640, maxW), Math.min(480, maxH))
             color: Theme.background
+            implicitWidth: Math.min(1920, maxW)
+            implicitHeight: Math.min(1080, maxH)
+            minimumSize: Qt.size(implicitWidth, implicitHeight)
+            maximumSize: Qt.size(implicitWidth, implicitHeight)
 
             onVisibleChanged: if (!visible)
                 SettingsConfig.open = false
