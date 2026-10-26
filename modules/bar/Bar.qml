@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Shapes
+import qs.services.theme
 import qs.configuration.Bar
 
 Item {
@@ -12,12 +13,11 @@ Item {
     readonly property Item popupS: host
 
     readonly property string edge: BarConfig.edge
+    readonly property bool floating: BarConfig.floating
     readonly property bool horizontal: edge === "top" || edge === "bottom"
     readonly property bool lowFlat: edge === "bottom" || edge === "right"
     readonly property real length: horizontal ? width : height
     readonly property real thickness: horizontal ? height : width
-    readonly property real cc: lowFlat ? thickness / 2 + radius / 2 : thickness / 2 - radius / 2
-    readonly property real attach: lowFlat ? radius : thickness - radius
 
     readonly property real notchPadding: 4
     readonly property real notchRadius: 18
@@ -28,7 +28,14 @@ Item {
     readonly property real popupGap: 10
     readonly property real dateShift: notchRadius + notchPadding + 12
 
-    readonly property var permanent: [battery, recordingIndicator]
+    readonly property real topLine: floating ? 0 : radius
+    readonly property real edgePad: floating ? Math.max(itemGap + notchPadding, radius * 0.5) : itemGap + notchPadding
+    readonly property real batteryPad: floating ? edgePad : radius + notchPadding + notchRadius - 10
+
+    readonly property real cc: floating ? thickness / 2 : (lowFlat ? thickness / 2 + radius / 2 : thickness / 2 - radius / 2)
+    readonly property real attach: floating ? (lowFlat ? 0 : thickness) : (lowFlat ? radius : thickness - radius)
+
+    readonly property var permanent: floating ? [] : [battery, recordingIndicator]
 
     readonly property var activeContent: {
         if (target === controls)
@@ -175,7 +182,7 @@ Item {
         }
     }
 
-    readonly property real mWorkspace: itemGap + notchPadding
+    readonly property real mWorkspace: edgePad
     readonly property real mStartSlot: mWorkspace + lenOf(workspace) + itemGap
     readonly property real mNightSlot: mStartSlot + lenOf(startMenu) + tightGap
     readonly property real mMediaSlot: mNightSlot + lenOf(nightMode) + tightGap
@@ -184,7 +191,7 @@ Item {
     readonly property real mMedia: mMediaSlot + mediaOffset
     readonly property real mApps: mMediaSlot + lenOf(mediaButton) + itemGap
 
-    readonly property real mBattery: length - (radius + notchPadding + notchRadius - 10) - lenOf(battery)
+    readonly property real mBattery: length - batteryPad - lenOf(battery)
     readonly property real mDateSlot: mBattery - itemGap - lenOf(datetime)
     readonly property real mDate: mDateSlot - dateOffset
     readonly property real mControls: mDateSlot - itemGap - dateOffset - lenOf(controls)
@@ -257,14 +264,17 @@ Item {
     readonly property real l3: spanR + lagR
 
     readonly property real crossSize: horizontal ? controls.height : controls.width
-    readonly property real fullFloorY: Math.min(thickness / 2 + radius / 2 + crossSize / 2 + notchPadding, thickness)
-    readonly property real permanentDepth: Math.max(0, fullFloorY - radius)
+    readonly property real fullFloorY: floating ? Math.min(thickness / 2 + crossSize / 2 + notchPadding, thickness - 4) : Math.min(thickness / 2 + radius / 2 + crossSize / 2 + notchPadding, thickness)
+    readonly property real permanentDepth: Math.max(0, fullFloorY - topLine)
     readonly property real depth: permanentDepth * notchProgress
 
     function outline() {
         const R = radius;
         const W = length;
         const H = thickness;
+        const T = topLine;
+        const r = Math.max(0, Math.min(R, H / 2, W / 2));
+
         const cuts = [];
         for (const item of permanent) {
             const k = item.cutProgress ?? 1;
@@ -287,17 +297,21 @@ Item {
         }
         cuts.sort((a, b) => a.l - b.l);
 
-        let p = `M ${pt(0, H)} L ${pt(0, 0)} Q ${pt(0, R)} ${pt(R, R)}`;
+        let p = floating ? `M ${pt(0, H - r)} L ${pt(0, r)} Q ${pt(0, 0)} ${pt(r, 0)}` : `M ${pt(0, H)} L ${pt(0, 0)} Q ${pt(0, R)} ${pt(R, R)}`;
         for (const c of cuts) {
-            const f = R + c.d;
+            const f = T + c.d;
             const rt = Math.min(notchRadius, c.d / 2);
             const rb = Math.min(notchRadiusBottom, (c.r - c.l) / 2, Math.max(0, c.d - rt));
-            p += ` L ${pt(c.l - rt, R)} Q ${pt(c.l, R)} ${pt(c.l, R + rt)}`;
+            p += ` L ${pt(c.l - rt, T)} Q ${pt(c.l, T)} ${pt(c.l, T + rt)}`;
             p += ` L ${pt(c.l, f - rb)} Q ${pt(c.l, f)} ${pt(c.l + rb, f)}`;
             p += ` L ${pt(c.r - rb, f)} Q ${pt(c.r, f)} ${pt(c.r, f - rb)}`;
-            p += ` L ${pt(c.r, R + rt)} Q ${pt(c.r, R)} ${pt(c.r + rt, R)}`;
+            p += ` L ${pt(c.r, T + rt)} Q ${pt(c.r, T)} ${pt(c.r + rt, T)}`;
         }
-        p += ` L ${pt(W - R, R)} Q ${pt(W, R)} ${pt(W, 0)} L ${pt(W, H)} Z`;
+        if (floating) {
+            p += ` L ${pt(W - r, 0)} Q ${pt(W, 0)} ${pt(W, r)} L ${pt(W, H - r)} Q ${pt(W, H)} ${pt(W - r, H)} L ${pt(r, H)} Q ${pt(0, H)} ${pt(0, H - r)} Z`;
+        } else {
+            p += ` L ${pt(W - R, R)} Q ${pt(W, R)} ${pt(W, 0)} L ${pt(W, H)} Z`;
+        }
         return p;
     }
 
@@ -338,7 +352,8 @@ Item {
         ShapePath {
             pathHints: ShapePath.PathSolid | ShapePath.PathNonIntersecting
             fillColor: root.colour
-            strokeWidth: 0
+            strokeWidth: root.floating ? 1 : 0
+            strokeColor: Qt.alpha(Theme.primary, 0.15)
             PathSvg {
                 path: root.outlinePath
             }
@@ -536,7 +551,7 @@ Item {
             sourceComponent: WindowPreviewPopup {
                 active: true
                 group: openedApp.hoverGroup
-                maxWidth: root.horizontal ? root.width - 2 * host.edgeMargin - host.pad * 2 : (root.parent ? root.parent.width : 1920) - root.thickness - root.popupGap - 2 * host.edgeMargin - host.pad * 2
+                maxWidth: root.horizontal ? root.width - 2 * host.edgeMargin - host.pad * 2 : (root.parent ? root.parent.width : 1920) - root.thickness - (root.floating ? BarConfig.dockMargin : 0) - root.popupGap - 2 * host.edgeMargin - host.pad * 2
             }
         }
         Loader {

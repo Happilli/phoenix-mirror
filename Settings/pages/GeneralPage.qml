@@ -209,8 +209,19 @@ SettingsPage {
             }
         }
     }
-
     SettingsGroup {
+        SettingsGroup.Entry {
+            key: "bar.style"
+            title: "Bar style"
+            description: "Horizon melts into the screen edge, Floating hovers free of it"
+
+            SettingsChoice {
+                labels: BarConfig.styleLabels
+                currentIndex: BarConfig.styleIndex
+                onPicked: index => BarConfig.setStyle(BarConfig.styles[index])
+            }
+        }
+
         SettingsGroup.Entry {
             key: "bar.edge"
             title: "Bar position"
@@ -220,6 +231,44 @@ SettingsPage {
                 labels: BarConfig.labels
                 currentIndex: BarConfig.edgeIndex
                 onPicked: index => BarConfig.setEdge(BarConfig.edges[index])
+            }
+        }
+
+        Repeater {
+            model: [
+                {
+                    side: "left",
+                    title: "Margin left"
+                },
+                {
+                    side: "right",
+                    title: "Margin right"
+                },
+                {
+                    side: "top",
+                    title: "Margin top"
+                },
+                {
+                    side: "bottom",
+                    title: "Margin bottom"
+                }
+            ]
+
+            SettingsGroup.Entry {
+                id: margin
+                required property var modelData
+
+                key: "bar.margin." + modelData.side
+                visible: BarConfig.floating && BarConfig.opposite !== modelData.side
+                title: modelData.title
+                description: "Gap between the floating bar and the " + modelData.side + " screen edge"
+
+                SettingsSlider {
+                    from: 0
+                    to: 120
+                    value: BarConfig.marginOf(margin.modelData.side)
+                    onMoved: BarConfig.setMargin(margin.modelData.side, value)
+                }
             }
         }
 
@@ -239,11 +288,11 @@ SettingsPage {
         SettingsGroup.Entry {
             key: "bar.radius"
             title: "Bar corner radius"
-            description: "Rounding of the bar edges"
+            description: "Rounding of the bar edges. Floating can go full pill"
 
             SettingsSlider {
                 from: 0
-                to: 30
+                to: BarConfig.maxRadius
                 value: BarConfig.radius
                 onMoved: BarConfig.setRadius(value)
             }

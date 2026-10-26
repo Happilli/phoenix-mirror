@@ -191,11 +191,51 @@ QtObject {
             page: "general"
         },
         {
+            key: "bar.style",
+            headline: "Bar style",
+            supporting: "Horizon melts into the screen edge, Floating hovers free of it",
+            trailingText: "General",
+            leadingIcon: "\uf2d0",
+            page: "general"
+        },
+        {
             key: "bar.edge",
             headline: "Bar position",
             supporting: "Screen edge the bar docks to",
             trailingText: "General",
             leadingIcon: "\uf0c9",
+            page: "general"
+        },
+        {
+            key: "bar.margin.left",
+            headline: "Margin left",
+            supporting: "Gap between the floating bar and the left screen edge",
+            trailingText: "General",
+            leadingIcon: "\udb80\udf53",
+            page: "general"
+        },
+        {
+            key: "bar.margin.right",
+            headline: "Margin right",
+            supporting: "Gap between the floating bar and the right screen edge",
+            trailingText: "General",
+            leadingIcon: "\udb80\udf53",
+            page: "general"
+        },
+        {
+            key: "bar.margin.top",
+            headline: "Margin top",
+            supporting: "Gap between the floating bar and the top screen edge",
+            trailingText: "General",
+            leadingIcon: "\udb80\udf53",
+            page: "general"
+        },
+        {
+            key: "bar.margin.bottom",
+            headline: "Margin bottom",
+            supporting: "Gap between the floating bar and the bottom screen edge",
+            trailingText: "General",
+            leadingIcon: "\udb80\udf53",
             page: "general"
         },
         {

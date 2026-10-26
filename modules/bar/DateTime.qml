@@ -12,7 +12,7 @@ Rectangle {
     color: Theme.background
     radius: Math.min(width, height) / 2
     implicitWidth: vertical ? 40 : row.implicitWidth + 10
-    implicitHeight: vertical ? col.implicitHeight + 20 : 40
+    implicitHeight: vertical ? col.implicitHeight + 26 : 40
 
     SystemClock {
         id: sysClock
@@ -50,52 +50,78 @@ Rectangle {
     Column {
         id: col
         visible: root.vertical
-        spacing: 2
+        spacing: 1
         anchors.centerIn: parent
+
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
-            color: root.showTime ? Theme.onSurfaceVariantColor : Theme.primary
-            text: Qt.formatDateTime(sysClock.date, "ddd")
-            font.pixelSize: 14
+            text: Qt.formatDateTime(sysClock.date, "ddd").toUpperCase()
+            font.pixelSize: 10
             font.bold: true
+            font.letterSpacing: 0.8
+            color: Theme.onSurfaceVariantColor
+            opacity: 0.7
         }
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
-            color: root.showTime ? Theme.onSurfaceVariantColor : Theme.primary
             text: Qt.formatDateTime(sysClock.date, "d")
-            font.pixelSize: 14
+            font.pixelSize: 22
             font.bold: true
+            color: root.showTime ? Theme.onSurfaceVariantColor : Theme.primary
         }
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
-            color: root.showTime ? Theme.onSurfaceVariantColor : Theme.primary
-            text: Qt.formatDateTime(sysClock.date, "MMM")
-            font.pixelSize: 14
+            text: Qt.formatDateTime(sysClock.date, "MMM").toUpperCase()
+            font.pixelSize: 10
             font.bold: true
+            font.letterSpacing: 0.8
+            color: Theme.onSurfaceVariantColor
+            opacity: 0.7
+        }
+
+        Item {
+            visible: root.showTime
+            width: 1
+            height: 7
         }
         Rectangle {
             visible: root.showTime
             anchors.horizontalCenter: parent.horizontalCenter
-            width: 4
-            height: 4
-            radius: 4
-            color: Theme.onSurfaceVariantColor
+            width: 18
+            height: 2
+            radius: 1
+            color: Qt.alpha(Theme.primary, 0.35)
         }
+        Item {
+            visible: root.showTime
+            width: 1
+            height: 7
+        }
+
         Text {
             visible: root.showTime
             anchors.horizontalCenter: parent.horizontalCenter
-            color: Theme.primary
-            text: Qt.formatDateTime(sysClock.date, "h:mm")
-            font.pixelSize: 14
+            text: Qt.formatDateTime(sysClock.date, "h")
+            font.pixelSize: 17
             font.bold: true
+            color: Theme.primary
         }
         Text {
             visible: root.showTime
             anchors.horizontalCenter: parent.horizontalCenter
+            text: Qt.formatDateTime(sysClock.date, "mm")
+            font.pixelSize: 17
+            font.bold: true
             color: Theme.primary
+        }
+        Text {
+            visible: root.showTime
+            anchors.horizontalCenter: parent.horizontalCenter
             text: Qt.formatDateTime(sysClock.date, "A")
-            font.pixelSize: 12
+            font.pixelSize: 9
             font.bold: true
+            color: Theme.primary
+            opacity: 0.7
         }
     }
 }

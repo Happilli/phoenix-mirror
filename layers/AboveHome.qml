@@ -12,12 +12,16 @@ Variants {
         id: screenScope
         required property var modelData
         property int gap: 2
+        readonly property real mL: BarConfig.floating ? BarConfig.marginLeft : 0
+        readonly property real mR: BarConfig.floating ? BarConfig.marginRight : 0
+        readonly property real mT: BarConfig.floating ? BarConfig.marginTop : 0
+        readonly property real mB: BarConfig.floating ? BarConfig.marginBottom : 0
 
         WlrLayershell {
             namespace: "phoenix-aboveHome"
             screen: screenScope.modelData
             layer: WlrLayer.Top
-            exclusiveZone: BarConfig.thickness - BarConfig.radius + screenScope.gap
+            exclusiveZone: BarConfig.floating ? BarConfig.dockMargin + BarConfig.thickness + screenScope.gap : BarConfig.thickness - BarConfig.radius + screenScope.gap
             color: "transparent"
             mask: Region {}
 
@@ -53,14 +57,14 @@ Variants {
                 screen: screenScope.modelData
                 radius: BarConfig.radius
                 colour: Theme.background
-                width: BarConfig.horizontal ? parent.width : BarConfig.thickness
-                height: BarConfig.horizontal ? BarConfig.thickness : parent.height
-                x: BarConfig.edge === "right" ? parent.width - width : 0
-                y: BarConfig.edge === "bottom" ? parent.height - height : 0
+                width: BarConfig.horizontal ? parent.width - screenScope.mL - screenScope.mR : BarConfig.thickness
+                height: BarConfig.horizontal ? BarConfig.thickness : parent.height - screenScope.mT - screenScope.mB
+                x: BarConfig.horizontal ? screenScope.mL : (BarConfig.edge === "right" ? parent.width - width - screenScope.mR : screenScope.mL)
+                y: BarConfig.horizontal ? (BarConfig.edge === "bottom" ? parent.height - height - screenScope.mB : screenScope.mT) : screenScope.mT
             }
             Osd {
-                x: BarConfig.horizontal ? (parent.width - width) / 2 : (BarConfig.edge === "left" ? bar.width + 8 : bar.x - width - 8)
-                y: BarConfig.horizontal ? (BarConfig.edge === "top" ? bar.height + 8 : bar.y - height - 8) : (parent.height - height) / 2
+                x: BarConfig.horizontal ? (parent.width - width) / 2 : (BarConfig.edge === "left" ? bar.x + bar.width + 8 : bar.x - width - 8)
+                y: BarConfig.horizontal ? (BarConfig.edge === "top" ? bar.y + bar.height + 8 : bar.y - height - 8) : (parent.height - height) / 2
             }
         }
     }

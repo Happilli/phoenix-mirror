@@ -15,7 +15,7 @@ Scope {
 
             readonly property var screenObj: Quickshell.screens[0] ?? null
             readonly property real maxWidth: (win.screenObj ? win.screenObj.width : 1920) * 0.97
-            readonly property real maxHeight: (win.screenObj ? win.screenObj.height : 1080) * 0.95
+            readonly property real maxHeight: (win.screenObj ? win.screenObj.height : 1080) * 0.9
 
             title: "Phoenix Settings"
             color: Theme.background
