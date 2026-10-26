@@ -1,7 +1,8 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import qs.configuration.Wallpaper
+import Quickshell
 import Quickshell.Widgets
+import qs.configuration.Wallpaper
 import qs.services.theme
 
 Item {
@@ -11,8 +12,10 @@ Item {
     property real position: 0
     property real scroll: 0
     property bool animate: false
+    property bool ready: false
 
     readonly property int visionRange: 4
+    readonly property int reach: visionRange + 2
     readonly property real gap: 8
     readonly property real radius: 24
 
@@ -21,7 +24,19 @@ Item {
     readonly property real sideWidth: Math.max(18, budget * 0.46)
     readonly property real midWidth: Math.max(14, budget * 0.32)
     readonly property real farWidth: Math.max(10, budget * 0.22)
-    property bool ready: false
+    readonly property real decodeHeight: Math.ceil(Math.max(height, centerWidth * 0.75) / 50) * 50
+
+    readonly property int base: Math.floor(position)
+    readonly property real baseLeft: lerp(width / 2 - centerWidth / 2, width / 2 - centerWidth / 2 - (gap + sideWidth), position - base)
+    readonly property var windowIndices: {
+        const out = [];
+        const lo = Math.max(0, base - reach);
+        const hi = Math.min(walls.count - 1, base + reach);
+        for (let i = lo; i <= hi; i++)
+            out.push(i);
+        return out;
+    }
+
     opacity: ready ? 1 : 0
 
     Behavior on opacity {
@@ -34,6 +49,7 @@ Item {
     function lerp(from, to, t) {
         return from + (to - from) * t;
     }
+
     function widthForDistance(distance) {
         const d = Math.min(distance, 4);
         if (d <= 1)
@@ -44,27 +60,23 @@ Item {
             return lerp(midWidth, farWidth, d - 2);
         return lerp(farWidth, farWidth * 0.4, d - 3);
     }
+
     function widthFor(index) {
         return widthForDistance(Math.abs(index - position));
     }
-    function leftFor(index) {
-        const baseIndex = Math.floor(position);
-        const progressCandidate = position - baseIndex;
-        let x = lerp(width / 2 - centerWidth / 2, width / 2 - centerWidth / 2 - (gap + sideWidth), progressCandidate);
-        for (let i = baseIndex; i < index; i++) {
-            x += widthFor(i) + gap;
-        }
-        for (let i = baseIndex - 1; i >= index; i--) {
-            x -= widthFor(i) + gap;
-        }
 
+    function leftFor(index) {
+        let x = baseLeft;
+        for (let i = base; i < index; i++)
+            x += widthFor(i) + gap;
+        for (let i = base - 1; i >= index; i--)
+            x -= widthFor(i) + gap;
         return x;
     }
+
     function fadeFor(index) {
         const d = Math.abs(index - position);
-        if (d <= 3)
-            return 1;
-        return Math.max(0, 4 - d);
+        return d <= 3 ? 1 : Math.max(0, 4 - d);
     }
 
     function syncToCurrent() {
@@ -82,15 +94,16 @@ Item {
         ready = true;
         settle.restart();
     }
+
     function select(index) {
-        if (index < 0 || index === current || index >= walls.count) {
+        if (index < 0 || index === current || index >= walls.count)
             return;
-        }
         current = index;
         position = index;
         WallpaperConfig.setWallpaper(walls.get(index, "filePath"));
         Theme.generate();
     }
+
     Behavior on position {
         enabled: root.animate
         SpringAnimation {
@@ -99,11 +112,13 @@ Item {
             epsilon: 0.005
         }
     }
+
     Timer {
         id: settle
         interval: 120
         onTriggered: root.animate = true
     }
+
     Connections {
         target: WallpaperConfig
 
@@ -112,10 +127,12 @@ Item {
                 root.syncToCurrent();
         }
     }
+
     WallpaperModel {
         id: walls
         onLoaded: root.syncToCurrent()
     }
+
     MouseArea {
         anchors.fill: parent
         acceptedButtons: Qt.NoButton
@@ -130,16 +147,24 @@ Item {
             }
         }
     }
+
     ClippingRectangle {
         anchors.fill: parent
         radius: root.radius
         color: "transparent"
+
         Repeater {
-            model: walls.count
+            model: ScriptModel {
+                values: root.windowIndices
+            }
+
             ClippingRectangle {
                 id: card
-                required property int index
+                required property int modelData
+
+                readonly property int index: modelData
                 readonly property bool near: Math.abs(index - root.position) < root.visionRange
+
                 visible: near
                 color: Theme.surfaceContainerHighest
                 x: near ? root.leftFor(index) : 0
@@ -147,10 +172,11 @@ Item {
                 width: near ? root.widthFor(index) : 0
                 radius: Math.min(root.radius, width / 2)
                 opacity: near ? root.fadeFor(index) : 0
+
                 Image {
                     anchors.fill: parent
-                    source: card.visible ? "file://" + walls.get(card.index, "filePath") : ""
-                    sourceSize.height: 260
+                    source: "file://" + walls.get(card.index, "filePath")
+                    sourceSize.height: root.decodeHeight
                     asynchronous: true
                     fillMode: Image.PreserveAspectCrop
                     opacity: status === Image.Ready ? 1 : 0

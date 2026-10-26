@@ -10,7 +10,7 @@ MaterialButtonGroup {
     sizeStyle: MaterialButtonGroup.ExtraSmall
     color: Theme.surfaceContainerHighest
     checkedColor: Theme.primary
-    textColor: Theme.onSurfaceVariantColor
+    textColor: Theme.onSurfaceColor
     checkedTextColor: Theme.onPrimaryColor
 
     onToggled: (index, checked) => {

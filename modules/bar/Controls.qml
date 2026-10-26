@@ -6,12 +6,20 @@ import qs.services.controls
 
 Rectangle {
     id: root
-    color: Theme.background
-    implicitWidth: 120
-    implicitHeight: 40
-    radius: height / 2
 
-    readonly property var controls: ["volume", "brightness", "mic"]
+    property bool vertical: false
+
+    readonly property bool hovered: hover.hovered
+    readonly property var kinds: ["volume", "brightness", "mic"]
+
+    color: Theme.background
+    implicitWidth: vertical ? 40 : 120
+    implicitHeight: vertical ? 120 : 40
+    radius: Math.min(width, height) / 2
+
+    HoverHandler {
+        id: hover
+    }
 
     function iconOf(key) {
         switch (key) {
@@ -59,14 +67,17 @@ Rectangle {
         }
         OsdService.show(key);
     }
-    Row {
+    Grid {
         anchors.centerIn: parent
+        flow: root.vertical ? Grid.TopToBottom : Grid.LeftToRight
+        columns: root.vertical ? 1 : 3
+
         Repeater {
-            model: root.controls
+            model: root.kinds
             Item {
                 id: cell
-                width: 39
-                height: root.height
+                width: root.vertical ? root.width : 39
+                height: root.vertical ? 39 : root.height
                 required property var modelData
                 WavyProgress {
                     anchors.centerIn: parent

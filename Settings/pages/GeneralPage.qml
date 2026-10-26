@@ -4,12 +4,13 @@ import QtQuick.Dialogs
 import Ryu.Extraa
 import qs.services.theme
 import qs.configuration.Wallpaper
+import qs.configuration.Bar
 import qs.components.Wallpaper
 import qs.Settings.components
 
 SettingsPage {
     id: page
-    title: "Wallpaper"
+    title: "General"
 
     readonly property var schemeLabels: Theme.schemes.map(s => s.replace("scheme-", "").replace(/-/g, " "))
     readonly property int schemeIndex: Theme.schemes.indexOf(Theme.scheme)
@@ -126,13 +127,9 @@ SettingsPage {
 
                     spacing: 8
 
-                    Rectangle {
+                    Item {
                         width: Math.max(140, Math.min(360, folderRow.avail - 180))
                         height: 40
-                        radius: 20
-                        color: Theme.surfaceContainerHighest
-                        border.width: 2
-                        border.color: pathInput.activeFocus ? Theme.primary : "transparent"
 
                         Connections {
                             target: WallpaperConfig
@@ -144,10 +141,11 @@ SettingsPage {
 
                         TextInput {
                             id: pathInput
-                            anchors.fill: parent
-                            anchors.leftMargin: 16
-                            anchors.rightMargin: 16
-                            verticalAlignment: TextInput.AlignVCenter
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.bottom: parent.bottom
+                            anchors.bottomMargin: 8
+                            leftPadding: 1
                             clip: true
                             text: WallpaperConfig.folder
                             font.pixelSize: 13
@@ -162,6 +160,19 @@ SettingsPage {
                             onActiveFocusChanged: if (!activeFocus)
                                 text = WallpaperConfig.folder
                             Keys.onEscapePressed: focus = false
+                        }
+                        Rectangle {
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.bottom: parent.bottom
+                            height: pathInput.activeFocus ? 2 : 1
+                            color: pathInput.activeFocus ? Theme.primary : Theme.outlineVariant
+
+                            Behavior on color {
+                                ColorAnimation {
+                                    duration: 150
+                                }
+                            }
                         }
                     }
 
@@ -195,6 +206,46 @@ SettingsPage {
                         onClicked: WallpaperConfig.resetFolder()
                     }
                 }
+            }
+        }
+    }
+
+    SettingsGroup {
+        SettingsGroup.Entry {
+            key: "bar.edge"
+            title: "Bar position"
+            description: "Screen edge the bar docks to"
+
+            SettingsChoice {
+                labels: BarConfig.labels
+                currentIndex: BarConfig.edgeIndex
+                onPicked: index => BarConfig.setEdge(BarConfig.edges[index])
+            }
+        }
+
+        SettingsGroup.Entry {
+            key: "bar.thickness"
+            title: "Bar thickness"
+            description: "Size of the bar across the screen edge"
+
+            SettingsSlider {
+                from: 56
+                to: 140
+                value: BarConfig.thickness
+                onMoved: BarConfig.setThickness(value)
+            }
+        }
+
+        SettingsGroup.Entry {
+            key: "bar.radius"
+            title: "Bar corner radius"
+            description: "Rounding of the bar edges"
+
+            SettingsSlider {
+                from: 0
+                to: 30
+                value: BarConfig.radius
+                onMoved: BarConfig.setRadius(value)
             }
         }
     }

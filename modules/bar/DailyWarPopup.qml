@@ -9,7 +9,6 @@ Item {
     required property bool active
 
     readonly property int contentWidth: 300
-    readonly property int pad: 14
 
     property real enter: 0
 
@@ -26,8 +25,8 @@ Item {
     }
 
     anchors.centerIn: parent
-    implicitWidth: contentWidth + pad * 2
-    implicitHeight: column.implicitHeight + pad * 2
+    implicitWidth: contentWidth
+    implicitHeight: column.implicitHeight
     visible: active
 
     Component.onCompleted: enter = 1
@@ -41,8 +40,8 @@ Item {
 
     Column {
         id: column
-        x: root.pad
-        y: root.pad + (1 - root.enter) * 8
+        x: 0
+        y: (1 - root.enter) * 8
         width: root.contentWidth
         spacing: 12
         opacity: root.enter

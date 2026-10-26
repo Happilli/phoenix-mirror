@@ -14,8 +14,8 @@ Scope {
             id: win
 
             readonly property var screenObj: Quickshell.screens[0] ?? null
-            readonly property real maxWidth: (win.screenObj ? win.screenObj.width : 1920) * 0.9
-            readonly property real maxHeight: (win.screenObj ? win.screenObj.height : 1080) * 0.9
+            readonly property real maxWidth: (win.screenObj ? win.screenObj.width : 1920) * 0.97
+            readonly property real maxHeight: (win.screenObj ? win.screenObj.height : 1080) * 0.95
 
             title: "Phoenix Settings"
             color: Theme.background
@@ -39,8 +39,8 @@ Scope {
             }
 
             Component {
-                id: wallpaperPage
-                WallpaperPage {}
+                id: generalPage
+                GeneralPage {}
             }
 
             Item {
@@ -106,7 +106,7 @@ Scope {
                             anchors.fill: parent
                             visible: stage.ready
                             active: stage.width > 0 && stage.height > 0
-                            sourceComponent: SettingsConfig.page === "wallpaper" ? wallpaperPage : widgetsPage
+                            sourceComponent: SettingsConfig.page === "general" ? generalPage : widgetsPage
                         }
                     }
 

@@ -4,28 +4,28 @@ import Quickshell.Wayland
 import qs.services.theme
 import qs.modules.bar
 import qs.components.osd
+import qs.configuration.Bar
 
 Variants {
     model: Quickshell.screens
     Scope {
         id: screenScope
         required property var modelData
-        property int barHeight: 60
         property int gap: 2
-        property int radius: 15
 
         WlrLayershell {
             namespace: "phoenix-aboveHome"
             screen: screenScope.modelData
             layer: WlrLayer.Top
-            exclusiveZone: screenScope.barHeight - screenScope.radius + screenScope.gap
+            exclusiveZone: BarConfig.thickness - BarConfig.radius + screenScope.gap
             color: "transparent"
             mask: Region {}
 
             anchors {
-                bottom: true
-                left: true
-                right: true
+                top: BarConfig.edge !== "bottom"
+                bottom: BarConfig.edge !== "top"
+                left: BarConfig.edge !== "right"
+                right: BarConfig.edge !== "left"
             }
         }
         WlrLayershell {
@@ -51,19 +51,16 @@ Variants {
             Bar {
                 id: bar
                 screen: screenScope.modelData
-                height: screenScope.barHeight
-                radius: screenScope.radius
+                radius: BarConfig.radius
                 colour: Theme.background
-                anchors {
-                    bottom: parent.bottom
-                    left: parent.left
-                    right: parent.right
-                }
+                width: BarConfig.horizontal ? parent.width : BarConfig.thickness
+                height: BarConfig.horizontal ? BarConfig.thickness : parent.height
+                x: BarConfig.edge === "right" ? parent.width - width : 0
+                y: BarConfig.edge === "bottom" ? parent.height - height : 0
             }
             Osd {
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.bottom: bar.top
-                anchors.bottomMargin: 8
+                x: BarConfig.horizontal ? (parent.width - width) / 2 : (BarConfig.edge === "left" ? bar.width + 8 : bar.x - width - 8)
+                y: BarConfig.horizontal ? (BarConfig.edge === "top" ? bar.height + 8 : bar.y - height - 8) : (parent.height - height) / 2
             }
         }
     }

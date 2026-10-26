@@ -6,10 +6,16 @@ Rectangle {
 
     property bool open: false
 
+    readonly property bool hovered: hover.hovered
+
     implicitWidth: 40
     implicitHeight: 40
     radius: height / 2
     color: Theme.background
+
+    HoverHandler {
+        id: hover
+    }
 
     Text {
         anchors.centerIn: parent

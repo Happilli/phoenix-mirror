@@ -1,13 +1,23 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Shapes
+import qs.configuration.Bar
 
 Item {
     id: root
+
     property real radius
     property color colour
     property var screen
     readonly property Item popupS: host
+
+    readonly property string edge: BarConfig.edge
+    readonly property bool horizontal: edge === "top" || edge === "bottom"
+    readonly property bool lowFlat: edge === "bottom" || edge === "right"
+    readonly property real length: horizontal ? width : height
+    readonly property real thickness: horizontal ? height : width
+    readonly property real cc: lowFlat ? thickness / 2 + radius / 2 : thickness / 2 - radius / 2
+    readonly property real attach: lowFlat ? radius : thickness - radius
 
     readonly property real notchPadding: 4
     readonly property real notchRadius: 18
@@ -40,23 +50,21 @@ Item {
 
     readonly property bool popupShown: notchOpen && (target === controls || target === powerProfile || target === datetime || target === appSlot || target === nightMode || target === mediaButton || target === startMenu || target === dailyWar)
     readonly property Item hoveredItem: {
-        if (powerHover.hovered)
+        if (powerProfile.hovered)
             return powerProfile;
-        if (warHover.hovered)
+        if (dailyWar.hovered)
             return dailyWar;
-        if (ctrlHover.hovered && dateHover.hovered)
-            return (notchOpen && target === datetime) ? datetime : controls;
-        if (ctrlHover.hovered)
+        if (controls.hovered)
             return controls;
-        if (dateHover.hovered)
+        if (dateSlot.hovered)
             return datetime;
         if (openedApp.hoveredCell)
             return appSlot;
-        if (mediaHover.hovered)
+        if (mediaButton.hovered)
             return mediaButton;
-        if (nightHover.hovered)
+        if (nightMode.hovered)
             return nightMode;
-        if (startHover.hovered)
+        if (startMenu.hovered)
             return startMenu;
         if (host.hovered)
             return target;
@@ -64,6 +72,34 @@ Item {
     }
     property Item target: controls
     property bool notchOpen: false
+
+    function lenOf(item) {
+        return horizontal ? item.width : item.height;
+    }
+
+    function along(item) {
+        return horizontal ? item.x : item.y;
+    }
+
+    function px(m, item) {
+        return horizontal ? m : cc - item.width / 2;
+    }
+
+    function py(m, item) {
+        return horizontal ? cc - item.height / 2 : m;
+    }
+
+    function pt(u, w) {
+        switch (edge) {
+        case "top":
+            return u + " " + (thickness - w);
+        case "left":
+            return (thickness - w) + " " + u;
+        case "right":
+            return w + " " + u;
+        }
+        return u + " " + w;
+    }
 
     property real dateOffset: (notchOpen && target === datetime) ? dateShift : 0
     Behavior on dateOffset {
@@ -81,16 +117,30 @@ Item {
         }
     }
 
-    readonly property real targetX: {
+    readonly property real mWorkspace: itemGap + notchPadding
+    readonly property real mStart: mWorkspace + lenOf(workspace) + itemGap
+    readonly property real mNight: mStart + lenOf(startMenu) + itemGap
+    readonly property real mMedia: mNight + lenOf(nightMode) + itemGap
+    readonly property real mApps: mMedia + lenOf(mediaButton) + itemGap
+
+    readonly property real mBattery: length - (radius + notchPadding + notchRadius - 10) - lenOf(battery)
+    readonly property real mDateSlot: mBattery - itemGap - lenOf(datetime)
+    readonly property real mDate: mDateSlot - dateOffset
+    readonly property real mControls: mDateSlot - itemGap - dateOffset - lenOf(controls)
+    readonly property real mWar: mControls - itemGap - lenOf(dailyWar)
+    readonly property real mPower: mWar - itemGap - lenOf(powerProfile)
+    readonly property real mRec: mPower - 16 - recOffset - lenOf(recordingIndicator)
+
+    readonly property real targetM: {
         if (target === datetime)
-            return dateSlot.x - dateShift;
+            return mDateSlot - dateShift;
         if (target === controls)
-            return dateSlot.x - itemGap - controls.width;
+            return mDateSlot - itemGap - lenOf(controls);
         if (target === dailyWar)
-            return dateSlot.x - itemGap - controls.width - itemGap - dailyWar.width;
+            return mDateSlot - itemGap - lenOf(controls) - itemGap - lenOf(dailyWar);
         if (target === powerProfile)
-            return dateSlot.x - itemGap - controls.width - itemGap - dailyWar.width - itemGap - powerProfile.width;
-        return target.x;
+            return mDateSlot - itemGap - lenOf(controls) - itemGap - lenOf(dailyWar) - itemGap - lenOf(powerProfile);
+        return along(target);
     }
 
     property real notchProgress: notchOpen ? 1 : 0
@@ -101,7 +151,7 @@ Item {
             epsilon: 0.25
         }
     }
-    property real appOffset: openedApp.lastX
+    property real appOffset: openedApp.lastM
     Behavior on appOffset {
         enabled: root.notchOpen && root.target === appSlot
         SpringAnimation {
@@ -111,8 +161,8 @@ Item {
         }
     }
 
-    readonly property real spanL: targetX - notchPadding
-    readonly property real spanR: targetX + target.width + notchPadding
+    readonly property real spanL: targetM - notchPadding
+    readonly property real spanR: targetM + lenOf(target) + notchPadding
 
     property bool lagAnimated: true
     property real lagL: 0
@@ -138,23 +188,25 @@ Item {
     readonly property real l2: spanL + lagL
     readonly property real l3: spanR + lagR
 
-    readonly property real fullFloorY: Math.min(controls.y + controls.height + notchPadding, height)
+    readonly property real crossSize: horizontal ? controls.height : controls.width
+    readonly property real fullFloorY: Math.min(thickness / 2 + radius / 2 + crossSize / 2 + notchPadding, thickness)
     readonly property real permanentDepth: Math.max(0, fullFloorY - radius)
     readonly property real depth: permanentDepth * notchProgress
 
     function outline() {
         const R = radius;
-        const W = width;
-        const H = height;
+        const W = length;
+        const H = thickness;
         const cuts = [];
         for (const item of permanent) {
             const k = item.cutProgress ?? 1;
             if (permanentDepth * k < 0.5) {
                 continue;
             }
+            const s = along(item);
             cuts.push({
-                l: item.x - notchPadding,
-                r: item.x + item.width + notchPadding,
+                l: s - notchPadding,
+                r: s + lenOf(item) + notchPadding,
                 d: permanentDepth * k
             });
         }
@@ -167,17 +219,17 @@ Item {
         }
         cuts.sort((a, b) => a.l - b.l);
 
-        let p = `M 0 ${H} L 0 0 Q 0 ${R} ${R} ${R}`;
+        let p = `M ${pt(0, H)} L ${pt(0, 0)} Q ${pt(0, R)} ${pt(R, R)}`;
         for (const c of cuts) {
             const f = R + c.d;
             const rt = Math.min(notchRadius, c.d / 2);
             const rb = Math.min(notchRadiusBottom, (c.r - c.l) / 2, Math.max(0, c.d - rt));
-            p += ` L ${c.l - rt} ${R} Q ${c.l} ${R} ${c.l} ${R + rt}`;
-            p += ` L ${c.l} ${f - rb} Q ${c.l} ${f} ${c.l + rb} ${f}`;
-            p += ` L ${c.r - rb} ${f} Q ${c.r} ${f} ${c.r} ${f - rb}`;
-            p += ` L ${c.r} ${R + rt} Q ${c.r} ${R} ${c.r + rt} ${R}`;
+            p += ` L ${pt(c.l - rt, R)} Q ${pt(c.l, R)} ${pt(c.l, R + rt)}`;
+            p += ` L ${pt(c.l, f - rb)} Q ${pt(c.l, f)} ${pt(c.l + rb, f)}`;
+            p += ` L ${pt(c.r - rb, f)} Q ${pt(c.r, f)} ${pt(c.r, f - rb)}`;
+            p += ` L ${pt(c.r, R + rt)} Q ${pt(c.r, R)} ${pt(c.r + rt, R)}`;
         }
-        p += ` L ${W - R} ${R} Q ${W} ${R} ${W} 0 L ${W} ${H} Z`;
+        p += ` L ${pt(W - R, R)} Q ${pt(W, R)} ${pt(W, 0)} L ${pt(W, H)} Z`;
         return p;
     }
 
@@ -208,7 +260,7 @@ Item {
 
     Timer {
         id: closeTimer
-        interval: barHover.hovered ? 260 : 100
+        interval: (barHover.hovered || root.popupShown) ? 260 : 100
         onTriggered: root.notchOpen = false
     }
 
@@ -223,184 +275,96 @@ Item {
                 path: root.outlinePath
             }
         }
-        Workspace {
-            id: workspace
-            screen: root.screen
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.left: parent.left
-            anchors.verticalCenterOffset: root.radius / 2
-            anchors.leftMargin: root.itemGap + root.notchPadding
-        }
-        StartButton {
-            id: startMenu
-            open: root.notchOpen && root.target === startMenu
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.left: workspace.right
-            anchors.verticalCenterOffset: root.radius / 2
-            anchors.leftMargin: root.itemGap
-        }
-        NightModeButton {
-            id: nightMode
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.left: startMenu.right
-            anchors.verticalCenterOffset: root.radius / 2
-            anchors.leftMargin: root.itemGap
-        }
-        MediaButton {
-            id: mediaButton
-            open: root.notchOpen && root.target === mediaButton
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.left: nightMode.right
-            anchors.verticalCenterOffset: root.radius / 2
-            anchors.leftMargin: root.itemGap
-        }
-        OpenedApp {
-            id: openedApp
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.left: mediaButton.right
-            anchors.verticalCenterOffset: root.radius / 2
-            anchors.leftMargin: root.itemGap
-        }
-        Item {
-            id: appSlot
-            x: openedApp.x + root.appOffset
-            width: 40
-        }
-        Battery {
-            id: battery
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.right: parent.right
-            anchors.verticalCenterOffset: root.radius / 2
-            anchors.rightMargin: root.radius + root.notchPadding + root.notchRadius - 10
-        }
-        Item {
-            id: dateSlot
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.right: battery.left
-            anchors.verticalCenterOffset: root.radius / 2
-            anchors.rightMargin: root.itemGap
-            width: datetime.width
-            height: 40
-        }
+    }
 
-        Item {
-            id: startHit
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.verticalCenterOffset: root.radius / 2
-            x: startMenu.x - root.itemGap
-            width: startMenu.width + root.itemGap + root.itemGap / 2
-            height: 40
-            HoverHandler {
-                id: startHover
-            }
-        }
-        Item {
-            id: nightHit
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.verticalCenterOffset: root.radius / 2
-            x: nightMode.x - root.itemGap / 2
-            width: nightMode.width + root.itemGap
-            height: 40
-            HoverHandler {
-                id: nightHover
-            }
-        }
-        Item {
-            id: mediaHit
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.verticalCenterOffset: root.radius / 2
-            x: mediaButton.x - root.itemGap / 2
-            width: mediaButton.width + root.itemGap + root.itemGap / 2
-            height: 40
-            HoverHandler {
-                id: mediaHover
-            }
-        }
+    Workspace {
+        id: workspace
+        screen: root.screen
+        vertical: !root.horizontal
+        x: root.px(root.mWorkspace, workspace)
+        y: root.py(root.mWorkspace, workspace)
+    }
+    StartButton {
+        id: startMenu
+        open: root.notchOpen && root.target === startMenu
+        x: root.px(root.mStart, startMenu)
+        y: root.py(root.mStart, startMenu)
+    }
+    NightModeButton {
+        id: nightMode
+        x: root.px(root.mNight, nightMode)
+        y: root.py(root.mNight, nightMode)
+    }
+    MediaButton {
+        id: mediaButton
+        vertical: !root.horizontal
+        open: root.notchOpen && root.target === mediaButton
+        x: root.px(root.mMedia, mediaButton)
+        y: root.py(root.mMedia, mediaButton)
+    }
+    OpenedApp {
+        id: openedApp
+        vertical: !root.horizontal
+        notched: root.notchOpen && root.target === appSlot
+        pushAmount: root.notchPadding + 2
+        x: root.px(root.mApps, openedApp)
+        y: root.py(root.mApps, openedApp)
+    }
+    Item {
+        id: appSlot
+        width: 40
+        height: 40
+        x: root.px(root.mApps + root.appOffset, appSlot)
+        y: root.py(root.mApps + root.appOffset, appSlot)
+    }
+    Battery {
+        id: battery
+        vertical: !root.horizontal
+        x: root.px(root.mBattery, battery)
+        y: root.py(root.mBattery, battery)
+    }
+    Item {
+        id: dateSlot
+        width: root.horizontal ? datetime.width : 40
+        height: root.horizontal ? 40 : datetime.height
+        x: root.px(root.mDateSlot, dateSlot)
+        y: root.py(root.mDateSlot, dateSlot)
 
-        Item {
-            id: dateHit
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.right: dateSlot.right
-            anchors.verticalCenterOffset: root.radius / 2
-            width: dateSlot.width + root.dateShift
-            height: 40
-            HoverHandler {
-                id: dateHover
-            }
-        }
+        readonly property bool hovered: dateHover.hovered
 
-        Item {
-            id: ctrlHit
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.right: dateSlot.left
-            anchors.verticalCenterOffset: root.radius / 2
-            anchors.rightMargin: root.itemGap
-            width: controls.width + root.dateOffset
-            height: 40
-            HoverHandler {
-                id: ctrlHover
-            }
+        HoverHandler {
+            id: dateHover
         }
+    }
 
-        DateTime {
-            id: datetime
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.right: dateSlot.right
-            anchors.verticalCenterOffset: root.radius / 2
-            anchors.rightMargin: root.dateOffset
-        }
-        Controls {
-            id: controls
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.right: dateSlot.left
-            anchors.verticalCenterOffset: root.radius / 2
-            anchors.rightMargin: root.itemGap + root.dateOffset
-        }
-
-        RecordingIndicator {
-            id: recordingIndicator
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.right: powerProfile.left
-            anchors.verticalCenterOffset: root.radius / 2
-            anchors.rightMargin: 16 + root.recOffset
-        }
-        DailyWarButton {
-            id: dailyWar
-            open: root.notchOpen && root.target === dailyWar
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.right: controls.left
-            anchors.verticalCenterOffset: root.radius / 2
-            anchors.rightMargin: root.itemGap
-        }
-        PowerProfileButton {
-            id: powerProfile
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.right: dailyWar.left
-            anchors.verticalCenterOffset: root.radius / 2
-            anchors.rightMargin: root.itemGap
-        }
-        Item {
-            id: warHit
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.verticalCenterOffset: root.radius / 2
-            x: dailyWar.x
-            width: dailyWar.width + root.itemGap
-            height: 40
-            HoverHandler {
-                id: warHover
-            }
-        }
-        Item {
-            id: powerHit
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.verticalCenterOffset: root.radius / 2
-            x: powerProfile.x - root.itemGap / 2
-            width: powerProfile.width + root.itemGap
-            height: 40
-            HoverHandler {
-                id: powerHover
-            }
-        }
+    DateTime {
+        id: datetime
+        vertical: !root.horizontal
+        x: root.px(root.mDate, datetime)
+        y: root.py(root.mDate, datetime)
+    }
+    Controls {
+        id: controls
+        vertical: !root.horizontal
+        x: root.px(root.mControls, controls)
+        y: root.py(root.mControls, controls)
+    }
+    RecordingIndicator {
+        id: recordingIndicator
+        vertical: !root.horizontal
+        x: root.px(root.mRec, recordingIndicator)
+        y: root.py(root.mRec, recordingIndicator)
+    }
+    DailyWarButton {
+        id: dailyWar
+        open: root.notchOpen && root.target === dailyWar
+        x: root.px(root.mWar, dailyWar)
+        y: root.py(root.mWar, dailyWar)
+    }
+    PowerProfileButton {
+        id: powerProfile
+        x: root.px(root.mPower, powerProfile)
+        y: root.py(root.mPower, powerProfile)
     }
 
     PopupHost {
@@ -408,8 +372,9 @@ Item {
         shown: root.popupShown
         content: root.activeContent
         gap: root.popupGap
-        centerX: root.targetX + root.target.width / 2
-        bottomY: root.radius
+        edge: root.edge
+        centerM: root.targetM + root.lenOf(root.target) / 2
+        attach: root.attach
         Loader {
             id: warLoader
             anchors.centerIn: parent
@@ -450,7 +415,7 @@ Item {
             sourceComponent: WindowPreviewPopup {
                 active: true
                 group: openedApp.hoverGroup
-                maxWidth: root.width - 2 * host.edgeMargin - host.pad * 2
+                maxWidth: root.horizontal ? root.width - 2 * host.edgeMargin - host.pad * 2 : (root.parent ? root.parent.width : 1920) - root.thickness - root.popupGap - 2 * host.edgeMargin - host.pad * 2
             }
         }
         Loader {
@@ -471,10 +436,8 @@ Item {
         }
         Loader {
             id: startLoader
-            anchors.left: parent.left
-            anchors.leftMargin: host.pad
-            anchors.bottom: parent.bottom
-            anchors.bottomMargin: host.pad
+            x: host.pad
+            y: root.edge === "top" ? host.pad : parent.height - height - host.pad
             active: root.notchOpen && root.target === startMenu
             sourceComponent: StartMenuPopup {
                 active: true

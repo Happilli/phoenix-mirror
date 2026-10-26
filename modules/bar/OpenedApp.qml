@@ -5,17 +5,25 @@ import Quickshell.Wayland
 import Quickshell.Widgets
 import qs.services.theme
 
-Row {
+Grid {
     id: root
+
+    property bool vertical: false
+    property bool notched: false
+    property real pushAmount: 6
+
     spacing: 2
+    flow: vertical ? Grid.TopToBottom : Grid.LeftToRight
+    columns: vertical ? 1 : Math.max(1, groups.length)
 
     property var hoveredCell: null
-    property real lastX: 0
+    property real lastM: 0
     property string lastAppId: ""
     readonly property var hoverGroup: groups.find(g => g.appId === lastAppId) ?? null
+    readonly property int lastIndex: groups.findIndex(g => g.appId === lastAppId)
 
     onHoveredCellChanged: if (hoveredCell) {
-        lastX = hoveredCell.x;
+        lastM = vertical ? hoveredCell.y : hoveredCell.x;
         lastAppId = hoveredCell.modelData.appId;
     }
 
@@ -52,12 +60,32 @@ Row {
         delegate: Item {
             id: cell
             required property var modelData
+            required property int index
 
             readonly property var instances: modelData.toplevels
             readonly property bool anyActive: instances.some(t => t.activated)
+            readonly property real push: {
+                if (!root.notched || root.lastIndex < 0 || index === root.lastIndex)
+                    return 0;
+                return index < root.lastIndex ? -root.pushAmount : root.pushAmount;
+            }
+
+            property real shift: push
 
             width: 40
             height: 40
+
+            transform: Translate {
+                x: root.vertical ? 0 : cell.shift
+                y: root.vertical ? cell.shift : 0
+            }
+
+            Behavior on shift {
+                NumberAnimation {
+                    duration: 180
+                    easing.type: Easing.OutCubic
+                }
+            }
 
             Rectangle {
                 anchors.fill: parent

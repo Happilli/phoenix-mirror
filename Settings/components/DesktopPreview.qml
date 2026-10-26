@@ -24,10 +24,10 @@ ClippingRectangle {
     Image {
         anchors.fill: parent
         source: WallpaperConfig.currentWallpaper
-        sourceSize.height: 360
+        sourceSize.height: Math.ceil(root.height / 50) * 50
+        cache: true
         fillMode: Image.PreserveAspectCrop
         asynchronous: true
-        cache: false
     }
 
     Item {

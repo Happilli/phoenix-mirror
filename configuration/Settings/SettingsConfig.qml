@@ -3,21 +3,21 @@ import QtQuick
 
 QtObject {
     property bool open: false
-    property string page: "widgets"
+    property string page: "general"
     property string query: ""
     property string focusKey: ""
     property var scroller: null
 
     readonly property var pages: [
         {
+            key: "general",
+            headline: "General",
+            leadingIcon: "\uf013"
+        },
+        {
             key: "widgets",
             headline: "Widgets",
             leadingIcon: "\uf009"
-        },
-        {
-            key: "wallpaper",
-            headline: "Wallpaper",
-            leadingIcon: "\uf03e"
         }
     ]
 
@@ -170,25 +170,49 @@ QtObject {
             key: "wall.appearance",
             headline: "Appearance",
             supporting: "Switch between dark and light mode",
-            trailingText: "Wallpaper",
+            trailingText: "General",
             leadingIcon: "\ueac6",
-            page: "wallpaper"
+            page: "general"
         },
         {
             key: "wall.scheme",
             headline: "Color scheme",
             supporting: "How colors are generated from the wallpaper",
-            trailingText: "Wallpaper",
+            trailingText: "General",
             leadingIcon: "\udb80\udfd8",
-            page: "wallpaper"
+            page: "general"
         },
         {
             key: "wall.folder",
-            headline: "Folder",
+            headline: "Wallpaper folder",
             supporting: "Where wallpapers are loaded from",
-            trailingText: "Wallpaper",
+            trailingText: "General",
             leadingIcon: "\uf07c",
-            page: "wallpaper"
+            page: "general"
+        },
+        {
+            key: "bar.edge",
+            headline: "Bar position",
+            supporting: "Screen edge the bar docks to",
+            trailingText: "General",
+            leadingIcon: "\uf0c9",
+            page: "general"
+        },
+        {
+            key: "bar.thickness",
+            headline: "Bar thickness",
+            supporting: "Size of the bar across the screen edge",
+            trailingText: "General",
+            leadingIcon: "\uf0b2",
+            page: "general"
+        },
+        {
+            key: "bar.radius",
+            headline: "Bar corner radius",
+            supporting: "Rounding of the bar edges",
+            trailingText: "General",
+            leadingIcon: "\uf1de",
+            page: "general"
         }
     ]
 

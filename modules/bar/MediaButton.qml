@@ -7,18 +7,21 @@ import qs.services.media
 Rectangle {
     id: root
 
+    property bool vertical: false
     property bool open: false
     property bool expanded: false
     property real progress: expanded ? 1 : 0
 
+    readonly property bool hovered: hover.hovered
     readonly property real collapsedWidth: 40
     readonly property real expandedWidth: 112
     readonly property real expandedOpacity: Math.max(0, Math.min(1, (progress - 0.4) / 0.6))
+    readonly property real alongSize: collapsedWidth + (expandedWidth - collapsedWidth) * progress
     readonly property var ranges: [[0, 4], [4, 10], [10, 18], [18, 32]]
 
-    implicitWidth: collapsedWidth + (expandedWidth - collapsedWidth) * progress
-    implicitHeight: 40
-    radius: height / 2
+    implicitWidth: vertical ? 40 : alongSize
+    implicitHeight: vertical ? alongSize : 40
+    radius: Math.min(width, height) / 2
     color: Theme.background
     clip: true
 
@@ -39,6 +42,10 @@ Rectangle {
         return sum / (to - from);
     }
 
+    HoverHandler {
+        id: hover
+    }
+
     VisualizerClient {
         enabled: MediaService.hasPlayer
     }
@@ -50,10 +57,10 @@ Rectangle {
     }
 
     Item {
-        anchors.left: parent.left
-        anchors.verticalCenter: parent.verticalCenter
-        width: root.collapsedWidth
-        height: root.height
+        x: 0
+        y: 0
+        width: root.vertical ? root.width : root.collapsedWidth
+        height: root.vertical ? root.collapsedWidth : root.height
         opacity: 1 - root.expandedOpacity
         visible: opacity > 0.01
 
@@ -102,12 +109,13 @@ Rectangle {
         }
     }
 
-    Row {
+    Grid {
         anchors.centerIn: parent
         spacing: 4
+        flow: root.vertical ? Grid.TopToBottom : Grid.LeftToRight
+        columns: root.vertical ? 1 : 3
         opacity: root.expandedOpacity
         visible: opacity > 0.01
-
         MaterialIconButton {
             width: 32
             height: 32

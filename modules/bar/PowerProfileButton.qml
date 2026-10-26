@@ -8,6 +8,12 @@ Item {
     implicitWidth: 40
     implicitHeight: 40
 
+    readonly property bool hovered: hover.hovered
+
+    HoverHandler {
+        id: hover
+    }
+
     function iconOf(profile) {
         switch (profile) {
         case PowerProfile.PowerSaver:

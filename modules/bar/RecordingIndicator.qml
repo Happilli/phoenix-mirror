@@ -5,6 +5,8 @@ import qs.services.recorder
 Rectangle {
     id: root
 
+    property bool vertical: false
+
     readonly property bool active: RecorderService.recording
     property real cutProgress: active ? 1 : 0
     property int seconds: 0
@@ -20,9 +22,9 @@ Rectangle {
         return h > 0 ? h + ":" + pad(m) + ":" + pad(s) : pad(m) + ":" + pad(s);
     }
 
-    width: row.implicitWidth + 24
-    height: 40
-    radius: height / 2
+    width: vertical ? 44 : group.implicitWidth + 24
+    height: vertical ? group.implicitHeight + 24 : 40
+    radius: Math.min(width, height) / 2
     color: Theme.surfaceContainer
     opacity: Math.max(0, (cutProgress - 0.3) / 0.7)
     scale: 0.8 + 0.2 * cutProgress
@@ -50,27 +52,30 @@ Rectangle {
         text: root.seconds >= 3600 ? "0:00:00" : "00:00"
     }
 
-    Row {
-        id: row
+    Grid {
+        id: group
         anchors.centerIn: parent
-        spacing: 10
+        flow: root.vertical ? Grid.TopToBottom : Grid.LeftToRight
+        columns: root.vertical ? 1 : 2
+        spacing: root.vertical ? 6 : 10
+        horizontalItemAlignment: Grid.AlignHCenter
+        verticalItemAlignment: Grid.AlignVCenter
 
         Rectangle {
             width: 12
             height: 12
             radius: 6
             color: Theme.error
-            anchors.verticalCenter: parent.verticalCenter
         }
 
         Text {
             id: label
             width: metrics.advanceWidth
-            anchors.verticalCenter: parent.verticalCenter
             text: root.timeText
             color: Theme.onSurfaceVariantColor
-            font.pixelSize: 16
+            font.pixelSize: root.vertical ? 11 : 16
             font.bold: true
+            horizontalAlignment: Text.AlignHCenter
         }
     }
 

@@ -23,7 +23,7 @@ Item {
         anchors.centerIn: parent
         spacing: -(root.itemWidth - root.trackWidth - root.sliderGap)
         Repeater {
-            model: root.pill.controls
+            model: root.pill.kinds
             MaterialSlider {
                 required property var modelData
                 orientation: MaterialSlider.Vertical

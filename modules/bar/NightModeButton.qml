@@ -8,6 +8,12 @@ Item {
     implicitWidth: 40
     implicitHeight: 40
 
+    readonly property bool hovered: hover.hovered
+
+    HoverHandler {
+        id: hover
+    }
+
     MaterialIconButton {
         anchors.fill: parent
         type: MaterialIconButton.Standard
