@@ -4,6 +4,7 @@ import Quickshell
 import Quickshell.Widgets
 import qs.services.theme
 import qs.configuration.Settings
+import qs.configuration.Hypr
 import qs.Settings.pages
 
 Scope {
@@ -24,8 +25,10 @@ Scope {
             minimumSize: Qt.size(win.implicitWidth, win.implicitHeight)
             maximumSize: Qt.size(win.implicitWidth, win.implicitHeight)
 
-            onVisibleChanged: if (!win.visible)
-                SettingsConfig.open = false
+            onVisibleChanged: if (!win.visible) {
+                HyprConfig.revertAll();
+                SettingsConfig.open = false;
+            }
 
             Shortcut {
                 sequence: "Escape"
@@ -41,6 +44,10 @@ Scope {
             Component {
                 id: generalPage
                 GeneralPage {}
+            }
+            Component {
+                id: hyprPage
+                HyprPage {}
             }
 
             Item {
@@ -106,7 +113,15 @@ Scope {
                             anchors.fill: parent
                             visible: stage.ready
                             active: stage.width > 0 && stage.height > 0
-                            sourceComponent: SettingsConfig.page === "general" ? generalPage : widgetsPage
+                            sourceComponent: {
+                                switch (SettingsConfig.page) {
+                                case "general":
+                                    return generalPage;
+                                case "hyprland":
+                                    return hyprPage;
+                                }
+                                return widgetsPage;
+                            }
                         }
                     }
 

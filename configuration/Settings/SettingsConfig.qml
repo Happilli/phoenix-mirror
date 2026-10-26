@@ -18,6 +18,11 @@ QtObject {
             key: "widgets",
             headline: "Widgets",
             leadingIcon: "\uf009"
+        },
+        {
+            key: "hyprland",
+            headline: "Hyprland",
+            leadingIcon: "\uf108"
         }
     ]
 
@@ -253,6 +258,110 @@ QtObject {
             trailingText: "General",
             leadingIcon: "\uf1de",
             page: "general"
+        },
+        {
+            key: "hypr.layout",
+            headline: "Layout",
+            supporting: "How tiled windows are arranged",
+            trailingText: "Hyprland",
+            leadingIcon: "\uf009",
+            page: "hyprland"
+        },
+        {
+            key: "hypr.gaps_in",
+            headline: "Inner gaps",
+            supporting: "Space between windows",
+            trailingText: "Hyprland",
+            leadingIcon: "\uf1de",
+            page: "hyprland"
+        },
+        {
+            key: "hypr.gaps_out",
+            headline: "Outer gaps",
+            supporting: "Space between windows and the screen edge",
+            trailingText: "Hyprland",
+            leadingIcon: "\uf1de",
+            page: "hyprland"
+        },
+        {
+            key: "hypr.border_size",
+            headline: "Border size",
+            supporting: "Thickness of the active window border",
+            trailingText: "Hyprland",
+            leadingIcon: "\uf0b2",
+            page: "hyprland"
+        },
+        {
+            key: "hypr.rounding",
+            headline: "Corner radius",
+            supporting: "Rounding of window corners",
+            trailingText: "Hyprland",
+            leadingIcon: "\uf1de",
+            page: "hyprland"
+        },
+        {
+            key: "hypr.active_opacity",
+            headline: "Active opacity",
+            supporting: "Opacity of the focused window",
+            trailingText: "Hyprland",
+            leadingIcon: "\uf042",
+            page: "hyprland"
+        },
+        {
+            key: "hypr.inactive_opacity",
+            headline: "Inactive opacity",
+            supporting: "Opacity of unfocused windows",
+            trailingText: "Hyprland",
+            leadingIcon: "\uf042",
+            page: "hyprland"
+        },
+        {
+            key: "hypr.dim_inactive",
+            headline: "Dim inactive",
+            supporting: "Darken windows that are not focused",
+            trailingText: "Hyprland",
+            leadingIcon: "\uf042",
+            page: "hyprland"
+        },
+        {
+            key: "hypr.shadow",
+            headline: "Window shadows",
+            supporting: "Draw a shadow behind windows",
+            trailingText: "Hyprland",
+            leadingIcon: "\uf042",
+            page: "hyprland"
+        },
+        {
+            key: "hypr.blur",
+            headline: "Blur",
+            supporting: "Blur the area behind transparent windows",
+            trailingText: "Hyprland",
+            leadingIcon: "\uf042",
+            page: "hyprland"
+        },
+        {
+            key: "hypr.blur_size",
+            headline: "Blur size",
+            supporting: "How far the blur spreads",
+            trailingText: "Hyprland",
+            leadingIcon: "\uf042",
+            page: "hyprland"
+        },
+        {
+            key: "hypr.blur_passes",
+            headline: "Blur passes",
+            supporting: "More passes look smoother but cost more GPU",
+            trailingText: "Hyprland",
+            leadingIcon: "\uf042",
+            page: "hyprland"
+        },
+        {
+            key: "hypr.animations",
+            headline: "Animations",
+            supporting: "Master switch for window and workspace animations",
+            trailingText: "Hyprland",
+            leadingIcon: "\uf04b",
+            page: "hyprland"
         }
     ]
 
