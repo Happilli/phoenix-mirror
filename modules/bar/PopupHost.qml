@@ -39,15 +39,7 @@ Item {
         }
     }
 
-    property real cm: centerM
-    Behavior on cm {
-        enabled: root.settled
-        SpringAnimation {
-            spring: 3
-            damping: 0.4
-            epsilon: 0.25
-        }
-    }
+    readonly property real cm: centerM
 
     property real w: wantW + (vertical ? gap : 0)
     Behavior on w {
@@ -64,7 +56,7 @@ Item {
         enabled: root.settled
         SpringAnimation {
             spring: 3
-            damping: 0.25
+            damping: 0.4
             epsilon: 0.25
         }
     }

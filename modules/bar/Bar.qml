@@ -23,6 +23,8 @@ Item {
     readonly property real notchRadius: 18
     readonly property real notchRadiusBottom: 30
     readonly property real itemGap: 8
+    readonly property real tightGap: 0
+    readonly property real slideShift: 6
     readonly property real popupGap: 10
     readonly property real dateShift: notchRadius + notchPadding + 12
 
@@ -50,7 +52,7 @@ Item {
 
     readonly property bool popupShown: notchOpen && (target === controls || target === powerProfile || target === datetime || target === appSlot || target === nightMode || target === mediaButton || target === startMenu || target === dailyWar)
     readonly property Item hoveredItem: {
-        if (powerProfile.hovered)
+        if (powerSlot.hovered || powerProfile.hovered)
             return powerProfile;
         if (dailyWar.hovered)
             return dailyWar;
@@ -60,18 +62,42 @@ Item {
             return datetime;
         if (openedApp.hoveredCell)
             return appSlot;
-        if (mediaButton.hovered)
-            return mediaButton;
         if (nightMode.hovered)
             return nightMode;
         if (startMenu.hovered)
             return startMenu;
+        if (mediaButton.hovered)
+            return mediaButton;
+        if (nightSlot.hovered)
+            return nightMode;
+        if (startSlot.hovered)
+            return startMenu;
+        if (mediaSlot.hovered)
+            return mediaButton;
         if (host.hovered)
             return target;
         return null;
     }
     property Item target: controls
     property bool notchOpen: false
+
+    readonly property int groupIndex: {
+        if (!notchOpen)
+            return -1;
+        if (target === startMenu)
+            return 0;
+        if (target === nightMode)
+            return 1;
+        if (target === mediaButton)
+            return 2;
+        return -1;
+    }
+
+    function groupShift(i) {
+        if (groupIndex < 0 || groupIndex === i)
+            return 0;
+        return i < groupIndex ? -slideShift : slideShift;
+    }
 
     function lenOf(item) {
         return horizontal ? item.width : item.height;
@@ -117,18 +143,54 @@ Item {
         }
     }
 
+    property real pairOffset: (notchOpen && (target === powerProfile || target === dailyWar)) ? slideShift : 0
+    Behavior on pairOffset {
+        NumberAnimation {
+            duration: 180
+            easing.type: Easing.OutCubic
+        }
+    }
+
+    property real startOffset: groupShift(0)
+    Behavior on startOffset {
+        NumberAnimation {
+            duration: 180
+            easing.type: Easing.OutCubic
+        }
+    }
+
+    property real nightOffset: groupShift(1)
+    Behavior on nightOffset {
+        NumberAnimation {
+            duration: 180
+            easing.type: Easing.OutCubic
+        }
+    }
+
+    property real mediaOffset: groupShift(2)
+    Behavior on mediaOffset {
+        NumberAnimation {
+            duration: 180
+            easing.type: Easing.OutCubic
+        }
+    }
+
     readonly property real mWorkspace: itemGap + notchPadding
-    readonly property real mStart: mWorkspace + lenOf(workspace) + itemGap
-    readonly property real mNight: mStart + lenOf(startMenu) + itemGap
-    readonly property real mMedia: mNight + lenOf(nightMode) + itemGap
-    readonly property real mApps: mMedia + lenOf(mediaButton) + itemGap
+    readonly property real mStartSlot: mWorkspace + lenOf(workspace) + itemGap
+    readonly property real mNightSlot: mStartSlot + lenOf(startMenu) + tightGap
+    readonly property real mMediaSlot: mNightSlot + lenOf(nightMode) + tightGap
+    readonly property real mStart: mStartSlot + startOffset
+    readonly property real mNight: mNightSlot + nightOffset
+    readonly property real mMedia: mMediaSlot + mediaOffset
+    readonly property real mApps: mMediaSlot + lenOf(mediaButton) + itemGap
 
     readonly property real mBattery: length - (radius + notchPadding + notchRadius - 10) - lenOf(battery)
     readonly property real mDateSlot: mBattery - itemGap - lenOf(datetime)
     readonly property real mDate: mDateSlot - dateOffset
     readonly property real mControls: mDateSlot - itemGap - dateOffset - lenOf(controls)
     readonly property real mWar: mControls - itemGap - lenOf(dailyWar)
-    readonly property real mPower: mWar - itemGap - lenOf(powerProfile)
+    readonly property real mPowerSlot: mWar - tightGap - lenOf(powerProfile)
+    readonly property real mPower: mPowerSlot - pairOffset
     readonly property real mRec: mPower - 16 - recOffset - lenOf(recordingIndicator)
 
     readonly property real targetM: {
@@ -139,7 +201,13 @@ Item {
         if (target === dailyWar)
             return mDateSlot - itemGap - lenOf(controls) - itemGap - lenOf(dailyWar);
         if (target === powerProfile)
-            return mDateSlot - itemGap - lenOf(controls) - itemGap - lenOf(dailyWar) - itemGap - lenOf(powerProfile);
+            return mDateSlot - itemGap - lenOf(controls) - itemGap - lenOf(dailyWar) - tightGap - lenOf(powerProfile) - slideShift;
+        if (target === startMenu)
+            return mStartSlot;
+        if (target === nightMode)
+            return mNightSlot;
+        if (target === mediaButton)
+            return mMediaSlot;
         return along(target);
     }
 
@@ -277,6 +345,46 @@ Item {
         }
     }
 
+    Item {
+        id: startSlot
+        width: 40
+        height: 40
+        x: root.px(root.mStartSlot, startSlot)
+        y: root.py(root.mStartSlot, startSlot)
+
+        readonly property bool hovered: startHover.hovered
+
+        HoverHandler {
+            id: startHover
+        }
+    }
+    Item {
+        id: nightSlot
+        width: 40
+        height: 40
+        x: root.px(root.mNightSlot, nightSlot)
+        y: root.py(root.mNightSlot, nightSlot)
+
+        readonly property bool hovered: nightHover.hovered
+
+        HoverHandler {
+            id: nightHover
+        }
+    }
+    Item {
+        id: mediaSlot
+        width: root.horizontal ? mediaButton.width : 40
+        height: root.horizontal ? 40 : mediaButton.height
+        x: root.px(root.mMediaSlot, mediaSlot)
+        y: root.py(root.mMediaSlot, mediaSlot)
+
+        readonly property bool hovered: mediaHover.hovered
+
+        HoverHandler {
+            id: mediaHover
+        }
+    }
+
     Workspace {
         id: workspace
         screen: root.screen
@@ -336,6 +444,19 @@ Item {
             id: dateHover
         }
     }
+    Item {
+        id: powerSlot
+        width: 40
+        height: 40
+        x: root.px(root.mPowerSlot, powerSlot)
+        y: root.py(root.mPowerSlot, powerSlot)
+
+        readonly property bool hovered: powerHover.hovered
+
+        HoverHandler {
+            id: powerHover
+        }
+    }
 
     DateTime {
         id: datetime
@@ -373,7 +494,7 @@ Item {
         content: root.activeContent
         gap: root.popupGap
         edge: root.edge
-        centerM: root.targetM + root.lenOf(root.target) / 2
+        centerM: (root.l2 + root.l3) / 2
         attach: root.attach
         Loader {
             id: warLoader

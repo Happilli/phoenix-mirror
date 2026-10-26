@@ -41,11 +41,6 @@ for f in "$HOME"/.zcompdump-*; do
   rm -f "$f"
 done
 shopt -u nullglob
-
 rm -f "$HOME/.wget-hsts"
-
 find /tmp -maxdepth 1 -mindepth 1 -user "$USER" -type f -mtime +1 -delete 2>/dev/null
-
 journalctl --user --vacuum-time=1d >/dev/null 2>&1
-
-notify-send -a "Refresh" "Caches cleared" 2>/dev/null
