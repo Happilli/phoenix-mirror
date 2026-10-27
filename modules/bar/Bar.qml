@@ -11,6 +11,7 @@ Item {
     property color colour
     property var screen
     readonly property Item popupS: host
+    readonly property Item hitbox: hit
 
     readonly property string edge: BarConfig.edge
     readonly property bool floating: BarConfig.floating
@@ -344,6 +345,15 @@ Item {
         id: closeTimer
         interval: (barHover.hovered || root.popupShown) ? 260 : 100
         onTriggered: root.notchOpen = false
+    }
+
+    Item {
+        id: hit
+        anchors.fill: parent
+        anchors.topMargin: root.edge === "bottom" ? root.topLine : 0
+        anchors.bottomMargin: root.edge === "top" ? root.topLine : 0
+        anchors.leftMargin: root.edge === "right" ? root.topLine : 0
+        anchors.rightMargin: root.edge === "left" ? root.topLine : 0
     }
 
     Shape {

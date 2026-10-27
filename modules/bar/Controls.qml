@@ -79,7 +79,9 @@ Rectangle {
                 width: root.vertical ? root.width : 39
                 height: root.vertical ? 39 : root.height
                 required property var modelData
+
                 WavyProgress {
+                    id: ring
                     anchors.centerIn: parent
                     style: WavyProgress.Circular
                     amplitude: 0
@@ -91,8 +93,9 @@ Rectangle {
                     width: 35
                     height: 35
                 }
+
                 MouseArea {
-                    anchors.fill: parent
+                    anchors.fill: ring
                     cursorShape: Qt.PointingHandCursor
                     onClicked: root.toggleMute(cell.modelData)
                 }

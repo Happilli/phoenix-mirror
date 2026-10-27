@@ -32,6 +32,7 @@ SettingsPage {
             x: 0
             y: page.wide ? 0 : pv.height + page.gutter
             width: page.quickWidth
+            dividerRight: page.wide ? 40 : 18
 
             SettingsGroup.Entry {
                 id: showEntry
@@ -51,10 +52,31 @@ SettingsPage {
                 title: "Color"
                 description: "Tint of the clock digits"
 
-                SettingsChoice {
-                    labels: ClockConfig.colorOptions.map(o => o.label)
-                    currentIndex: ClockConfig.colorOptions.findIndex(o => o.key === ClockConfig.colorKey)
-                    onPicked: index => ClockConfig.set("colorKey", ClockConfig.colorOptions[index].key)
+                Grid {
+                    id: colorGrid
+
+                    readonly property real avail: parent?.limit ?? 300
+                    readonly property real cell: Math.floor((avail - columnSpacing) / 2)
+
+                    columns: 2
+                    columnSpacing: 8
+                    rowSpacing: 0
+
+                    Repeater {
+                        model: ClockConfig.colorOptions
+
+                        SettingsRadio {
+                            id: tone
+                            required property var modelData
+                            required property int index
+
+                            group: "clockColor"
+                            width: colorGrid.cell
+                            text: modelData.label
+                            checked: ClockConfig.colorKey === modelData.key
+                            onToggled: ClockConfig.set("colorKey", tone.modelData.key)
+                        }
+                    }
                 }
             }
 
@@ -64,7 +86,7 @@ SettingsPage {
                 title: "Size"
                 description: "Overall size of the clock"
 
-                SettingsSlider {
+                SettingsValueSlider {
                     from: 120
                     to: 600
                     value: ClockConfig.size
@@ -78,7 +100,7 @@ SettingsPage {
                 title: "Randomize position"
                 description: "Pick a spot based on the current wallpaper"
 
-                SettingsSwitch {
+                SettingsCheckbox {
                     checked: ClockConfig.randomizePosition
                     onToggled: ClockConfig.set("randomizePosition", checked)
                 }
@@ -138,7 +160,7 @@ SettingsPage {
             title: "Orientation"
             description: "Stack the digits or place them side by side"
 
-            SettingsChoice {
+            SettingsSegmented {
                 labels: ["Vertical", "Horizontal"]
                 currentIndex: ClockConfig.orientation
                 onPicked: index => ClockConfig.set("orientation", index)
@@ -151,7 +173,7 @@ SettingsPage {
             title: "Separator"
             description: "Show the colon between hours and minutes"
 
-            SettingsSwitch {
+            SettingsCheckbox {
                 checked: ClockConfig.showSeparator
                 onToggled: ClockConfig.set("showSeparator", checked)
             }
@@ -162,7 +184,7 @@ SettingsPage {
             title: "Font weight"
             description: "Thickness of the digits"
 
-            SettingsSlider {
+            SettingsValueSlider {
                 from: 100
                 to: 900
                 value: ClockConfig.fontWeight
@@ -175,7 +197,7 @@ SettingsPage {
             title: "24-hour time"
             description: "Turn off to use 12-hour time"
 
-            SettingsSwitch {
+            SettingsCheckbox {
                 checked: ClockConfig.use24Hour
                 onToggled: ClockConfig.set("use24Hour", checked)
             }
@@ -187,7 +209,7 @@ SettingsPage {
             title: "Show AM/PM"
             description: "Display the period next to the time"
 
-            SettingsSwitch {
+            SettingsCheckbox {
                 checked: ClockConfig.showAmPm
                 onToggled: ClockConfig.set("showAmPm", checked)
             }
@@ -199,10 +221,23 @@ SettingsPage {
             title: "AM/PM position"
             description: "Where the period sits relative to the digits"
 
-            SettingsChoice {
-                labels: ["Beside", "Below", "Superscript"]
-                currentIndex: ClockConfig.amPmStyle
-                onPicked: index => ClockConfig.set("amPmStyle", index)
+            Row {
+                spacing: 4
+
+                Repeater {
+                    model: ["Beside", "Below", "Superscript"]
+
+                    SettingsRadio {
+                        id: periodOption
+                        required property string modelData
+                        required property int index
+
+                        group: "amPmStyle"
+                        text: modelData
+                        checked: ClockConfig.amPmStyle === index
+                        onToggled: ClockConfig.set("amPmStyle", periodOption.index)
+                    }
+                }
             }
         }
     }
@@ -213,7 +248,7 @@ SettingsPage {
             title: "Margin"
             description: "Distance from the screen edges"
 
-            SettingsSlider {
+            SettingsValueSlider {
                 from: 0
                 to: 200
                 value: ClockConfig.margin
@@ -274,7 +309,7 @@ SettingsPage {
                 title: modelData.title
                 description: modelData.description
 
-                SettingsSlider {
+                SettingsValueSlider {
                     from: tune.modelData.from
                     to: tune.modelData.to
                     value: ClockConfig.get(tune.modelData.key)

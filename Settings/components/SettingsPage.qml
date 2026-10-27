@@ -1,13 +1,11 @@
 import QtQuick
-import Quickshell.Widgets
 import qs.configuration.Settings
 
 Item {
     id: root
 
     property string title: ""
-    readonly property real cardRadius: 14
-    readonly property real margin: width < 720 ? 16 : 28
+    readonly property real margin: 0
     readonly property real headerMaxHeight: height * 0.36
 
     default property alias content: body.data
@@ -18,7 +16,7 @@ Item {
         x: root.margin
         y: root.margin
         width: parent.width - root.margin * 2
-        spacing: 16
+        spacing: 8
 
         Item {
             id: headerSlot
@@ -28,34 +26,29 @@ Item {
         }
     }
 
-    ClippingRectangle {
+    Flickable {
+        id: flick
         anchors.top: topper.bottom
-        anchors.topMargin: 16
+        anchors.topMargin: 8
         anchors.bottom: parent.bottom
         anchors.bottomMargin: root.margin
         anchors.left: parent.left
         anchors.leftMargin: root.margin
         anchors.right: parent.right
         anchors.rightMargin: root.margin
-        radius: root.cardRadius
-        color: "transparent"
+        clip: true
+        contentWidth: width
+        contentHeight: body.implicitHeight
+        boundsBehavior: Flickable.StopAtBounds
 
-        Flickable {
-            id: flick
-            anchors.fill: parent
-            contentWidth: width
-            contentHeight: body.implicitHeight
-            boundsBehavior: Flickable.StopAtBounds
+        Component.onCompleted: SettingsConfig.scroller = flick
+        Component.onDestruction: if (SettingsConfig.scroller === flick)
+            SettingsConfig.scroller = null
 
-            Component.onCompleted: SettingsConfig.scroller = flick
-            Component.onDestruction: if (SettingsConfig.scroller === flick)
-                SettingsConfig.scroller = null
-
-            Column {
-                id: body
-                width: parent.width
-                spacing: 14
-            }
+        Column {
+            id: body
+            width: parent.width
+            spacing: 14
         }
     }
 }

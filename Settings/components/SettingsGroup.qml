@@ -6,9 +6,10 @@ Item {
     id: root
 
     default property alias entries: col.data
+    property real dividerRight: 18
 
     width: parent ? parent.width : 0
-    height: col.implicitHeight
+    height: col.implicitHeight + divider.height
 
     component Entry: Item {
         id: entry
@@ -21,7 +22,7 @@ Item {
 
         readonly property real limit: slot.limit
         readonly property bool stacked: width < 560
-        readonly property real pad: 20
+        readonly property real pad: 18
         readonly property bool targeted: key !== "" && SettingsConfig.focusKey === key
 
         function locate() {
@@ -30,7 +31,7 @@ Item {
         }
 
         width: parent ? parent.width : 0
-        height: Math.max(minHeight, stacked ? textCol.implicitHeight + slot.height + (slot.height > 0 ? 12 : 0) + 28 : Math.max(68, textCol.implicitHeight + 28, slot.height + 28))
+        height: stacked ? Math.max(minHeight, textCol.implicitHeight + (slot.height > 0 ? slot.height + 10 : 0) + 26) : Math.max(minHeight, 60, textCol.implicitHeight + 24, slot.height + 24)
 
         onTargetedChanged: if (targeted)
             locate()
@@ -55,6 +56,7 @@ Item {
                 f.contentY = Math.max(0, Math.min(Math.max(0, f.contentHeight - f.height), y - f.height / 3));
             }
         }
+
         Timer {
             interval: 1600
             running: entry.targeted
@@ -65,34 +67,22 @@ Item {
             id: glow
             anchors.fill: parent
             anchors.margins: 4
-            radius: 12
-            color: Qt.alpha(Theme.primary, 0.14)
-            border.width: 2
+            radius: 14
+            color: "transparent"
+            border.width: 1
             border.color: Theme.primary
             opacity: 0
-            scale: 1
             z: -1
         }
 
         SequentialAnimation {
             id: pulse
 
-            ParallelAnimation {
-                NumberAnimation {
-                    target: glow
-                    property: "opacity"
-                    to: 1
-                    duration: 120
-                }
-                SpringAnimation {
-                    target: glow
-                    property: "scale"
-                    from: 0.94
-                    to: 1
-                    spring: 5
-                    damping: 0.2
-                    epsilon: 0.002
-                }
+            NumberAnimation {
+                target: glow
+                property: "opacity"
+                to: 1
+                duration: 120
             }
 
             PauseAnimation {
@@ -106,19 +96,18 @@ Item {
                 duration: 400
             }
         }
-
         Column {
             id: textCol
             x: entry.pad
-            y: entry.stacked ? 14 : (entry.height - height) / 2
+            y: entry.stacked ? 13 : (entry.height - height) / 2
             width: entry.stacked ? entry.width - entry.pad * 2 : Math.max(0, entry.width - entry.pad * 2 - slot.width - 16)
-            spacing: 2
+            spacing: 1
 
             Text {
                 width: parent.width
                 text: entry.title
                 wrapMode: Text.Wrap
-                font.pixelSize: 15
+                font.pixelSize: 16
                 font.weight: Font.Medium
                 color: Theme.onBackgroundColor
             }
@@ -128,7 +117,7 @@ Item {
                 visible: text !== ""
                 text: entry.description
                 wrapMode: Text.Wrap
-                font.pixelSize: 12
+                font.pixelSize: 13
                 color: Theme.onSurfaceVariantColor
                 opacity: 0.75
             }
@@ -140,20 +129,24 @@ Item {
             readonly property real limit: entry.stacked ? entry.width - entry.pad * 2 : Math.max(160, (entry.width - entry.pad * 2) * 0.55)
 
             x: entry.stacked ? entry.pad : entry.width - entry.pad - width
-            y: entry.stacked ? textCol.y + textCol.implicitHeight + 12 : (entry.height - height) / 2
+            y: entry.stacked ? textCol.y + textCol.implicitHeight + 10 : (entry.height - height) / 2
             width: childrenRect.width
             height: childrenRect.height
         }
     }
 
-    Rectangle {
-        anchors.fill: parent
-        radius: 14
-        color: Theme.surfaceContainerLow
-    }
-
     Column {
         id: col
         width: parent.width
+    }
+
+    Rectangle {
+        id: divider
+        x: 18
+        y: col.implicitHeight
+        width: parent.width - 18 - root.dividerRight
+        height: 1.6
+        radius: 20
+        color: Theme.outlineVariant
     }
 }

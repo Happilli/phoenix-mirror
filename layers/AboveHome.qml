@@ -40,7 +40,8 @@ Variants {
             exclusiveZone: -1
             color: "transparent"
             mask: Region {
-                item: bar
+                item: bar.hitbox
+
                 Region {
                     item: bar.popupS
                 }

@@ -12,8 +12,8 @@ Singleton {
     readonly property var styles: ["horizon", "floating"]
     readonly property var styleLabels: ["Horizon", "Floating"]
 
-    readonly property int minContent: 46
-    readonly property int minFloatThickness: 56
+    readonly property int minContent: 40
+    readonly property int minFloatThickness: 45
     readonly property int maxThickness: 140
     readonly property int maxHorizonRadius: 30
 

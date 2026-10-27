@@ -12,12 +12,11 @@ Item {
     signal dismissed
     signal picked(string key, string page)
 
-    implicitHeight: 84
+    implicitHeight: 64
 
     Text {
         id: title
         anchors.left: root.left
-        anchors.leftMargin: 12
         anchors.verticalCenter: root.verticalCenter
         text: SettingsConfig.currentTitle
         font.pixelSize: 26
@@ -52,6 +51,7 @@ Item {
             id: search
             anchors.right: slot.right
             anchors.verticalCenter: slot.verticalCenter
+            anchors.leftMargin: 10
             width: slot.width / slot.searchScale
             scale: slot.searchScale
             transformOrigin: Item.Right
@@ -88,7 +88,6 @@ Item {
 
         anchors.right: root.right
         anchors.top: root.bottom
-        anchors.topMargin: -12
         width: Math.min(440, root.width)
         height: Math.max(0, view.shownHeight)
 

@@ -1,4 +1,5 @@
 import QtQuick
+import Ryu.Extraa
 import qs.services.theme
 
 Item {
@@ -16,18 +17,27 @@ Item {
     readonly property bool pressed: slider.pressed
     readonly property real avail: parent?.limit ?? 352
     readonly property real labelWidth: 44
-    readonly property real labelGap: 8
+    readonly property real labelGap: 10
 
     signal moved
 
-    width: Math.max(190, Math.min(avail, 352))
+    width: Math.max(200, Math.min(avail, 360))
     height: slider.height
 
-    SettingsSlider {
+    MaterialSlider {
         id: slider
+        anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter
         width: root.width - root.labelWidth - root.labelGap
+        sizeStyle: MaterialSlider.Small
+        outerRadius: 8
+        handleGap: 3
+        innerRadius: 2
+        showStops: false
         showValueIndicator: false
+        trackColor: Theme.surfaceContainerHighest
+        color: Theme.primary
+        handleColor: Theme.primary
         onMoved: root.moved()
     }
 
@@ -37,8 +47,8 @@ Item {
         width: root.labelWidth
         horizontalAlignment: Text.AlignRight
         text: (root.value * root.displayScale).toFixed(root.decimals) + root.suffix
-        font.pixelSize: 13
-        font.weight: Font.DemiBold
+        font.pixelSize: 14
+        font.weight: Font.Medium
         color: root.pressed ? Theme.primary : Theme.onSurfaceVariantColor
 
         Behavior on color {

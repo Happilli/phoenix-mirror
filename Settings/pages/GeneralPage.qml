@@ -71,7 +71,7 @@ SettingsPage {
                 title: "Appearance"
                 description: "Switch between dark and light mode"
 
-                SettingsChoice {
+                SettingsSegmented {
                     labels: ["Dark", "Light"]
                     currentIndex: Theme.isDark ? 0 : 1
                     onPicked: index => Theme.setMode(index === 0 ? "dark" : "light")
@@ -83,33 +83,30 @@ SettingsPage {
                 title: "Color scheme"
                 description: "How colors are generated from the wallpaper"
 
-                Column {
-                    id: schemeCol
+                Grid {
+                    id: schemeGrid
 
                     readonly property real avail: parent?.limit ?? 360
-                    readonly property int per: avail >= 400 ? 4 : 2
-                    readonly property var rows: {
-                        const out = [];
-                        for (let i = 0; i < page.schemeLabels.length; i += per)
-                            out.push({
-                                start: i,
-                                labels: page.schemeLabels.slice(i, i + per)
-                            });
-                        return out;
-                    }
+                    readonly property int cols: avail >= 520 ? 4 : 2
+                    readonly property real cell: Math.floor((avail - columnSpacing * (cols - 1)) / cols)
 
-                    spacing: 6
+                    columns: cols
+                    columnSpacing: 8
+                    rowSpacing: 0
 
                     Repeater {
-                        model: schemeCol.rows
+                        model: page.schemeLabels
 
-                        SettingsChoice {
-                            id: choice
-                            required property var modelData
+                        SettingsRadio {
+                            id: schemeOption
+                            required property string modelData
+                            required property int index
 
-                            labels: modelData.labels
-                            currentIndex: page.schemeIndex - modelData.start
-                            onPicked: index => Theme.setScheme(Theme.schemes[choice.modelData.start + index])
+                            group: "scheme"
+                            width: schemeGrid.cell
+                            text: modelData
+                            checked: page.schemeIndex === index
+                            onToggled: Theme.setScheme(Theme.schemes[schemeOption.index])
                         }
                     }
                 }
@@ -215,10 +212,23 @@ SettingsPage {
             title: "Bar style"
             description: "Horizon melts into the screen edge, Floating hovers free of it"
 
-            SettingsChoice {
-                labels: BarConfig.styleLabels
-                currentIndex: BarConfig.styleIndex
-                onPicked: index => BarConfig.setStyle(BarConfig.styles[index])
+            Row {
+                spacing: 8
+
+                Repeater {
+                    model: BarConfig.styleLabels
+
+                    SettingsRadio {
+                        id: styleOption
+                        required property string modelData
+                        required property int index
+
+                        group: "barStyle"
+                        text: modelData
+                        checked: BarConfig.styleIndex === index
+                        onToggled: BarConfig.setStyle(BarConfig.styles[styleOption.index])
+                    }
+                }
             }
         }
 
@@ -227,7 +237,7 @@ SettingsPage {
             title: "Bar position"
             description: "Screen edge the bar docks to"
 
-            SettingsChoice {
+            SettingsSegmented {
                 labels: BarConfig.labels
                 currentIndex: BarConfig.edgeIndex
                 onPicked: index => BarConfig.setEdge(BarConfig.edges[index])
@@ -263,7 +273,7 @@ SettingsPage {
                 title: modelData.title
                 description: "Gap between the floating bar and the " + modelData.side + " screen edge"
 
-                SettingsSlider {
+                SettingsValueSlider {
                     from: 0
                     to: 120
                     value: BarConfig.marginOf(margin.modelData.side)
@@ -277,9 +287,9 @@ SettingsPage {
             title: "Bar thickness"
             description: "Size of the bar across the screen edge"
 
-            SettingsSlider {
-                from: 56
-                to: 140
+            SettingsValueSlider {
+                from: BarConfig.minThickness
+                to: BarConfig.maxThickness
                 value: BarConfig.thickness
                 onMoved: BarConfig.setThickness(value)
             }
@@ -290,7 +300,7 @@ SettingsPage {
             title: "Bar corner radius"
             description: "Rounding of the bar edges. Floating can go full pill"
 
-            SettingsSlider {
+            SettingsValueSlider {
                 from: 0
                 to: BarConfig.maxRadius
                 value: BarConfig.radius

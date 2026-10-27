@@ -16,34 +16,55 @@ Item {
     width: parent ? parent.width : 0
     height: col.implicitHeight
 
-    component FooterButton: Rectangle {
+    component HeaderButton: Rectangle {
         id: btn
 
         property string label: ""
+        property string glyph: ""
         property bool primary: false
         signal clicked
 
-        width: 92
-        height: 36
-        radius: 18
-        color: primary ? Theme.primary : "transparent"
-        border.width: primary ? 0 : 1
-        border.color: Theme.outlineVariant
-        opacity: root.dirty ? 1 : 0.35
+        readonly property color fg: primary ? Theme.onPrimaryColor : Theme.onSurfaceVariantColor
+
+        width: 82
+        height: 34
+        radius: 17
+        color: primary ? Theme.primary : Theme.surfaceContainerHighest
+        scale: area.pressed ? 0.94 : 1
+
+        Behavior on scale {
+            SpringAnimation {
+                spring: 5
+                damping: 0.4
+                epsilon: 0.005
+            }
+        }
 
         Rectangle {
             anchors.fill: parent
             radius: parent.radius
-            color: btn.primary ? Theme.onPrimaryColor : Theme.onSurfaceVariantColor
+            color: btn.fg
             opacity: area.pressed ? 0.16 : (area.containsMouse ? 0.08 : 0)
         }
 
-        Text {
+        Row {
             anchors.centerIn: parent
-            text: btn.label
-            font.pixelSize: 13
-            font.weight: Font.DemiBold
-            color: btn.primary ? Theme.onPrimaryColor : Theme.onSurfaceVariantColor
+            spacing: 6
+
+            Text {
+                anchors.verticalCenter: parent.verticalCenter
+                text: btn.glyph
+                font.pixelSize: 12
+                color: btn.fg
+            }
+
+            Text {
+                anchors.verticalCenter: parent.verticalCenter
+                text: btn.label
+                font.pixelSize: 13
+                font.weight: Font.DemiBold
+                color: btn.fg
+            }
         }
 
         MouseArea {
@@ -59,69 +80,79 @@ Item {
     Column {
         id: col
         width: parent.width
-        spacing: 10
+        spacing: 0
 
-        Column {
-            x: 6
-            width: parent.width - 12
-            spacing: 2
-
+        Item {
+            id: head
+            width: parent.width
+            height: Math.max(actions.height, textCol.implicitHeight)
             Row {
+                id: textCol
+                x: 18
+                anchors.verticalCenter: parent.verticalCenter
+                width: Math.max(0, head.width - x - actions.width - 16)
                 spacing: 10
 
                 Text {
+                    id: titleText
                     anchors.verticalCenter: parent.verticalCenter
-                    text: root.title.toUpperCase()
-                    font.pixelSize: 12
+                    text: root.title
+                    font.pixelSize: 24
                     font.weight: Font.DemiBold
-                    font.letterSpacing: 1.2
-                    color: Theme.primary
+                    font.capitalization: Font.MixedCase
+                    color: root.dirty ? Theme.primary : Theme.onBackgroundColor
+
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 180
+                        }
+                    }
                 }
 
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
-                    visible: root.dirty
-                    text: "unsaved"
-                    font.pixelSize: 11
+                    width: Math.max(0, textCol.width - titleText.width - textCol.spacing)
+                    visible: root.description !== ""
+                    text: "[" + root.description + "]"
+                    elide: Text.ElideRight
+                    font.pixelSize: 15
                     color: Theme.onSurfaceVariantColor
-                    opacity: 0.7
+                    opacity: 0.75
                 }
             }
+            Row {
+                id: actions
+                anchors.right: parent.right
+                anchors.rightMargin: 4
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 6
+                opacity: root.dirty ? 1 : 0
+                scale: 0.92 + 0.08 * opacity
+                transformOrigin: Item.Right
 
-            Text {
-                width: parent.width
-                visible: text !== ""
-                text: root.description
-                wrapMode: Text.Wrap
-                font.pixelSize: 12
-                color: Theme.onSurfaceVariantColor
-                opacity: 0.7
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 160
+                    }
+                }
+
+                HeaderButton {
+                    label: "Undo"
+                    glyph: "\uf0e2"
+                    onClicked: HyprConfig.cancel(root.keys)
+                }
+
+                HeaderButton {
+                    label: "Save"
+                    glyph: "\uf00c"
+                    primary: true
+                    onClicked: HyprConfig.save(root.keys)
+                }
             }
         }
 
         SettingsGroup {
             id: group
-        }
-
-        Item {
-            width: parent.width
-            height: 36
-
-            Row {
-                anchors.right: parent.right
-                spacing: 8
-
-                FooterButton {
-                    label: "Cancel"
-                    onClicked: HyprConfig.cancel(root.keys)
-                }
-
-                FooterButton {
-                    label: "Save"
-                    primary: true
-                    onClicked: HyprConfig.save(root.keys)
-                }
-            }
         }
     }
 }

@@ -1,7 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
-import Quickshell.Widgets
 import qs.services.theme
 import qs.configuration.Settings
 import qs.configuration.Hypr
@@ -45,6 +44,7 @@ Scope {
                 id: generalPage
                 GeneralPage {}
             }
+
             Component {
                 id: hyprPage
                 HyprPage {}
@@ -71,10 +71,8 @@ Scope {
                         id: header
                         z: 10
                         anchors.left: main.left
+                        anchors.rightMargin: 12
                         anchors.right: main.right
-                        anchors.top: main.top
-                        anchors.leftMargin: 16
-                        anchors.rightMargin: 16
 
                         onDismissed: main.forceActiveFocus()
                         onPicked: (key, page) => {
@@ -83,7 +81,7 @@ Scope {
                         }
                     }
 
-                    ClippingRectangle {
+                    Loader {
                         id: stage
 
                         property bool ready: false
@@ -94,8 +92,17 @@ Scope {
                         anchors.bottom: main.bottom
                         anchors.rightMargin: 12
                         anchors.bottomMargin: 12
-                        radius: 28
-                        color: Theme.surfaceContainer
+                        visible: stage.ready
+                        active: stage.width > 0 && stage.height > 0
+                        sourceComponent: {
+                            switch (SettingsConfig.page) {
+                            case "general":
+                                return generalPage;
+                            case "hyprland":
+                                return hyprPage;
+                            }
+                            return widgetsPage;
+                        }
 
                         Component.onCompleted: settle.restart()
                         onWidthChanged: if (!stage.ready)
@@ -108,21 +115,17 @@ Scope {
                             interval: 80
                             onTriggered: stage.ready = true
                         }
-
-                        Loader {
-                            anchors.fill: parent
-                            visible: stage.ready
-                            active: stage.width > 0 && stage.height > 0
-                            sourceComponent: {
-                                switch (SettingsConfig.page) {
-                                case "general":
-                                    return generalPage;
-                                case "hyprland":
-                                    return hyprPage;
-                                }
-                                return widgetsPage;
-                            }
-                        }
+                    }
+                    Rectangle {
+                        anchors.left: stage.left
+                        anchors.right: stage.right
+                        anchors.top: stage.top
+                        anchors.bottom: stage.bottom
+                        color: "transparent"
+                        border.width: 1.6
+                        radius: 10
+                        border.color: Theme.outlineVariant
+                        visible: stage.ready
                     }
 
                     MouseArea {
