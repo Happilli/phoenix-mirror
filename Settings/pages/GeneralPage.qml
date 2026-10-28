@@ -199,37 +199,87 @@ SettingsPage {
                             }
                         }
                     }
-
-                    MaterialIconButton {
-                        type: MaterialIconButton.Tonal
-                        sizeStyle: MaterialIconButton.Small
-                        widthStyle: MaterialIconButton.Wide
+                    MaterialSplitButton {
+                        id: folderSplit
+                        anchors.verticalCenter: parent.verticalCenter
+                        type: MaterialSplitButton.Tonal
+                        sizeStyle: MaterialSplitButton.Small
+                        label: "Browse"
                         iconText: "\uf07c"
                         color: Theme.surfaceContainerHighest
-                        iconColor: Theme.onSurfaceVariantColor
+                        contentColor: Theme.onSurfaceVariantColor
+
                         onClicked: folderDialog.open()
-                    }
-
-                    MaterialIconButton {
-                        type: MaterialIconButton.Tonal
-                        sizeStyle: MaterialIconButton.Small
-                        widthStyle: MaterialIconButton.Wide
-                        iconText: "\uf03e"
-                        color: Theme.surfaceContainerHighest
-                        iconColor: Theme.onSurfaceVariantColor
-                        onClicked: fileDialog.open()
-                    }
-
-                    MaterialIconButton {
-                        type: MaterialIconButton.Tonal
-                        sizeStyle: MaterialIconButton.Small
-                        widthStyle: MaterialIconButton.Wide
-                        iconText: "\uf2ea"
-                        color: Theme.surfaceContainerHighest
-                        iconColor: Theme.error
-                        onClicked: WallpaperConfig.resetFolder()
+                        onMenuClicked: {
+                            if (!menuOpen) {
+                                folderMenu.close();
+                                return;
+                            }
+                            const p = folderSplit.mapToItem(dropdown, folderSplit.width - folderMenu.width, folderSplit.height + 6);
+                            folderMenu.popup(p.x, p.y);
+                        }
                     }
                 }
+            }
+        }
+        Item {
+            id: dropdown
+            parent: page
+            x: 0
+            y: 0
+            z: 100
+            width: page.width
+            height: page.height
+
+            MouseArea {
+                anchors.fill: parent
+                enabled: folderMenu.open
+                onPressed: folderMenu.close()
+            }
+
+            MaterialMenu {
+                id: folderMenu
+                color: Theme.surfaceContainerHigh
+                textColor: Theme.onSurfaceVariantColor
+                dangerColor: Theme.error
+                separatorColor: Qt.alpha(Theme.primary, 0.15)
+                borderWidth: 1
+                borderColor: Qt.alpha(Theme.primary, 0.15)
+
+                model: [
+                    {
+                        action: "folder",
+                        label: "Choose folder",
+                        icon: "\uf07c"
+                    },
+                    {
+                        action: "picture",
+                        label: "Choose picture",
+                        icon: "\uf03e"
+                    },
+                    "-",
+                    {
+                        action: "reset",
+                        label: "Reset to default",
+                        icon: "\uf2ea",
+                        danger: true
+                    }
+                ]
+
+                onTriggered: (index, item) => {
+                    switch (item.action) {
+                    case "folder":
+                        folderDialog.open();
+                        break;
+                    case "picture":
+                        fileDialog.open();
+                        break;
+                    case "reset":
+                        WallpaperConfig.resetFolder();
+                        break;
+                    }
+                }
+                onClosed: folderSplit.menuOpen = false
             }
         }
     }

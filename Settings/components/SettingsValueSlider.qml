@@ -15,7 +15,8 @@ Item {
     property string suffix: ""
 
     readonly property bool pressed: slider.pressed
-    readonly property real avail: parent?.limit ?? 352
+    readonly property var host: parent
+    readonly property real avail: host?.limit ?? 352
     readonly property real labelWidth: 44
     readonly property real labelGap: 10
 
@@ -34,7 +35,7 @@ Item {
         handleGap: 3
         innerRadius: 2
         showStops: false
-        showValueIndicator: true 
+        showValueIndicator: true
         indicatorColor: Theme.primary
         indicatorTextColor: Theme.onPrimaryColor
         trackColor: Theme.surfaceContainerHighest

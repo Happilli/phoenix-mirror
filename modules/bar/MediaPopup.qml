@@ -11,7 +11,7 @@ Item {
     required property bool active
 
     readonly property int disc: 160
-    readonly property int artSize: 130
+    readonly property int artSize: 145
     readonly property int rowGap: 18
     readonly property int minContent: 340
     readonly property int maxText: 300
