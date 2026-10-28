@@ -132,7 +132,7 @@ Singleton {
 
     FileView {
         id: file
-        path: PathService.home + "/.config/hypr/ergonDumbah"
+        path: PathService.home + "/.config/hypr/ergon.dumbAssBitch"
         blockLoading: true
         atomicWrites: true
         onLoaded: {

@@ -77,41 +77,68 @@ SettingsPage {
                     onPicked: index => Theme.setMode(index === 0 ? "dark" : "light")
                 }
             }
-
             SettingsGroup.Entry {
                 key: "wall.scheme"
                 title: "Color scheme"
                 description: "How colors are generated from the wallpaper"
-
-                Grid {
-                    id: schemeGrid
+                Column {
+                    id: schemeCol
 
                     readonly property real avail: parent?.limit ?? 360
-                    readonly property int cols: avail >= 520 ? 4 : 2
-                    readonly property real cell: Math.floor((avail - columnSpacing * (cols - 1)) / cols)
+                    readonly property int perRow: avail >= 380 ? 4 : 2
+                    readonly property int rows: Math.ceil(page.schemeLabels.length / perRow)
+                    readonly property real gap: 2
+                    readonly property real minPad: 8
+                    readonly property int labelWeight: 400
 
-                    columns: cols
-                    columnSpacing: 8
-                    rowSpacing: 0
+                    FontMetrics {
+                        id: fm
+                        font.pixelSize: 14
+                        font.weight: schemeCol.labelWeight
+                    }
 
+                    function textWidth(s) {
+                        return fm.advanceWidth(s);
+                    }
+
+                    function rowText(r) {
+                        const labels = page.schemeLabels.slice(r * perRow, r * perRow + perRow);
+                        let t = 0;
+                        for (const l of labels)
+                            t += textWidth(l);
+                        return t;
+                    }
+
+                    readonly property real target: {
+                        let w = 0;
+                        for (let r = 0; r < rows; ++r) {
+                            const n = Math.min(perRow, page.schemeLabels.length - r * perRow);
+                            w = Math.max(w, rowText(r) + n * 2 * minPad + gap * (n - 1));
+                        }
+                        return w;
+                    }
+
+                    spacing: 6
                     Repeater {
-                        model: page.schemeLabels
+                        model: schemeCol.rows
 
-                        SettingsRadio {
-                            id: schemeOption
-                            required property string modelData
+                        SettingsButtonGroup {
+                            id: grp
                             required property int index
 
-                            group: "scheme"
-                            width: schemeGrid.cell
-                            text: modelData
-                            checked: page.schemeIndex === index
-                            onToggled: Theme.setScheme(Theme.schemes[schemeOption.index])
+                            readonly property int start: index * schemeCol.perRow
+                            readonly property var rowLabels: page.schemeLabels.slice(start, start + schemeCol.perRow)
+                            readonly property int n: rowLabels.length
+
+                            labels: rowLabels
+                            fontWeight: schemeCol.labelWeight
+                            currentIndex: page.schemeIndex - start
+                            horizontalPadding: Math.max(schemeCol.minPad, (schemeCol.target - schemeCol.rowText(index) - schemeCol.gap * (n - 1)) / (2 * n))
+                            onPicked: i => Theme.setScheme(Theme.schemes[grp.start + i])
                         }
                     }
                 }
             }
-
             SettingsGroup.Entry {
                 key: "wall.folder"
                 title: "Folder"

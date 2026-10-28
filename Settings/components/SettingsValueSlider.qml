@@ -34,7 +34,9 @@ Item {
         handleGap: 3
         innerRadius: 2
         showStops: false
-        showValueIndicator: false
+        showValueIndicator: true 
+        indicatorColor: Theme.primary
+        indicatorTextColor: Theme.onPrimaryColor
         trackColor: Theme.surfaceContainerHighest
         color: Theme.primary
         handleColor: Theme.primary
