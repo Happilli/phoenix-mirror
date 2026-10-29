@@ -315,16 +315,43 @@ Item {
         }
         cuts.sort((a, b) => a.l - b.l);
 
-        let p = floating ? `M ${pt(0, H - r)} L ${pt(0, r)} Q ${pt(0, 0)} ${pt(r, 0)}` : `M ${pt(0, H)} L ${pt(0, 0)} Q ${pt(0, R)} ${pt(R, R)}`;
-        for (const c of cuts) {
-            const f = T + c.d;
-            const rt = Math.min(notchRadius, c.d / 2);
-            const rb = Math.min(notchRadiusBottom, (c.r - c.l) / 2, Math.max(0, c.d - rt));
-            p += ` L ${pt(c.l - rt, T)} Q ${pt(c.l, T)} ${pt(c.l, T + rt)}`;
-            p += ` L ${pt(c.l, f - rb)} Q ${pt(c.l, f)} ${pt(c.l + rb, f)}`;
-            p += ` L ${pt(c.r - rb, f)} Q ${pt(c.r, f)} ${pt(c.r, f - rb)}`;
-            p += ` L ${pt(c.r, T + rt)} Q ${pt(c.r, T)} ${pt(c.r + rt, T)}`;
+        const merged = !floating && R > 0 && cuts.length > 0 && cuts[0].l < R;
+
+        let p;
+        if (floating) {
+            p = `M ${pt(0, H - r)} L ${pt(0, r)} Q ${pt(0, 0)} ${pt(r, 0)}`;
+        } else if (merged) {
+            p = `M ${pt(0, H)} L ${pt(0, 0)}`;
+        } else {
+            p = `M ${pt(0, H)} L ${pt(0, 0)} Q ${pt(0, R)} ${pt(R, R)}`;
         }
+
+        for (let i = 0; i < cuts.length; i++) {
+            const c = cuts[i];
+            const f = T + c.d;
+
+            if (merged && i === 0) {
+                const xs = Math.max(0, c.l);
+                const t = Math.sqrt(xs / R);
+                const ys = R * (2 * t - t * t);
+                const rb = Math.min(notchRadiusBottom, (c.r - xs) / 2, Math.max(0, f - ys));
+                p += ` Q ${pt(0, t * R)} ${pt(xs, ys)}`;
+                p += ` L ${pt(xs, f - rb)} Q ${pt(xs, f)} ${pt(xs + rb, f)}`;
+            } else {
+                let rt = Math.min(notchRadius, c.d / 2);
+                if (!floating && i === 0)
+                    rt = Math.min(rt, Math.max(0, c.l - R)); // fillet never starts inside the corner
+                const rb = Math.min(notchRadiusBottom, (c.r - c.l) / 2, Math.max(0, c.d - rt));
+                p += ` L ${pt(c.l - rt, T)} Q ${pt(c.l, T)} ${pt(c.l, T + rt)}`;
+                p += ` L ${pt(c.l, f - rb)} Q ${pt(c.l, f)} ${pt(c.l + rb, f)}`;
+            }
+
+            const rt2 = Math.min(notchRadius, c.d / 2);
+            const rb2 = Math.min(notchRadiusBottom, (c.r - c.l) / 2, Math.max(0, c.d - rt2));
+            p += ` L ${pt(c.r - rb2, f)} Q ${pt(c.r, f)} ${pt(c.r, f - rb2)}`;
+            p += ` L ${pt(c.r, T + rt2)} Q ${pt(c.r, T)} ${pt(c.r + rt2, T)}`;
+        }
+
         if (floating) {
             p += ` L ${pt(W - r, 0)} Q ${pt(W, 0)} ${pt(W, r)} L ${pt(W, H - r)} Q ${pt(W, H)} ${pt(W - r, H)} L ${pt(r, H)} Q ${pt(0, H)} ${pt(0, H - r)} Z`;
         } else {
@@ -332,7 +359,6 @@ Item {
         }
         return p;
     }
-
     readonly property string outlinePath: outline()
 
     onHoveredItemChanged: {
