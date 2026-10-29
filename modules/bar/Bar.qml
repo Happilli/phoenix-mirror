@@ -33,6 +33,9 @@ Item {
     readonly property real edgePad: floating ? Math.max(itemGap + notchPadding, radius * 0.5) : itemGap + notchPadding
     readonly property real batteryPad: floating ? edgePad : radius + notchPadding + notchRadius - 10
 
+    readonly property real closedGap: 4
+    readonly property real leftTrim: Math.max(0, batteryPad - closedGap)
+
     readonly property real cc: floating ? thickness / 2 : (lowFlat ? thickness / 2 + radius / 2 : thickness / 2 - radius / 2)
     readonly property real attach: floating ? (lowFlat ? 0 : thickness) : (lowFlat ? radius : thickness - radius)
 
@@ -70,6 +73,8 @@ Item {
             return datetime;
         if (openedApp.hoveredCell)
             return appSlot;
+        if (sessionButton.hovered || sessionSlot.hovered)
+            return sessionButton;
         if (nightMode.hovered)
             return nightMode;
         if (startMenu.hovered)
@@ -93,11 +98,11 @@ Item {
         if (!notchOpen)
             return -1;
         if (target === startMenu)
-            return 0;
-        if (target === nightMode)
             return 1;
-        if (target === mediaButton)
+        if (target === nightMode)
             return 2;
+        if (target === mediaButton)
+            return 3;
         return -1;
     }
 
@@ -159,7 +164,7 @@ Item {
         }
     }
 
-    property real startOffset: groupShift(0)
+    property real startOffset: groupShift(1)
     Behavior on startOffset {
         NumberAnimation {
             duration: 180
@@ -167,7 +172,7 @@ Item {
         }
     }
 
-    property real nightOffset: groupShift(1)
+    property real nightOffset: groupShift(2)
     Behavior on nightOffset {
         NumberAnimation {
             duration: 180
@@ -175,7 +180,7 @@ Item {
         }
     }
 
-    property real mediaOffset: groupShift(2)
+    property real mediaOffset: groupShift(3)
     Behavior on mediaOffset {
         NumberAnimation {
             duration: 180
@@ -183,7 +188,17 @@ Item {
         }
     }
 
-    readonly property real mWorkspace: edgePad
+    property real leftShift: (notchOpen && target === sessionButton) ? 0 : leftTrim
+    Behavior on leftShift {
+        NumberAnimation {
+            duration: 180
+            easing.type: Easing.OutCubic
+        }
+    }
+
+    readonly property real mSessionClosed: batteryPad - leftTrim
+    readonly property real mSessionSlot: batteryPad - leftShift
+    readonly property real mWorkspace: mSessionSlot + lenOf(sessionButton) + itemGap
     readonly property real mStartSlot: mWorkspace + lenOf(workspace) + itemGap
     readonly property real mNightSlot: mStartSlot + lenOf(startMenu) + tightGap
     readonly property real mMediaSlot: mNightSlot + lenOf(nightMode) + tightGap
@@ -210,6 +225,8 @@ Item {
             return mDateSlot - itemGap - lenOf(controls) - itemGap - lenOf(dailyWar);
         if (target === powerProfile)
             return mDateSlot - itemGap - lenOf(controls) - itemGap - lenOf(dailyWar) - tightGap - lenOf(powerProfile) - slideShift;
+        if (target === sessionButton)
+            return mSessionSlot;
         if (target === startMenu)
             return mStartSlot;
         if (target === nightMode)
@@ -371,6 +388,19 @@ Item {
     }
 
     Item {
+        id: sessionSlot
+        width: root.horizontal ? root.lenOf(sessionButton) + root.leftTrim : 40
+        height: root.horizontal ? 40 : root.lenOf(sessionButton) + root.leftTrim
+        x: root.px(root.mSessionClosed, sessionSlot)
+        y: root.py(root.mSessionClosed, sessionSlot)
+
+        readonly property bool hovered: sessionHover.hovered
+
+        HoverHandler {
+            id: sessionHover
+        }
+    }
+    Item {
         id: startSlot
         width: 40
         height: 40
@@ -410,6 +440,13 @@ Item {
         }
     }
 
+    SessionButton {
+        id: sessionButton
+        vertical: !root.horizontal
+        open: root.notchOpen && root.target === sessionButton
+        x: root.px(root.mSessionSlot, sessionButton)
+        y: root.py(root.mSessionSlot, sessionButton)
+    }
     Workspace {
         id: workspace
         screen: root.screen
