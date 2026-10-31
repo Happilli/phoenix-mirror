@@ -7,8 +7,6 @@ import Quickshell.Io
 Singleton {
     id: root
 
-    readonly property var sensorNames: ["coretemp", "k10temp", "zenpower", "cpu_thermal"]
-
     property int clients: 0
     readonly property bool running: clients > 0
 
@@ -18,7 +16,6 @@ Singleton {
     property real temp: 0
     property real diskUsed: 0
     property real diskTotal: 0
-    property string tempPath: ""
 
     readonly property real ram: ramTotal > 0 ? ramUsed / ramTotal : 0
     readonly property real disk: diskTotal > 0 ? diskUsed / diskTotal : 0
@@ -68,21 +65,6 @@ Singleton {
         prevIdle = 0;
     }
 
-    Instantiator {
-        model: 16
-
-        delegate: FileView {
-            required property int index
-
-            path: "/sys/class/hwmon/hwmon" + index + "/name"
-            blockLoading: true
-            onLoaded: {
-                if (root.tempPath === "" && root.sensorNames.includes(text().trim()))
-                    root.tempPath = "/sys/class/hwmon/hwmon" + index + "/temp1_input";
-            }
-        }
-    }
-
     FileView {
         id: cpuFile
         path: "/proc/stat"
@@ -97,7 +79,8 @@ Singleton {
 
     FileView {
         id: tempFile
-        path: root.tempPath
+        path: "/sys/class/hwmon/hwmon5/temp1_input"
+        printErrors: false
         onLoaded: root.temp = Number(text()) / 1000
     }
 
