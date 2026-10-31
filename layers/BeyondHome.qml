@@ -6,9 +6,11 @@ import qs.components.screenshot
 import qs.components.notifications
 import qs.components.clipboard
 import qs.components.polkit
+import qs.components.stats
 import qs.configuration.Screenshot
 import qs.configuration.Clipboard
 import qs.services.polkit
+import qs.services.theme
 
 Variants {
     model: Quickshell.screens
@@ -20,9 +22,11 @@ Variants {
         readonly property bool selecting: ScreenshotConfig.selecting && ScreenshotConfig.selectScreen === modelData.name
         readonly property bool clipOpen: ClipboardConfig.open && ClipboardConfig.screenName === modelData.name
         readonly property bool polkitOpen: PolkitService.shown && ScreenshotConfig.focusedName() === modelData.name
+        readonly property bool statsHover: statsTriggerHover.hovered || statsHoverHandler.hovered
         property bool clipShown: false
         property bool clipGrab: false
         property bool polkitGrab: false
+        property bool statsOpen: false
 
         onClipOpenChanged: {
             if (clipOpen) {
@@ -46,6 +50,15 @@ Variants {
             }
         }
 
+        onStatsHoverChanged: {
+            if (statsHover) {
+                statsClose.stop();
+                statsOpen = true;
+            } else {
+                statsClose.restart();
+            }
+        }
+
         Timer {
             id: grabTimer
             interval: 200
@@ -56,6 +69,12 @@ Variants {
             id: polkitTimer
             interval: 200
             onTriggered: screenScope.polkitGrab = false
+        }
+
+        Timer {
+            id: statsClose
+            interval: 300
+            onTriggered: screenScope.statsOpen = false
         }
 
         WlrLayershell {
@@ -79,6 +98,14 @@ Variants {
 
                 Region {
                     item: polkitLoader.item as Item
+                }
+
+                Region {
+                    item: statsTrigger
+                }
+
+                Region {
+                    item: popout
                 }
             }
 
@@ -117,6 +144,53 @@ Variants {
                 anchors.centerIn: parent
                 active: screenScope.polkitOpen
                 sourceComponent: PolkitCard {}
+            }
+
+            Item {
+                id: statsTrigger
+                anchors.top: parent.top
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: 400
+                height: 3
+
+                HoverHandler {
+                    id: statsTriggerHover
+                }
+            }
+
+            PopOut {
+                id: popout
+                anchors.top: parent.top
+                anchors.horizontalCenter: parent.horizontalCenter
+                height: screenScope.statsOpen ? 210 : 0.1
+                colour: Theme.background
+                width: 650
+                radius: 10
+                visible: height > 0.5
+
+                Behavior on height {
+                    SpringAnimation {
+                        spring: 2.5
+                        damping: 0.2
+                        epsilon: 0.05
+                    }
+                }
+
+                HoverHandler {
+                    id: statsHoverHandler
+                }
+
+                Loader {
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    width: parent.width - popout.radius * 4
+                    active: screenScope.statsOpen || popout.height > 1
+
+                    sourceComponent: StatsPanel {
+                        reveal: Math.max(0, Math.min(1, (popout.height - 70) / 130))
+                    }
+                }
             }
 
             ScreenshotPopup {
