@@ -14,7 +14,7 @@ SettingsPage {
 
     readonly property var schemeLabels: Theme.schemes.map(s => s.replace("scheme-", "").replace(/-/g, " "))
     readonly property int schemeIndex: Theme.schemes.indexOf(Theme.scheme)
-
+    readonly property real edgeGap: 8
     readonly property real contentWidth: width - margin * 2
     readonly property bool wide: contentWidth >= 820
     readonly property real gutter: 14
@@ -50,20 +50,19 @@ SettingsPage {
         id: hdr
 
         width: parent.width
-        height: page.wide ? quick.height : carousel.height + page.gutter + quick.height
+        height: page.wide ? quick.height : page.edgeGap + carousel.height + page.gutter + quick.height
 
         WallpaperCarousel {
             id: carousel
-            x: page.wide ? hdr.width - width : 0
-            y: 0
-            width: page.carouselWidth
-            height: page.wide ? quick.height : page.stackedCarouselHeight
+            x: page.wide ? page.quickWidth - 18 + page.edgeGap : page.edgeGap
+            y: page.edgeGap
+            width: page.wide ? hdr.width - page.edgeGap - x : page.carouselWidth - page.edgeGap * 2
+            height: page.wide ? quick.height - page.edgeGap * 2 : page.stackedCarouselHeight
         }
-
         SettingsGroup {
             id: quick
             x: 0
-            y: page.wide ? 0 : carousel.height + page.gutter
+            y: page.wide ? 0 : page.edgeGap + carousel.height + page.gutter
             width: page.quickWidth
 
             SettingsGroup.Entry {
@@ -306,6 +305,16 @@ SettingsPage {
                         onToggled: BarConfig.setStyle(BarConfig.styles[styleOption.index])
                     }
                 }
+            }
+        }
+        SettingsGroup.Entry {
+            key: "bar.metallic"
+            title: "Metallic bar"
+            description: "Light-catching metal finish instead of a flat color"
+
+            SettingsSwitch {
+                checked: BarConfig.metallic
+                onToggled: BarConfig.setMetallic(checked)
             }
         }
 

@@ -196,6 +196,14 @@ QtObject {
             page: "general"
         },
         {
+            key: "bar.metallic",
+            headline: "Metallic bar",
+            supporting: "Light-catching metal finish instead of a flat color",
+            trailingText: "General",
+            leadingIcon: "\uf2d0",
+            page: "general"
+        },
+        {
             key: "bar.style",
             headline: "Bar style",
             supporting: "Horizon melts into the screen edge, Floating hovers free of it",

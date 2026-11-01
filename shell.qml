@@ -2,6 +2,7 @@
 import Quickshell
 import qs.layers
 import qs.ipc
+import qs.Picker
 import qs.Settings
 
 ShellRoot {
@@ -9,6 +10,7 @@ ShellRoot {
         IpcRegistry {}
         Home {}
         AboveHome {}
+        PickerWindow {}
         BeyondHome {}
         Lock {}
         SettingsWindow {}

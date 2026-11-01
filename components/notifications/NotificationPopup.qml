@@ -6,6 +6,8 @@ import Ryu.Extraa
 import qs.services.theme
 import qs.services.notifications
 import qs.configuration.Notification
+import qs.configuration.Bar
+import qs.components.metal
 
 Item {
     id: root
@@ -194,7 +196,19 @@ Item {
                 radius: 18
                 color: Theme.background
                 border.width: 1
-                border.color: Qt.alpha(Theme.primary, 0.15)
+                border.color: Qt.alpha(Theme.primary, BarConfig.metallic ? 0.3 : 0.15)
+
+                Metal {
+                    anchors.fill: parent
+                    kind: "backdrop"
+                    radius: card.radius
+                }
+
+                Metal {
+                    anchors.fill: parent
+                    kind: "innerRim"
+                    radius: card.radius
+                }
 
                 Column {
                     id: content
@@ -239,6 +253,7 @@ Item {
                         visible: tile.displayApp !== ""
 
                         Rectangle {
+                            id: letterTile
                             Layout.preferredWidth: 36
                             Layout.preferredHeight: 36
                             Layout.alignment: Qt.AlignVCenter
@@ -246,6 +261,12 @@ Item {
                             color: Theme.surfaceContainerHighest
                             visible: tile.iconSource === ""
                             scale: 0.7 + 0.3 * tile.pop
+
+                            Metal {
+                                anchors.fill: parent
+                                kind: "soft"
+                                radius: letterTile.radius
+                            }
 
                             Text {
                                 anchors.centerIn: parent

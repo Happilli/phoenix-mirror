@@ -4,8 +4,10 @@ import QtQuick.Effects
 import QtQuick.Shapes
 import qs.services.theme
 import qs.configuration.Lock
+import qs.components.metal
+import qs.configuration.Bar
 
-Rectangle {
+Item {
     id: root
 
     required property var context
@@ -14,39 +16,43 @@ Rectangle {
     property bool exiting: false
     property real enter: 0
     property real leave: 0
-    property real energy: 0
-    property real phase: 0
-    property var bands: new Array(24).fill(0)
+    property real warp: 0
 
     readonly property int length: context.currentText.length
     readonly property bool failed: context.showFailure
-    readonly property color accent: failed ? Theme.error : Theme.primary
-    readonly property real presence: Math.max(0, Math.min(1, enter)) * (1 - leave)
-    readonly property string stringPath: {
-        const n = bands.length, w = 380, h = 90, pts = [];
-        for (let i = 0; i < n * 2; ++i) {
-            const t = i / (n * 2 - 1);
-            const lvl = Math.min(1, bands[i < n ? n - 1 - i : i - n]);
-            pts.push([12 + t * (w - 24), h / 2 + (i % 2 ? -1 : 1) * lvl * h * 0.42 * Math.sin(t * Math.PI)]);
-        }
-        let d = "M" + pts[0];
-        for (let i = 1; i < pts.length - 1; ++i) {
-            d += " Q" + pts[i] + " " + (pts[i][0] + pts[i + 1][0]) / 2 + "," + (pts[i][1] + pts[i + 1][1]) / 2;
-        }
-        return d + " L" + pts[pts.length - 1];
-    }
+    readonly property real presence: enter * (1 - leave)
 
-    function hit(amount) {
-        energy = Math.min(1, energy + amount * 0.6);
-        bands = bands.map(v => Math.max(v, amount * (0.35 + 0.65 * Math.random())));
-    }
+    property color accent: failed ? Theme.error : Theme.primary
+    property color iconColor: failed ? Theme.onErrorColor : Theme.onPrimaryColor
+    property real dialAngle: exiting ? 720 : length * 21.6
 
-    color: Theme.background
+    readonly property real maxAngle: -6
+    readonly property real zoom: 0.5
+    readonly property real dim: 0.5
+    readonly property real tilt: warp * maxAngle
+    readonly property real aspect: Math.max(width, height) / Math.max(1, Math.min(width, height))
+    readonly property real angleRad: Math.abs(tilt) * Math.PI / 180
+    readonly property real coverScale: Math.cos(angleRad) + aspect * Math.sin(angleRad)
+    readonly property real stageScale: Math.max(1 + zoom * warp, coverScale)
+
     focus: true
+    clip: true
+
+    Behavior on accent {
+        ColorAnimation {
+            duration: 150
+        }
+    }
+
+    Behavior on iconColor {
+        ColorAnimation {
+            duration: 150
+        }
+    }
 
     Behavior on enter {
         NumberAnimation {
-            duration: 700
+            duration: 900
             easing.type: Easing.OutCubic
         }
     }
@@ -58,37 +64,29 @@ Rectangle {
         }
     }
 
+    Behavior on warp {
+        NumberAnimation {
+            duration: root.exiting ? 650 : 1100
+            easing.type: root.exiting ? Easing.InOutCubic : Easing.OutBack
+            easing.overshoot: 1.1
+        }
+    }
+
+    Behavior on dialAngle {
+        NumberAnimation {
+            duration: 450
+            easing.type: Easing.OutCubic
+        }
+    }
+
     Component.onCompleted: {
         forceActiveFocus();
         enter = 1;
-    }
-
-    onLengthChanged: {
-        hit(0.9);
-        ring.t = 0;
-        ringAnim.restart();
-    }
-
-    onFailedChanged: {
-        if (failed) {
-            hit(2);
-            shake.x = 18;
-            shakeSpring.restart();
-        }
-    }
-
-    Timer {
-        interval: 16
-        repeat: true
-        running: root.energy > 0.002
-        onTriggered: {
-            root.phase += 0.03 + root.energy * 0.3;
-            root.energy *= 0.94;
-            root.bands = root.bands.map(v => v * 0.93);
-        }
+        warp = 1;
     }
 
     Keys.onPressed: e => {
+        e.accepted = true;
         if (exiting || context.unlockInProgress) {
             return;
         }
@@ -102,25 +100,39 @@ Rectangle {
         } else if (!ctrl && e.text >= " " && e.text !== "\x7f") {
             context.currentText += e.text;
         }
-        e.accepted = true;
     }
 
-    Image {
-        id: bg
+    Item {
+        id: stage
         anchors.fill: parent
-        source: root.screenName !== "" ? "file://" + LockConfig.backgroundFor(root.screenName) : ""
-        fillMode: Image.PreserveAspectCrop
-        cache: false
-        layer.enabled: true
+        rotation: root.tilt
+        scale: root.stageScale
+        transformOrigin: Item.Center
+
+        Image {
+            id: bg
+            anchors.fill: parent
+            source: root.screenName !== "" ? "file://" + LockConfig.backgroundFor(root.screenName) : ""
+            fillMode: Image.PreserveAspectCrop
+            cache: false
+            smooth: true
+            layer.enabled: true
+        }
+
+        MultiEffect {
+            anchors.fill: bg
+            source: bg
+            blurEnabled: true
+            blurMax: 32
+            blur: root.presence * 0.6
+            autoPaddingEnabled: false
+        }
     }
 
-    MultiEffect {
-        anchors.fill: bg
-        source: bg
-        blurEnabled: true
-        blurMax: 32
-        blur: root.presence * 0.6
-        autoPaddingEnabled: false
+    Rectangle {
+        anchors.fill: parent
+        color: Theme.surfaceContainerLow
+        opacity: root.dim * root.presence
     }
 
     MouseArea {
@@ -129,122 +141,110 @@ Rectangle {
     }
 
     Item {
-        id: content
+        id: vault
         anchors.centerIn: parent
-        width: 260
-        height: 260
-        opacity: root.presence
-        scale: 0.96 + 0.04 * root.enter + 0.06 * root.leave
-        transform: Translate {
-            id: shake
+
+        readonly property real size: Math.min(root.width, root.height) * 0.38
+        readonly property real hub: size * 0.34
+        readonly property real rim: size * 0.045
+        readonly property real spokeWidth: size * 0.02
+        readonly property real knob: size * 0.15
+        readonly property real reach: size / 2 + knob / 2 + size * 0.015
+        readonly property real pad: size * 0.07
+        readonly property real extent: (reach + knob / 2 + pad) * 2 + 4
+        readonly property real angle: root.dialAngle - 180 * (1 - root.enter)
+        readonly property string path: wheelPath(angle)
+        readonly property string hubPath: circle(hub / 2, hub / 2, hub / 2, true)
+
+        function circle(cx, cy, r, clockwise) {
+            const s = clockwise ? 1 : 0;
+            return `M ${cx + r} ${cy} A ${r} ${r} 0 1 ${s} ${cx - r} ${cy} A ${r} ${r} 0 1 ${s} ${cx + r} ${cy} Z `;
         }
 
-        SpringAnimation {
-            id: shakeSpring
-            target: shake
-            property: "x"
-            to: 0
-            spring: 6
-            damping: 0.2
-            epsilon: 0.5
-        }
-
-        Rectangle {
-            id: ring
-            property real t: 1
-            anchors.centerIn: parent
-            width: 88
-            height: width
-            radius: width / 2
-            color: "transparent"
-            border.width: 1.5
-            border.color: root.accent
-            scale: 1 + t * 1.2
-            opacity: (1 - t) * 0.55
-
-            NumberAnimation {
-                id: ringAnim
-                target: ring
-                property: "t"
-                to: 1
-                duration: 850
-                easing.type: Easing.OutCubic
+        function wheelPath(deg) {
+            const c = extent / 2;
+            const half = spokeWidth / 2;
+            const r0 = hub / 2 - 1;
+            const off = deg * Math.PI / 180;
+            let p = circle(c, c, size / 2, true) + circle(c, c, size / 2 - rim, false) + circle(c, c, hub / 2, true);
+            for (let i = 0; i < 8; i++) {
+                const a = i * Math.PI / 4 + off;
+                const dx = Math.sin(a);
+                const dy = -Math.cos(a);
+                const nx = Math.cos(a) * half;
+                const ny = Math.sin(a) * half;
+                const x0 = c + dx * r0;
+                const y0 = c + dy * r0;
+                const x1 = c + dx * reach;
+                const y1 = c + dy * reach;
+                p += `M ${x0 - nx} ${y0 - ny} L ${x1 - nx} ${y1 - ny} L ${x1 + nx} ${y1 + ny} L ${x0 + nx} ${y0 + ny} Z `;
+                p += circle(x1, y1, knob / 2, true);
             }
+            return p;
         }
 
-        Repeater {
-            model: 60
+        width: size
+        height: size
+        scale: 0.9 + 0.1 * root.enter + 0.06 * root.leave
 
-            Item {
-                id: tick
-                required property int index
-                readonly property real wave: 0.5 + 0.5 * Math.cos(index * Math.PI / 5 - root.phase)
-                readonly property real wave2: 0.5 + 0.5 * Math.cos(index * Math.PI / 10 + root.phase * 0.6)
+        Item {
+            anchors.centerIn: parent
+            width: vault.extent
+            height: vault.extent
+            opacity: root.presence
 
+            Shape {
+                anchors.fill: parent
+                preferredRendererType: Shape.CurveRenderer
+                opacity: 0.5
+                transform: Translate {
+                    x: vault.size * 0.012
+                    y: vault.size * 0.024
+                }
+
+                layer.enabled: true
+                layer.smooth: true
+                layer.effect: MultiEffect {
+                    autoPaddingEnabled: false
+                    blurEnabled: true
+                    blurMax: 32
+                    blur: 0.4
+                }
+
+                ShapePath {
+                    fillRule: ShapePath.WindingFill
+                    fillColor: "black"
+                    strokeWidth: -1
+                    strokeColor: "transparent"
+
+                    PathSvg {
+                        path: vault.path
+                    }
+                }
+            }
+            Metal {
+                anchors.fill: parent
+                kind: "wheel"
+                base: root.accent
+                path: vault.path
+                extent: vault.extent
+            }
+
+            Metal {
                 anchors.centerIn: parent
-                rotation: index * 6
-
-                Rectangle {
-                    width: 2
-                    height: 3 + 20 * root.energy * (0.65 * tick.wave + 0.35 * tick.wave2)
-                    radius: 1
-                    x: -1
-                    y: -58 - height
-                    color: root.accent
-                    opacity: 0.18 + 0.72 * root.energy * (0.4 + 0.6 * tick.wave)
-                }
-            }
-        }
-
-        Rectangle {
-            anchors.centerIn: parent
-            width: 88
-            height: width
-            radius: width / 2
-            color: Qt.alpha(Theme.surfaceContainer, 0.75)
-            border.width: 1
-            border.color: root.failed ? Theme.error : Qt.alpha(Theme.primary, 0.15 + 0.7 * root.energy)
-            scale: (0.8 + 0.2 * root.enter) * (1 + 0.2 * root.energy)
-
-            Behavior on scale {
-                SpringAnimation {
-                    spring: 5
-                    damping: 0.2
-                    epsilon: 0.001
-                }
+                width: vault.hub
+                height: vault.hub
+                kind: "hub"
+                path: vault.hubPath
+                hubSize: vault.hub
             }
 
             Text {
                 anchors.centerIn: parent
                 text: root.failed ? "\uf071" : root.exiting ? "\uf09c" : "\uf023"
-                font.pixelSize: 30
-                color: root.failed ? Theme.error : (root.exiting || root.length > 0) ? Theme.primary : Theme.onSurfaceVariantColor
-
-                Behavior on color {
-                    ColorAnimation {
-                        duration: 150
-                    }
-                }
-            }
-        }
-
-        Shape {
-            anchors.horizontalCenter: parent.horizontalCenter
-            y: parent.height / 2 + 96
-            width: 380
-            height: 90
-            preferredRendererType: Shape.CurveRenderer
-
-            ShapePath {
-                strokeWidth: 2.5
-                strokeColor: root.accent
-                fillColor: "transparent"
-                capStyle: ShapePath.RoundCap
-                joinStyle: ShapePath.RoundJoin
-
-                PathSvg {
-                    path: root.stringPath
-                }
+                font.pixelSize: vault.hub * 0.5
+                scale: 0.8 + 0.2 * root.enter
+                color: root.iconColor
             }
         }
     }
@@ -254,8 +254,8 @@ Rectangle {
 
         function onUnlocked() {
             root.exiting = true;
-            root.hit(2);
             root.leave = 1;
+            root.warp = 0;
         }
     }
 }

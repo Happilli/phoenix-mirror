@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import qs.services.theme
 import qs.configuration.Hypr
+import qs.configuration.Bar
 
 Item {
     id: root
@@ -38,6 +39,38 @@ Item {
                 damping: 0.4
                 epsilon: 0.005
             }
+        }
+
+        Rectangle {
+            anchors.fill: parent
+            radius: parent.radius
+            visible: BarConfig.metallic
+
+            gradient: Gradient {
+                GradientStop {
+                    position: 0.0
+                    color: btn.primary ? Qt.rgba(1, 1, 1, 0.32) : Qt.rgba(1, 1, 1, 0.12)
+                }
+
+                GradientStop {
+                    position: 0.5
+                    color: Qt.rgba(1, 1, 1, 0)
+                }
+
+                GradientStop {
+                    position: 1.0
+                    color: btn.primary ? Qt.rgba(0, 0, 0, 0.32) : Qt.rgba(0, 0, 0, 0.3)
+                }
+            }
+        }
+
+        Rectangle {
+            anchors.fill: parent
+            radius: parent.radius
+            color: "transparent"
+            border.width: 1
+            border.color: Qt.rgba(1, 1, 1, 0.16)
+            visible: BarConfig.metallic
         }
 
         Rectangle {

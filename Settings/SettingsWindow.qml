@@ -4,6 +4,7 @@ import Quickshell
 import qs.services.theme
 import qs.configuration.Settings
 import qs.configuration.Hypr
+import qs.configuration.Bar
 import qs.Settings.pages
 
 Scope {
@@ -48,6 +49,28 @@ Scope {
             Component {
                 id: hyprPage
                 HyprPage {}
+            }
+
+            Rectangle {
+                anchors.fill: parent
+                visible: BarConfig.metallic
+
+                gradient: Gradient {
+                    GradientStop {
+                        position: 0.0
+                        color: Qt.tint(Theme.background, Qt.alpha(Theme.onBackgroundColor, 0.14))
+                    }
+
+                    GradientStop {
+                        position: 0.45
+                        color: Theme.background
+                    }
+
+                    GradientStop {
+                        position: 1.0
+                        color: Qt.darker(Theme.background, 1.5)
+                    }
+                }
             }
 
             Item {
@@ -124,7 +147,7 @@ Scope {
                         color: "transparent"
                         border.width: 1.6
                         radius: 10
-                        border.color: Theme.outlineVariant
+                        border.color: BarConfig.metallic ? Qt.alpha(Theme.onBackgroundColor, 0.16) : Theme.outlineVariant
                         visible: stage.ready
                     }
 

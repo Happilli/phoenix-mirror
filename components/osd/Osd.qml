@@ -1,6 +1,7 @@
 import QtQuick
 import qs.services.theme
 import qs.services.controls
+import qs.configuration.Bar
 
 Rectangle {
     id: root
@@ -48,6 +49,39 @@ Rectangle {
         }
     }
 
+    Rectangle {
+        anchors.fill: parent
+        radius: root.radius
+        visible: BarConfig.metallic
+
+        gradient: Gradient {
+            GradientStop {
+                position: 0.0
+                color: Qt.tint(Theme.background, Qt.alpha(Theme.onBackgroundColor, 0.14))
+            }
+
+            GradientStop {
+                position: 0.45
+                color: Theme.background
+            }
+
+            GradientStop {
+                position: 1.0
+                color: Qt.darker(Theme.background, 1.5)
+            }
+        }
+    }
+
+    Rectangle {
+        anchors.fill: parent
+        anchors.margins: 1
+        radius: root.radius - 1
+        color: "transparent"
+        border.width: 1
+        border.color: Qt.alpha(Theme.onBackgroundColor, 0.12)
+        visible: BarConfig.metallic
+    }
+
     Row {
         anchors.centerIn: parent
         spacing: 14
@@ -70,6 +104,29 @@ Rectangle {
             color: Theme.surfaceContainerHighest
 
             Rectangle {
+                anchors.fill: parent
+                radius: parent.radius
+                visible: BarConfig.metallic
+
+                gradient: Gradient {
+                    GradientStop {
+                        position: 0.0
+                        color: Qt.rgba(0, 0, 0, 0.28)
+                    }
+
+                    GradientStop {
+                        position: 0.5
+                        color: Qt.rgba(0, 0, 0, 0)
+                    }
+
+                    GradientStop {
+                        position: 1.0
+                        color: Qt.rgba(1, 1, 1, 0.08)
+                    }
+                }
+            }
+
+            Rectangle {
                 width: parent.width * root.value
                 height: parent.height
                 radius: parent.radius
@@ -78,6 +135,29 @@ Rectangle {
                 Behavior on width {
                     NumberAnimation {
                         duration: 80
+                    }
+                }
+
+                Rectangle {
+                    anchors.fill: parent
+                    radius: parent.radius
+                    visible: BarConfig.metallic
+
+                    gradient: Gradient {
+                        GradientStop {
+                            position: 0.0
+                            color: Qt.rgba(1, 1, 1, 0.32)
+                        }
+
+                        GradientStop {
+                            position: 0.5
+                            color: Qt.rgba(1, 1, 1, 0)
+                        }
+
+                        GradientStop {
+                            position: 1.0
+                            color: Qt.rgba(0, 0, 0, 0.32)
+                        }
                     }
                 }
             }

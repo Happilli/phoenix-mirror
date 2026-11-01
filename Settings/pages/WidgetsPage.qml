@@ -3,6 +3,7 @@ import QtQuick
 import Ryu.Extraa
 import qs.services.theme
 import qs.configuration.Widgets
+import qs.configuration.Bar
 import qs.Settings.components
 
 SettingsPage {
@@ -136,6 +137,29 @@ SettingsPage {
                             border.width: 2
                             border.color: Theme.outlineVariant
                             color: selected ? Theme.primary : (area.containsMouse && !ClockConfig.randomizePosition ? Theme.surfaceBright : Theme.surfaceContainerHighest)
+
+                            Rectangle {
+                                anchors.fill: parent
+                                radius: parent.radius
+                                visible: BarConfig.metallic
+
+                                gradient: Gradient {
+                                    GradientStop {
+                                        position: 0.0
+                                        color: cell.selected ? Qt.rgba(1, 1, 1, 0.32) : Qt.rgba(1, 1, 1, 0.12)
+                                    }
+
+                                    GradientStop {
+                                        position: 0.5
+                                        color: Qt.rgba(1, 1, 1, 0)
+                                    }
+
+                                    GradientStop {
+                                        position: 1.0
+                                        color: cell.selected ? Qt.rgba(0, 0, 0, 0.32) : Qt.rgba(0, 0, 0, 0.3)
+                                    }
+                                }
+                            }
 
                             MouseArea {
                                 id: area

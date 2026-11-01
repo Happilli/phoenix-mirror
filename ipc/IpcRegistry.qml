@@ -7,4 +7,5 @@ Scope {
     RecorderIpc {}
     ClipboardIpc {}
     SettingsIpc {}
+    PickerIpc {}
 }

@@ -21,6 +21,7 @@ Singleton {
 
     signal captured(string screenName, string path)
     signal regionPicked(string screenName, var rect)
+    signal sharePicked(string screenName, var rect)
     signal finished
 
     function pathFor(name) {
@@ -95,6 +96,13 @@ Singleton {
         selectPurpose = "record";
         return name !== "" && begin([name], false);
     }
+    function captureRegionForShare() {
+        const name = focusedName();
+        regionMode = true;
+        lassoMode = false;
+        selectPurpose = "share";
+        return name !== "" && begin([name], false);
+    }
 
     function finishSelect(geom, rect) {
         const source = selectSource;
@@ -104,11 +112,12 @@ Singleton {
         regionMode = false;
         lassoMode = false;
         selectPurpose = "screenshot";
-        if (purpose === "record") {
+        if (purpose === "record" || purpose === "share") {
             Quickshell.execDetached(["rm", "-f", source]);
-            if (geom !== "" && rect) {
+            if (purpose === "share")
+                sharePicked(screen, geom !== "" ? rect : null);
+            else if (geom !== "" && rect)
                 regionPicked(screen, rect);
-            }
         } else if (geom !== "") {
             ScreenshotService.present(screen, source, geom, "");
         } else {
