@@ -159,7 +159,7 @@ Item {
                     radius: width / 2
                     color: Theme.surfaceContainer
                     border.width: 1
-                    border.color: Qt.alpha(Theme.primary, 0.18)
+                    border.color: Theme.outlineVariant
                 }
 
                 Item {
@@ -180,7 +180,7 @@ Item {
                             radius: width / 2
                             color: "transparent"
                             border.width: 1
-                            border.color: Qt.alpha(Theme.onSurfaceVariantColor, 0.08 + (index % 2) * 0.05)
+                            border.color: Theme.outlineVariant
                         }
                     }
 
@@ -224,7 +224,7 @@ Item {
                         radius: width / 2
                         color: "transparent"
                         border.width: 2
-                        border.color: Qt.alpha(Theme.primary, 0.5)
+                        border.color: Theme.primary
                     }
 
                     Rectangle {
@@ -234,7 +234,7 @@ Item {
                         radius: width / 2
                         color: Theme.background
                         border.width: 2
-                        border.color: Qt.alpha(Theme.primary, 0.6)
+                        border.color: Theme.primary
                     }
                 }
 

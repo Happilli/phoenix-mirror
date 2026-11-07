@@ -17,8 +17,6 @@ Singleton {
     readonly property int maxThickness: 140
     readonly property int maxHorizonRadius: 30
 
-    property bool metallic: StateService.get("barMetallic", false)
-
     property string edge: StateService.get("barEdge", "bottom")
     property string style: StateService.get("barStyle", "horizon")
 
@@ -90,11 +88,6 @@ Singleton {
         edge = e;
         StateService.set("barEdge", e);
     }
-    function setMetallic(v) {
-        metallic = v;
-        StateService.set("barMetallic", v);
-    }
-
     function setStyle(s) {
         if (styles.indexOf(s) < 0 || s === style)
             return;

@@ -1,8 +1,6 @@
 import QtQuick
 import Quickshell.Widgets
 import qs.services.theme
-import qs.configuration.Bar
-import qs.components.metal
 
 Item {
     id: root
@@ -84,17 +82,6 @@ Item {
         anchors.rightMargin: root.edge === "right" ? Math.min(root.gap, root.width) : 0
         color: Theme.background
         radius: root.cardRadius
-
-        Metal {
-            anchors.fill: parent
-            kind: "backdrop"
-        }
-
-        Metal {
-            anchors.fill: parent
-            kind: "rim"
-            radius: root.cardRadius
-        }
 
         Item {
             id: holder

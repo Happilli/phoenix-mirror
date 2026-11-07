@@ -13,6 +13,7 @@ Item {
     property real scroll: 0
     property bool animate: false
     property bool ready: false
+    property real frameHeight: 0
 
     readonly property int visionRange: 4
     readonly property int reach: visionRange + 2
@@ -24,7 +25,7 @@ Item {
     readonly property real sideWidth: Math.max(18, budget * 0.46)
     readonly property real midWidth: Math.max(14, budget * 0.32)
     readonly property real farWidth: Math.max(10, budget * 0.22)
-    readonly property real decodeHeight: Math.ceil(Math.max(height, centerWidth * 0.75) / 50) * 50
+    readonly property real decodeHeight: Math.ceil(Math.max(frameHeight, centerWidth * 0.75) / 50) * 50
 
     readonly property int base: Math.floor(position)
     readonly property real baseLeft: lerp(width / 2 - centerWidth / 2, width / 2 - centerWidth / 2 - (gap + sideWidth), position - base)
@@ -38,6 +39,7 @@ Item {
     }
 
     opacity: ready ? 1 : 0
+    clip: true
 
     Behavior on opacity {
         NumberAnimation {
@@ -104,6 +106,22 @@ Item {
         Theme.generate();
     }
 
+    function latchHeight() {
+        if (height <= 0)
+            return;
+        if (frameHeight <= 0 || Math.abs(position - current) < 0.01)
+            frameHeight = height;
+    }
+
+    onHeightChanged: {
+        if (frameHeight <= 0)
+            frameHeight = height;
+        else
+            heightLatch.restart();
+    }
+
+    Component.onCompleted: latchHeight()
+
     Behavior on position {
         enabled: root.animate
         SpringAnimation {
@@ -117,6 +135,17 @@ Item {
         id: settle
         interval: 120
         onTriggered: root.animate = true
+    }
+
+    Timer {
+        id: heightLatch
+        interval: 250
+        onTriggered: {
+            if (Math.abs(root.position - root.current) < 0.01)
+                root.frameHeight = root.height;
+            else
+                heightLatch.restart();
+        }
     }
 
     Connections {
@@ -168,13 +197,16 @@ Item {
                 visible: near
                 color: Theme.surfaceContainerHighest
                 x: near ? root.leftFor(index) : 0
-                height: root.height
+                y: (root.height - height) / 2
+                height: root.frameHeight > 0 ? root.frameHeight : root.height
                 width: near ? root.widthFor(index) : 0
                 radius: Math.min(root.radius, width / 2)
                 opacity: near ? root.fadeFor(index) : 0
 
                 Image {
-                    anchors.fill: parent
+                    anchors.centerIn: parent
+                    width: card.width
+                    height: card.height
                     source: "file://" + walls.get(card.index, "filePath")
                     sourceSize.height: root.decodeHeight
                     asynchronous: true

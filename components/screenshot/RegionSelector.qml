@@ -92,28 +92,32 @@ Item {
         y: 0
         width: parent.width
         height: root.has ? root.sy : parent.height
-        color: Qt.alpha("black", 0.55)
+        color: Theme.scrim
+        opacity: 0.55
     }
     Rectangle {
         x: 0
         y: root.sy + root.sh
         width: parent.width
         height: root.has ? parent.height - y : 0
-        color: Qt.alpha("black", 0.55)
+        color: Theme.scrim
+        opacity: 0.55
     }
     Rectangle {
         x: 0
         y: root.sy
         width: root.has ? root.sx : 0
         height: root.sh
-        color: Qt.alpha("black", 0.55)
+        color: Theme.scrim
+        opacity: 0.55
     }
     Rectangle {
         x: root.sx + root.sw
         y: root.sy
         width: root.has ? parent.width - x : 0
         height: root.sh
-        color: Qt.alpha("black", 0.55)
+        color: Theme.scrim
+        opacity: 0.55
     }
 
     Rectangle {
@@ -154,7 +158,7 @@ Item {
         ShapePath {
             strokeWidth: 2
             strokeColor: Theme.primary
-            fillColor: Qt.alpha(Theme.primary, 0.16)
+            fillColor: "transparent"
             capStyle: ShapePath.RoundCap
             joinStyle: ShapePath.RoundJoin
 
@@ -251,7 +255,7 @@ Item {
             font.pixelSize: 20
             color: Theme.primary
             style: Text.Outline
-            styleColor: Qt.alpha("black", 0.7)
+            styleColor: Theme.scrim
         }
     }
 }

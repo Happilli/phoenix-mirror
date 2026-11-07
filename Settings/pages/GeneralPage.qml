@@ -15,11 +15,13 @@ SettingsPage {
     readonly property var schemeLabels: Theme.schemes.map(s => s.replace("scheme-", "").replace(/-/g, " "))
     readonly property int schemeIndex: Theme.schemes.indexOf(Theme.scheme)
     readonly property real edgeGap: 8
+    readonly property real carouselGap: 20
     readonly property real contentWidth: width - margin * 2
     readonly property bool wide: contentWidth >= 820
     readonly property real gutter: 14
     readonly property real carouselWidth: wide ? Math.min(720, contentWidth * 0.6) : contentWidth
     readonly property real stackedCarouselHeight: Math.max(150, Math.min(240, height * 0.28))
+    readonly property real wideCarouselHeight: Math.max(220, height * 0.34)
     readonly property real quickWidth: wide ? contentWidth - carouselWidth - gutter : contentWidth
 
     function toPath(url) {
@@ -54,10 +56,10 @@ SettingsPage {
 
         WallpaperCarousel {
             id: carousel
-            x: page.wide ? page.quickWidth - 18 + page.edgeGap : page.edgeGap
+            x: page.wide ? page.quickWidth - 18 + page.carouselGap : page.edgeGap
             y: page.edgeGap
             width: page.wide ? hdr.width - page.edgeGap - x : page.carouselWidth - page.edgeGap * 2
-            height: page.wide ? quick.height - page.edgeGap * 2 : page.stackedCarouselHeight
+            height: page.wide ? quick.height - page.edgeGap : page.stackedCarouselHeight
         }
         SettingsGroup {
             id: quick
@@ -71,6 +73,8 @@ SettingsPage {
                 description: "Switch between dark and light mode"
 
                 SettingsSegmented {
+                    fillWidth: true
+                    width: parent?.limit ?? 240
                     labels: ["Dark", "Light"]
                     currentIndex: Theme.isDark ? 0 : 1
                     onPicked: index => Theme.setMode(index === 0 ? "dark" : "light")
@@ -80,60 +84,30 @@ SettingsPage {
                 key: "wall.scheme"
                 title: "Color scheme"
                 description: "How colors are generated from the wallpaper"
-                Column {
-                    id: schemeCol
+
+                Grid {
+                    id: schemeGrid
 
                     readonly property real avail: parent?.limit ?? 360
-                    readonly property int perRow: avail >= 380 ? 4 : 2
-                    readonly property int rows: Math.ceil(page.schemeLabels.length / perRow)
-                    readonly property real gap: 2
-                    readonly property real minPad: 8
-                    readonly property int labelWeight: 400
+                    readonly property real minCell: 130
+                    readonly property real cellW: (avail - spacing * (columns - 1)) / columns
 
-                    FontMetrics {
-                        id: fm
-                        font.pixelSize: 14
-                        font.weight: schemeCol.labelWeight
-                    }
+                    columns: avail >= minCell * 4 + 24 ? 4 : (avail >= minCell * 3 + 16 ? 3 : 2)
+                    spacing: 8
 
-                    function textWidth(s) {
-                        return fm.advanceWidth(s);
-                    }
-
-                    function rowText(r) {
-                        const labels = page.schemeLabels.slice(r * perRow, r * perRow + perRow);
-                        let t = 0;
-                        for (const l of labels)
-                            t += textWidth(l);
-                        return t;
-                    }
-
-                    readonly property real target: {
-                        let w = 0;
-                        for (let r = 0; r < rows; ++r) {
-                            const n = Math.min(perRow, page.schemeLabels.length - r * perRow);
-                            w = Math.max(w, rowText(r) + n * 2 * minPad + gap * (n - 1));
-                        }
-                        return w;
-                    }
-
-                    spacing: 6
                     Repeater {
-                        model: schemeCol.rows
+                        model: page.schemeLabels
 
-                        SettingsButtonGroup {
-                            id: grp
+                        SettingsChip {
+                            id: chip
+                            required property string modelData
                             required property int index
 
-                            readonly property int start: index * schemeCol.perRow
-                            readonly property var rowLabels: page.schemeLabels.slice(start, start + schemeCol.perRow)
-                            readonly property int n: rowLabels.length
-
-                            labels: rowLabels
-                            fontWeight: schemeCol.labelWeight
-                            currentIndex: page.schemeIndex - start
-                            horizontalPadding: Math.max(schemeCol.minPad, (schemeCol.target - schemeCol.rowText(index) - schemeCol.gap * (n - 1)) / (2 * n))
-                            onPicked: i => Theme.setScheme(Theme.schemes[grp.start + i])
+                            width: schemeGrid.cellW
+                            type: MaterialChip.Filter
+                            label: modelData
+                            selected: page.schemeIndex === index
+                            onToggled: Theme.setScheme(Theme.schemes[chip.index])
                         }
                     }
                 }
@@ -173,7 +147,7 @@ SettingsPage {
                             text: WallpaperConfig.folder
                             font.pixelSize: 13
                             color: Theme.onBackgroundColor
-                            selectionColor: Qt.alpha(Theme.primary, 0.3)
+                            selectionColor: Theme.primaryContainer
                             selectedTextColor: Theme.onBackgroundColor
 
                             onAccepted: {
@@ -241,9 +215,9 @@ SettingsPage {
                 color: Theme.surfaceContainerHigh
                 textColor: Theme.onSurfaceVariantColor
                 dangerColor: Theme.error
-                separatorColor: Qt.alpha(Theme.primary, 0.15)
+                separatorColor: Theme.outlineVariant
                 borderWidth: 1
-                borderColor: Qt.alpha(Theme.primary, 0.15)
+                borderColor: Theme.outlineVariant
 
                 model: [
                     {
@@ -305,16 +279,6 @@ SettingsPage {
                         onToggled: BarConfig.setStyle(BarConfig.styles[styleOption.index])
                     }
                 }
-            }
-        }
-        SettingsGroup.Entry {
-            key: "bar.metallic"
-            title: "Metallic bar"
-            description: "Light-catching metal finish instead of a flat color"
-
-            SettingsSwitch {
-                checked: BarConfig.metallic
-                onToggled: BarConfig.setMetallic(checked)
             }
         }
 

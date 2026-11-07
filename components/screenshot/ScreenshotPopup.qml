@@ -4,8 +4,6 @@ import Quickshell.Widgets
 import Ryu.Extraa
 import qs.services.theme
 import qs.services.screenshot
-import qs.configuration.Bar
-import qs.components.metal
 
 Item {
     id: root
@@ -74,20 +72,8 @@ Item {
             radius: 24
             color: Theme.background
             border.width: 1
-            border.color: Qt.alpha(Theme.primary, BarConfig.metallic ? 0.3 : 0.15)
+            border.color: Theme.outlineVariant
             scale: 0.9 + 0.1 * pop
-
-            Metal {
-                anchors.fill: parent
-                kind: "backdrop"
-                radius: card.radius
-            }
-
-            Metal {
-                anchors.fill: parent
-                kind: "innerRim"
-                radius: card.radius
-            }
 
             ClippingRectangle {
                 x: root.pad
@@ -117,7 +103,7 @@ Item {
                     sizeStyle: MaterialIconButton.Small
                     widthStyle: MaterialIconButton.Wide
                     iconText: done ? "\uf00c" : "\uf019"
-                    color: done ? Qt.alpha(Theme.primary, 0.22) : Theme.surfaceContainerHighest
+                    color: done ? Theme.primaryContainer : Theme.surfaceContainerHighest
                     iconColor: done ? Theme.primary : Theme.onSurfaceVariantColor
                     onClicked: ScreenshotService.save()
                 }
@@ -128,7 +114,7 @@ Item {
                     sizeStyle: MaterialIconButton.Small
                     widthStyle: MaterialIconButton.Wide
                     iconText: done ? "\uf00c" : "\uf0c5"
-                    color: done ? Qt.alpha(Theme.primary, 0.22) : Theme.surfaceContainerHighest
+                    color: done ? Theme.primaryContainer : Theme.surfaceContainerHighest
                     iconColor: done ? Theme.primary : Theme.onSurfaceVariantColor
                     onClicked: ScreenshotService.copy()
                 }

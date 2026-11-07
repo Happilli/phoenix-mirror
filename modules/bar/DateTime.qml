@@ -90,7 +90,7 @@ Rectangle {
             width: 18
             height: 2
             radius: 1
-            color: Qt.alpha(Theme.primary, 0.35)
+            color: Theme.outlineVariant
         }
         Item {
             visible: root.showTime

@@ -69,7 +69,7 @@ Item {
             cursorColor: Theme.primary
             borderWidth: 2
             borderColor: "transparent"
-            selectionColor: Qt.alpha(Theme.primary, 0.3)
+            selectionColor: Theme.primaryContainer
 
             onTextEdited: SettingsConfig.query = search.text
             onAccepted: view.triggerCurrent()
@@ -101,7 +101,7 @@ Item {
         iconColor: Theme.onSurfaceVariantColor
         highlightColor: Theme.surfaceContainerHighest
         borderWidth: 1
-        borderColor: Qt.alpha(Theme.primary, 0.15)
+        borderColor: Theme.outlineVariant
 
         Behavior on shownHeight {
             SpringAnimation {

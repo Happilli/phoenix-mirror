@@ -76,7 +76,7 @@ Item {
         Rectangle {
             width: parent.width
             height: 1
-            color: Qt.alpha(Theme.primary, 0.12)
+            color: Theme.outlineVariant
         }
 
         Column {
@@ -117,7 +117,7 @@ Item {
                 radius: 10
                 color: Theme.surfaceContainerHighest
                 border.width: 1
-                border.color: Qt.alpha(Theme.primary, 0.2)
+                border.color: Theme.outlineVariant
 
                 Text {
                     id: langText
@@ -136,9 +136,9 @@ Item {
                 width: diffText.implicitWidth + 24
                 height: 30
                 radius: 10
-                color: Qt.alpha(tone, 0.15)
+                color: Theme.surfaceContainerHighest
                 border.width: 1
-                border.color: Qt.alpha(tone, 0.4)
+                border.color: tone
 
                 Text {
                     id: diffText

@@ -3,8 +3,6 @@ import QtQuick
 import Ryu.Shapes
 import qs.services.theme
 import qs.services.polkit
-import qs.configuration.Bar
-import qs.components.metal
 
 Rectangle {
     id: card
@@ -15,7 +13,6 @@ Rectangle {
     readonly property bool verified: PolkitService.verified
     readonly property bool locked: busy || verified
     readonly property bool bad: failed && !verified
-    readonly property bool metal: BarConfig.metallic
     readonly property color accent: bad ? Theme.error : Theme.primary
     readonly property string liveMessage: flow?.message ?? ""
 
@@ -43,7 +40,7 @@ Rectangle {
     radius: 28
     color: Theme.background
     border.width: 1
-    border.color: Qt.alpha(accent, verified ? 0.5 : (metal ? 0.3 : 0.15))
+    border.color: verified ? Theme.primary : (bad ? Theme.error : Theme.outlineVariant)
     opacity: Math.min(1, enter * 1.5)
     scale: 0.92 + 0.08 * enter
     transformOrigin: Item.Center
@@ -90,18 +87,6 @@ Rectangle {
         epsilon: 0.5
     }
 
-    Metal {
-        anchors.fill: parent
-        kind: "backdrop"
-        radius: card.radius
-    }
-
-    Metal {
-        anchors.fill: parent
-        kind: "innerRim"
-        radius: card.radius
-    }
-
     Column {
         id: col
         x: 28
@@ -126,7 +111,7 @@ Rectangle {
                     contained: true
                     containedScale: 0.8
                     color: card.accent
-                    containerColor: Qt.alpha(card.accent, 0.16)
+                    containerColor: (card.bad ? Theme.errorContainer : Theme.primaryContainer)
                     springStiffness: 360
                     springDamping: 0.45
                 }
@@ -177,12 +162,6 @@ Rectangle {
                 }
             }
 
-            Metal {
-                anchors.fill: parent
-                kind: "inset"
-                radius: field.radius
-            }
-
             TapHandler {
                 onTapped: input.forceActiveFocus()
             }
@@ -199,7 +178,7 @@ Rectangle {
                 passwordCharacter: "•"
                 font.pixelSize: 15
                 color: Theme.onBackgroundColor
-                selectionColor: Qt.alpha(Theme.primary, 0.3)
+                selectionColor: Theme.primaryContainer
                 selectedTextColor: Theme.onBackgroundColor
                 cursorDelegate: Rectangle {
                     width: 2
@@ -238,7 +217,7 @@ Rectangle {
                 width: 32
                 height: 32
                 radius: 16
-                color: eyeArea.containsMouse ? Qt.alpha(Theme.onSurfaceVariantColor, 0.12) : "transparent"
+                color: eyeArea.containsMouse ? Theme.surfaceContainerHigh : "transparent"
 
                 Text {
                     anchors.centerIn: parent
@@ -280,12 +259,6 @@ Rectangle {
                     opacity: cancelArea.pressed ? 0.16 : (cancelArea.containsMouse ? 0.08 : 0)
                 }
 
-                Metal {
-                    anchors.fill: parent
-                    kind: "rim"
-                    radius: cancelBtn.radius
-                }
-
                 Text {
                     anchors.centerIn: parent
                     text: "Cancel"
@@ -317,12 +290,6 @@ Rectangle {
                     NumberAnimation {
                         duration: 150
                     }
-                }
-
-                Metal {
-                    anchors.fill: parent
-                    kind: "gloss"
-                    radius: okBtn.radius
                 }
 
                 Rectangle {

@@ -5,8 +5,6 @@ import Ryu.Extraa
 import Ryu.Clipsh
 import qs.services.theme
 import qs.configuration.Clipboard
-import qs.configuration.Bar
-import qs.components.metal
 
 Item {
     id: root
@@ -114,18 +112,7 @@ Item {
         radius: 24
         color: Theme.background
         border.width: 1
-        border.color: Qt.alpha(Theme.primary, BarConfig.metallic ? 0.3 : 0.15)
-
-        Metal {
-            anchors.fill: parent
-            kind: "backdrop"
-        }
-
-        Metal {
-            anchors.fill: parent
-            kind: "innerRim"
-            radius: card.radius
-        }
+        border.color: Theme.outlineVariant
 
         MouseArea {
             anchors.fill: parent
@@ -161,7 +148,7 @@ Item {
                     cursorColor: Theme.primary
                     borderWidth: 2
                     borderColor: "transparent"
-                    selectionColor: Qt.alpha(Theme.primary, 0.3)
+                    selectionColor: Theme.primaryContainer
                     onAccepted: if (root.entries.length > 0)
                         board.copyItem(root.entries[0])
                 }
@@ -274,18 +261,6 @@ Item {
                             damping: 0.32
                             epsilon: 0.25
                         }
-                    }
-
-                    Metal {
-                        anchors.fill: parent
-                        kind: "soft"
-                        radius: pill.radius
-                    }
-
-                    Metal {
-                        anchors.fill: parent
-                        kind: "rim"
-                        radius: pill.radius
                     }
                 }
 

@@ -33,11 +33,11 @@ Item {
         id: menu
         color: Theme.background
         textColor: Theme.onSurfaceVariantColor
-        shortcutColor: Qt.alpha(Theme.onSurfaceVariantColor, 0.6)
+        shortcutColor: Theme.onSurfaceVariantColor
         dangerColor: Theme.error
-        separatorColor: Qt.alpha(Theme.primary, 0.15)
+        separatorColor: Theme.outlineVariant
         borderWidth: 1
-        borderColor: Qt.alpha(Theme.primary, 0.15)
+        borderColor: Theme.outlineVariant
 
         model: [
             {

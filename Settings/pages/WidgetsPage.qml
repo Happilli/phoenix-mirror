@@ -3,7 +3,6 @@ import QtQuick
 import Ryu.Extraa
 import qs.services.theme
 import qs.configuration.Widgets
-import qs.configuration.Bar
 import qs.Settings.components
 
 SettingsPage {
@@ -34,7 +33,6 @@ SettingsPage {
             x: 0
             y: page.wide ? 0 : pv.height + page.gutter
             width: page.quickWidth
-            dividerRight: page.wide ? 40 : 18
 
             SettingsGroup.Entry {
                 id: showEntry
@@ -53,29 +51,27 @@ SettingsPage {
                 key: "clock.color"
                 title: "Color"
                 description: "Tint of the clock digits"
-
                 Grid {
                     id: colorGrid
 
-                    readonly property real avail: parent?.limit ?? 300
-                    readonly property real cell: Math.floor((avail - columnSpacing) / 2)
+                    readonly property real avail: Math.max(200, Math.min(parent?.limit ?? 360, 360))
+                    readonly property real cellW: (avail - spacing) / 2
 
                     columns: 2
-                    columnSpacing: 8
-                    rowSpacing: 0
+                    spacing: 8
 
                     Repeater {
                         model: ClockConfig.colorOptions
 
-                        SettingsRadio {
+                        SettingsChip {
                             id: tone
                             required property var modelData
                             required property int index
 
-                            group: "clockColor"
-                            width: colorGrid.cell
-                            text: modelData.label
-                            checked: ClockConfig.colorKey === modelData.key
+                            width: colorGrid.cellW
+                            type: MaterialChip.Filter
+                            label: modelData.label
+                            selected: ClockConfig.colorKey === modelData.key
                             onToggled: ClockConfig.set("colorKey", tone.modelData.key)
                         }
                     }
@@ -137,29 +133,6 @@ SettingsPage {
                             border.width: 2
                             border.color: Theme.outlineVariant
                             color: selected ? Theme.primary : (area.containsMouse && !ClockConfig.randomizePosition ? Theme.surfaceBright : Theme.surfaceContainerHighest)
-
-                            Rectangle {
-                                anchors.fill: parent
-                                radius: parent.radius
-                                visible: BarConfig.metallic
-
-                                gradient: Gradient {
-                                    GradientStop {
-                                        position: 0.0
-                                        color: cell.selected ? Qt.rgba(1, 1, 1, 0.32) : Qt.rgba(1, 1, 1, 0.12)
-                                    }
-
-                                    GradientStop {
-                                        position: 0.5
-                                        color: Qt.rgba(1, 1, 1, 0)
-                                    }
-
-                                    GradientStop {
-                                        position: 1.0
-                                        color: cell.selected ? Qt.rgba(0, 0, 0, 0.32) : Qt.rgba(0, 0, 0, 0.3)
-                                    }
-                                }
-                            }
 
                             MouseArea {
                                 id: area

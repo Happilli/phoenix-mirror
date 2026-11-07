@@ -2,7 +2,6 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import qs.services.theme
 import qs.configuration.Settings
-import qs.configuration.Bar
 
 Item {
     id: root
@@ -42,7 +41,7 @@ Item {
             height: root.rowHeight
             radius: 16
             y: root.pillIndex * root.step
-            color: Qt.alpha(Theme.onSurfaceVariantColor, 0.1)
+            color: Theme.surfaceContainerHighest
             opacity: root.hoveredIndex >= 0 ? 1 : 0
             visible: opacity > 0.01
 
@@ -60,29 +59,6 @@ Item {
                     epsilon: 0.25
                 }
             }
-
-            Rectangle {
-                anchors.fill: parent
-                radius: parent.radius
-                visible: BarConfig.metallic
-
-                gradient: Gradient {
-                    GradientStop {
-                        position: 0.0
-                        color: Qt.rgba(1, 1, 1, 0.12)
-                    }
-
-                    GradientStop {
-                        position: 0.5
-                        color: Qt.rgba(1, 1, 1, 0)
-                    }
-
-                    GradientStop {
-                        position: 1.0
-                        color: Qt.rgba(0, 0, 0, 0.2)
-                    }
-                }
-            }
         }
 
         Rectangle {
@@ -91,7 +67,7 @@ Item {
             height: root.rowHeight
             radius: 16
             y: root.current * root.step
-            color: Qt.alpha(Theme.primary, 0.18)
+            color: Theme.primary
 
             Behavior on y {
                 SpringAnimation {
@@ -99,38 +75,6 @@ Item {
                     damping: 0.3
                     epsilon: 0.25
                 }
-            }
-
-            Rectangle {
-                anchors.fill: parent
-                radius: parent.radius
-                visible: BarConfig.metallic
-
-                gradient: Gradient {
-                    GradientStop {
-                        position: 0.0
-                        color: Qt.rgba(1, 1, 1, 0.22)
-                    }
-
-                    GradientStop {
-                        position: 0.5
-                        color: Qt.rgba(1, 1, 1, 0)
-                    }
-
-                    GradientStop {
-                        position: 1.0
-                        color: Qt.rgba(0, 0, 0, 0.25)
-                    }
-                }
-            }
-
-            Rectangle {
-                anchors.fill: parent
-                radius: parent.radius
-                color: "transparent"
-                border.width: 1
-                border.color: Qt.rgba(1, 1, 1, 0.16)
-                visible: BarConfig.metallic
             }
         }
 
@@ -156,7 +100,7 @@ Item {
                     horizontalAlignment: Text.AlignHCenter
                     text: row.modelData.leadingIcon
                     font.pixelSize: 18
-                    color: row.selected ? Theme.primary : Theme.onSurfaceVariantColor
+                    color: row.selected ? Theme.onPrimaryColor : Theme.onSurfaceVariantColor
                 }
 
                 Text {
@@ -166,7 +110,7 @@ Item {
                     text: row.modelData.headline
                     font.pixelSize: 15
                     font.weight: row.selected ? Font.DemiBold : Font.Medium
-                    color: row.selected ? Theme.primary : Theme.onBackgroundColor
+                    color: row.selected ? Theme.onPrimaryColor : Theme.onBackgroundColor
                 }
             }
         }

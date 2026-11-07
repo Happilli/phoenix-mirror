@@ -7,9 +7,9 @@ MaterialSegmentedButton {
 
     selectionMode: MaterialSegmentedButton.Single
     color: "transparent"
-    checkedColor: Theme.secondaryContainer
+    checkedColor: Theme.primary
     textColor: Theme.onSurfaceVariantColor
-    checkedTextColor: Theme.onSecondaryContainerColor
+    checkedTextColor: Theme.onPrimaryColor
     borderColor: Theme.outline
 
     onToggled: (index, checked) => {

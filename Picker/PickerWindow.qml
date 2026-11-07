@@ -6,8 +6,6 @@ import Quickshell.Hyprland
 import Ryu.Extraa
 import qs.services.theme
 import qs.configuration.Picker
-import qs.configuration.Bar
-import qs.components.metal
 
 Scope {
     component PickGrid: GridView {
@@ -15,21 +13,27 @@ Scope {
 
         property var items: []
         property bool shown: false
-        property var lookup: null
         property int hoveredIndex: -1
+        property real aspect: 9 / 16
 
         readonly property real inset: 6
         readonly property real labelHeight: 28
 
         clip: true
-        visible: shown
+        opacity: shown ? 1 : 0
+        enabled: shown
+        z: shown ? 1 : 0
         cellWidth: Math.floor(width / 2)
-        cellHeight: Math.round((cellWidth - 12) * 9 / 16) + 40
+        cellHeight: Math.round((cellWidth - 12) * aspect) + 40
         boundsBehavior: Flickable.StopAtBounds
         keyNavigationEnabled: false
         highlightFollowsCurrentItem: false
         currentIndex: -1
-        model: items
+
+        model: ScriptModel {
+            values: grid.items
+            objectProp: "key"
+        }
 
         onShownChanged: {
             hoveredIndex = -1;
@@ -82,6 +86,7 @@ Scope {
             required property int index
 
             readonly property bool hovered: grid.hoveredIndex === index
+            readonly property bool isWorkspace: modelData.kind === "workspace"
 
             width: grid.cellWidth
             height: grid.cellHeight
@@ -110,11 +115,6 @@ Scope {
                     color: Theme.surfaceContainerHighest
                     clip: true
 
-                    Metal {
-                        anchors.fill: parent
-                        kind: "soft"
-                    }
-
                     ScreencopyView {
                         id: sc
                         readonly property real sw: implicitWidth > 0 ? implicitWidth : 16
@@ -124,22 +124,24 @@ Scope {
                         anchors.centerIn: parent
                         width: sw * fill
                         height: sh * fill
-                        live: PickerConfig.open && grid.shown
-                        captureSource: cell.modelData.kind === "screen" ? cell.modelData.screen : grid.lookup(cell.modelData.addr)
+                        visible: !cell.isWorkspace
+                        live: PickerConfig.open && !cell.isWorkspace
+                        captureSource: cell.modelData.kind === "screen" ? cell.modelData.screen : null
+                    }
+
+                    WorkspaceMini {
+                        anchors.fill: parent
+                        visible: cell.isWorkspace
+                        wsName: cell.modelData.wsName ?? ""
                     }
 
                     Text {
                         anchors.centerIn: parent
-                        visible: !sc.hasContent
+                        visible: !cell.isWorkspace && !sc.hasContent
                         text: "No preview"
                         font.pixelSize: 12
                         color: Theme.onSurfaceVariantColor
                         opacity: 0.6
-                    }
-
-                    Metal {
-                        anchors.fill: parent
-                        kind: "rim"
                     }
                 }
 
@@ -167,16 +169,16 @@ Scope {
     FloatingWindow {
         id: win
 
-        function toplevelFor(addr) {
-            if (addr === "")
-                return null;
-            const n = Number(addr);
-            const hex = isNaN(n) ? addr.toLowerCase().replace(/^0x/, "") : n.toString(16);
-            for (const t of Hyprland.toplevels.values) {
-                if (t.address.toLowerCase().replace(/^0x/, "") === hex)
-                    return t.wayland;
-            }
-            return null;
+        readonly property real wsAspect: {
+            const m = Hyprland.focusedMonitor ?? Hyprland.monitors.values[0] ?? null;
+            const o = m ? m.lastIpcObject : null;
+            if (!o || !o.width || !o.height)
+                return 9 / 16;
+            const sc = o.scale || 1;
+            const rs = o.reserved ?? [0, 0, 0, 0];
+            const w = o.width / sc - rs[0] - rs[2];
+            const h = o.height / sc - rs[1] - rs[3];
+            return w > 0 && h > 0 ? h / w : 9 / 16;
         }
 
         title: "Share"
@@ -188,9 +190,7 @@ Scope {
         visible: PickerConfig.open && !PickerConfig.regioning
 
         onVisibleChanged: {
-            if (visible)
-                Hyprland.refreshToplevels();
-            else if (!PickerConfig.regioning)
+            if (!visible && !PickerConfig.regioning)
                 PickerConfig.cancel();
         }
 
@@ -198,11 +198,6 @@ Scope {
             sequence: "Escape"
             enabled: PickerConfig.open
             onActivated: PickerConfig.cancel()
-        }
-
-        Metal {
-            anchors.fill: parent
-            kind: "backdrop"
         }
 
         Loader {
@@ -217,7 +212,7 @@ Scope {
 
                 MaterialSegmentedButton {
                     id: tabs
-                    labels: ["Screen", "Window", "Region"]
+                    labels: ["Screen", "Window", "Workspace", "Region"]
                     currentIndex: PickerConfig.tab
                     selectionMode: MaterialSegmentedButton.Single
                     color: "transparent"
@@ -240,18 +235,31 @@ Scope {
                         anchors.fill: parent
                         items: PickerConfig.screenItems
                         shown: PickerConfig.tab === 0
-                        lookup: win.toplevelFor
+                    }
+
+                    WindowLayouts {
+                        anchors.fill: parent
+                        shown: PickerConfig.tab === 1
                     }
 
                     PickGrid {
                         anchors.fill: parent
-                        items: PickerConfig.windowItems
-                        shown: PickerConfig.tab === 1
-                        lookup: win.toplevelFor
+                        items: PickerConfig.workspaceItems
+                        shown: PickerConfig.tab === 2
+                        aspect: win.wsAspect
                     }
+
+                    Text {
+                        anchors.centerIn: parent
+                        visible: PickerConfig.tab === 2 && PickerConfig.workspaceItems.length === 0
+                        text: "No shareable workspaces"
+                        font.pixelSize: 14
+                        color: Theme.onSurfaceVariantColor
+                    }
+
                     Item {
                         anchors.fill: parent
-                        visible: PickerConfig.tab === 2
+                        visible: PickerConfig.tab === 3
 
                         Column {
                             anchors.centerIn: parent
@@ -279,12 +287,6 @@ Scope {
                                         damping: 0.4
                                         epsilon: 0.005
                                     }
-                                }
-
-                                Metal {
-                                    anchors.fill: parent
-                                    kind: "gloss"
-                                    radius: selectBtn.radius
                                 }
 
                                 Text {

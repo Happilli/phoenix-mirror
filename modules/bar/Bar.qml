@@ -1,8 +1,9 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import QtQuick.Shapes
 import qs.services.theme
 import qs.configuration.Bar
-import qs.components.metal
+import qs.configuration.Hypr
 
 Item {
     id: root
@@ -22,6 +23,9 @@ Item {
     readonly property bool lowFlat: edge === "bottom" || edge === "right"
     readonly property real length: horizontal ? width : height
     readonly property real thickness: horizontal ? height : width
+
+    readonly property real borderWidth: HyprConfig.get("border_size") ?? 0
+    readonly property color borderColor: Theme.primary
 
     readonly property real notchPadding: 4
     readonly property real notchRadius: 18
@@ -172,7 +176,9 @@ Item {
     readonly property real permanentDepth: Math.max(0, fullFloorY - topLine)
     readonly property real depth: permanentDepth * notchProgress
 
-    readonly property string outlinePath: outline()
+    readonly property var shapes: buildPaths()
+    readonly property string outlinePath: shapes.fill
+    readonly property string borderPath: shapes.border
 
     function groupShift(i) {
         if (groupIndex < 0 || groupIndex === i)
@@ -208,12 +214,13 @@ Item {
         return u + " " + w;
     }
 
-    function outline() {
+    function buildPaths() {
         const R = radius;
         const W = length;
         const H = thickness;
         const T = topLine;
         const r = Math.max(0, Math.min(R, H / 2, W / 2));
+        const inset = floating ? r : R;
 
         const cuts = [];
         for (const item of permanent) {
@@ -235,45 +242,66 @@ Item {
             });
         cuts.sort((a, b) => a.l - b.l);
 
-        const merged = !floating && R > 0 && cuts.length > 0 && cuts[0].l < R;
+        const last = cuts.length - 1;
+        const mergedL = !floating && R > 0 && cuts.length > 0 && cuts[0].l < R;
 
-        let p;
-        if (floating)
-            p = `M ${pt(0, H - r)} L ${pt(0, r)} Q ${pt(0, 0)} ${pt(r, 0)}`;
-        else if (merged)
-            p = `M ${pt(0, H)} L ${pt(0, 0)}`;
-        else
-            p = `M ${pt(0, H)} L ${pt(0, 0)} Q ${pt(0, R)} ${pt(R, R)}`;
+        let head;
+        let borderHead;
+        if (floating) {
+            head = `M ${pt(0, H - r)} L ${pt(0, r)} Q ${pt(0, 0)} ${pt(r, 0)}`;
+            borderHead = `M ${pt(0, r)} Q ${pt(0, 0)} ${pt(r, 0)}`;
+        } else if (mergedL) {
+            head = `M ${pt(0, H)} L ${pt(0, 0)}`;
+            borderHead = `M ${pt(0, 0)}`;
+        } else {
+            head = `M ${pt(0, H)} L ${pt(0, 0)} Q ${pt(0, R)} ${pt(R, R)}`;
+            borderHead = `M ${pt(0, 0)} Q ${pt(0, R)} ${pt(R, R)}`;
+        }
 
+        let body = "";
         for (let i = 0; i < cuts.length; i++) {
             const c = cuts[i];
             const f = T + c.d;
             const rt = Math.min(notchRadius, c.d / 2);
+            const first = i === 0;
+            const end = i === last;
+            const rtL = first ? Math.min(rt, Math.max(0, c.l - inset)) : rt;
+            const rtR = end ? Math.min(rt, Math.max(0, W - inset - c.r)) : rt;
 
-            if (merged && i === 0) {
+            if (mergedL && first) {
                 const xs = Math.max(0, c.l);
                 const t = Math.sqrt(xs / R);
                 const ys = R * (2 * t - t * t);
                 const rb = Math.min(notchRadiusBottom, (c.r - xs) / 2, Math.max(0, f - ys));
-                p += ` Q ${pt(0, t * R)} ${pt(xs, ys)}`;
-                p += ` L ${pt(xs, f - rb)} Q ${pt(xs, f)} ${pt(xs + rb, f)}`;
+                body += ` Q ${pt(0, t * R)} ${pt(xs, ys)}`;
+                body += ` L ${pt(xs, f - rb)} Q ${pt(xs, f)} ${pt(xs + rb, f)}`;
             } else {
-                const rtL = (!floating && i === 0) ? Math.min(rt, Math.max(0, c.l - R)) : rt;
                 const rbL = Math.min(notchRadiusBottom, (c.r - c.l) / 2, Math.max(0, c.d - rtL));
-                p += ` L ${pt(c.l - rtL, T)} Q ${pt(c.l, T)} ${pt(c.l, T + rtL)}`;
-                p += ` L ${pt(c.l, f - rbL)} Q ${pt(c.l, f)} ${pt(c.l + rbL, f)}`;
+                body += ` L ${pt(c.l - rtL, T)} Q ${pt(c.l, T)} ${pt(c.l, T + rtL)}`;
+                body += ` L ${pt(c.l, f - rbL)} Q ${pt(c.l, f)} ${pt(c.l + rbL, f)}`;
             }
 
-            const rbR = Math.min(notchRadiusBottom, (c.r - c.l) / 2, Math.max(0, c.d - rt));
-            p += ` L ${pt(c.r - rbR, f)} Q ${pt(c.r, f)} ${pt(c.r, f - rbR)}`;
-            p += ` L ${pt(c.r, T + rt)} Q ${pt(c.r, T)} ${pt(c.r + rt, T)}`;
+            const rbR = Math.min(notchRadiusBottom, (c.r - c.l) / 2, Math.max(0, c.d - rtR));
+            body += ` L ${pt(c.r - rbR, f)} Q ${pt(c.r, f)} ${pt(c.r, f - rbR)}`;
+            body += ` L ${pt(c.r, T + rtR)} Q ${pt(c.r, T)} ${pt(c.r + rtR, T)}`;
         }
 
-        if (floating)
-            p += ` L ${pt(W - r, 0)} Q ${pt(W, 0)} ${pt(W, r)} L ${pt(W, H - r)} Q ${pt(W, H)} ${pt(W - r, H)} L ${pt(r, H)} Q ${pt(0, H)} ${pt(0, H - r)} Z`;
-        else
-            p += ` L ${pt(W - R, R)} Q ${pt(W, R)} ${pt(W, 0)} L ${pt(W, H)} Z`;
-        return p;
+        let tail;
+        let borderTail;
+        if (floating) {
+            borderTail = ` L ${pt(W - r, 0)} Q ${pt(W, 0)} ${pt(W, r)}`;
+            tail = borderTail + ` L ${pt(W, H - r)} Q ${pt(W, H)} ${pt(W - r, H)} L ${pt(r, H)} Q ${pt(0, H)} ${pt(0, H - r)} Z`;
+        } else {
+            borderTail = ` L ${pt(W - R, R)} Q ${pt(W, R)} ${pt(W, 0)}`;
+            tail = borderTail + ` L ${pt(W, H)} Z`;
+        }
+
+        const fill = head + body + tail;
+
+        return {
+            fill: fill,
+            border: floating ? fill : borderHead + body + borderTail
+        };
     }
 
     onHoveredItemChanged: {
@@ -402,15 +430,37 @@ Item {
         anchors.leftMargin: root.edge === "right" ? root.topLine : 0
         anchors.rightMargin: root.edge === "left" ? root.topLine : 0
     }
-
-    Metal {
+    Shape {
         anchors.fill: parent
-        kind: "shape"
-        base: root.colour
-        path: root.outlinePath
-        strokeWidth: root.floating ? 1 : 0
-        strokeColor: Qt.alpha(Theme.primary, 0.15)
-        gradientY: root.horizontal
+        preferredRendererType: Shape.CurveRenderer
+
+        ShapePath {
+            pathHints: ShapePath.PathSolid | ShapePath.PathNonIntersecting
+            fillColor: root.colour
+            strokeWidth: -1
+            strokeColor: "transparent"
+
+            PathSvg {
+                path: root.outlinePath
+            }
+        }
+    }
+    Shape {
+        anchors.fill: parent
+        visible: root.borderWidth > 0
+        preferredRendererType: Shape.CurveRenderer
+
+        ShapePath {
+            fillColor: "transparent"
+            strokeColor: root.borderColor
+            strokeWidth: root.borderWidth
+            capStyle: ShapePath.FlatCap
+            joinStyle: ShapePath.RoundJoin
+
+            PathSvg {
+                path: root.borderPath
+            }
+        }
     }
 
     Item {

@@ -272,7 +272,7 @@ Item {
             Rectangle {
                 width: parent.width
                 height: 1
-                color: Qt.alpha(Theme.primary, 0.12)
+                color: Theme.outlineVariant
             }
 
             Row {
@@ -302,7 +302,7 @@ Item {
                 radius: 12
                 color: Theme.surfaceContainerHighest
                 border.width: 1
-                border.color: titleInput.activeFocus ? Theme.primary : Qt.alpha(Theme.primary, 0.12)
+                border.color: titleInput.activeFocus ? Theme.primary : Theme.outlineVariant
 
                 TextInput {
                     id: titleInput
@@ -314,7 +314,7 @@ Item {
                     maximumLength: 80
                     font.pixelSize: 14
                     color: Theme.onSurfaceVariantColor
-                    selectionColor: Qt.alpha(Theme.primary, 0.3)
+                    selectionColor: Theme.primaryContainer
                     selectedTextColor: Theme.onSurfaceVariantColor
                     onAccepted: descInput.forceActiveFocus()
                     Keys.onEscapePressed: root.forceActiveFocus()
@@ -336,7 +336,7 @@ Item {
                 radius: 12
                 color: Theme.surfaceContainerHighest
                 border.width: 1
-                border.color: descInput.activeFocus ? Theme.primary : Qt.alpha(Theme.primary, 0.12)
+                border.color: descInput.activeFocus ? Theme.primary : Theme.outlineVariant
 
                 TextEdit {
                     id: descInput
@@ -346,7 +346,7 @@ Item {
                     wrapMode: TextEdit.Wrap
                     font.pixelSize: 13
                     color: Theme.onSurfaceVariantColor
-                    selectionColor: Qt.alpha(Theme.primary, 0.3)
+                    selectionColor: Theme.primaryContainer
                     selectedTextColor: Theme.onSurfaceVariantColor
                     Keys.onEscapePressed: root.forceActiveFocus()
 
@@ -400,7 +400,7 @@ Item {
         radius: 12
         color: Theme.surfaceContainerHighest
         border.width: 1
-        border.color: Qt.alpha(Theme.primary, 0.25)
+        border.color: Theme.outlineVariant
         x: Math.max(0, Math.min(root.hoverX - width / 2, root.width - width))
         y: root.hoverY - height - 4 >= 0 ? root.hoverY - height - 4 : root.hoverY + root.cellSize + 4
 

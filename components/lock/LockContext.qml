@@ -44,11 +44,11 @@ Scope {
 
         onCompleted: result => {
             root.unlockInProgress = false;
-            root.currentText = "";
             if (result === PamResult.Success) {
                 root.showFailure = false;
                 root.unlocked();
             } else {
+                root.currentText = "";
                 root.showFailure = true;
             }
         }
