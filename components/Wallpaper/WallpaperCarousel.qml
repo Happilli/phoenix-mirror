@@ -1,231 +1,73 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Quickshell
-import Quickshell.Widgets
+import Ryu.Extraa
 import qs.configuration.Wallpaper
 import qs.services.theme
 
 Item {
     id: root
 
-    property int current: 0
-    property real position: 0
-    property real scroll: 0
-    property bool animate: false
-    property bool ready: false
-    property real frameHeight: 0
+    property var items: []
 
-    readonly property int visionRange: 4
-    readonly property int reach: visionRange + 2
-    readonly property real gap: 8
-    readonly property real radius: 24
-
-    readonly property real centerWidth: Math.min(0.56 * width, 600)
-    readonly property real budget: Math.max(0, (width - centerWidth) / 2 - gap * 3)
-    readonly property real sideWidth: Math.max(18, budget * 0.46)
-    readonly property real midWidth: Math.max(14, budget * 0.32)
-    readonly property real farWidth: Math.max(10, budget * 0.22)
-    readonly property real decodeHeight: Math.ceil(Math.max(frameHeight, centerWidth * 0.75) / 50) * 50
-
-    readonly property int base: Math.floor(position)
-    readonly property real baseLeft: lerp(width / 2 - centerWidth / 2, width / 2 - centerWidth / 2 - (gap + sideWidth), position - base)
-    readonly property var windowIndices: {
+    function rebuild() {
         const out = [];
-        const lo = Math.max(0, base - reach);
-        const hi = Math.min(walls.count - 1, base + reach);
-        for (let i = lo; i <= hi; i++)
-            out.push(i);
-        return out;
-    }
-
-    opacity: ready ? 1 : 0
-    clip: true
-
-    Behavior on opacity {
-        NumberAnimation {
-            duration: 200
-            easing.type: Easing.OutCubic
+        for (let i = 0; i < walls.count; i++) {
+            out.push({
+                image: "file://" + walls.get(i, "filePath")
+            });
         }
-    }
-
-    function lerp(from, to, t) {
-        return from + (to - from) * t;
-    }
-
-    function widthForDistance(distance) {
-        const d = Math.min(distance, 4);
-        if (d <= 1)
-            return lerp(centerWidth, sideWidth, d);
-        if (d <= 2)
-            return lerp(sideWidth, midWidth, d - 1);
-        if (d <= 3)
-            return lerp(midWidth, farWidth, d - 2);
-        return lerp(farWidth, farWidth * 0.4, d - 3);
-    }
-
-    function widthFor(index) {
-        return widthForDistance(Math.abs(index - position));
-    }
-
-    function leftFor(index) {
-        let x = baseLeft;
-        for (let i = base; i < index; i++)
-            x += widthFor(i) + gap;
-        for (let i = base - 1; i >= index; i--)
-            x -= widthFor(i) + gap;
-        return x;
-    }
-
-    function fadeFor(index) {
-        const d = Math.abs(index - position);
-        return d <= 3 ? 1 : Math.max(0, 4 - d);
+        items = out;
+        syncToCurrent();
     }
 
     function syncToCurrent() {
         const target = WallpaperConfig.currentWallpaper.toString();
-        let found = 0;
         for (let i = 0; i < walls.count; i++) {
             if ("file://" + walls.get(i, "filePath") === target) {
-                found = i;
-                break;
+                carousel.scrollTo(i, false);
+                return;
             }
         }
-        animate = false;
-        current = found;
-        position = found;
-        ready = true;
-        settle.restart();
     }
 
     function select(index) {
-        if (index < 0 || index === current || index >= walls.count)
+        if (index < 0 || index >= walls.count)
             return;
-        current = index;
-        position = index;
         WallpaperConfig.setWallpaper(walls.get(index, "filePath"));
         Theme.generate();
     }
 
-    function latchHeight() {
-        if (height <= 0)
-            return;
-        if (frameHeight <= 0 || Math.abs(position - current) < 0.01)
-            frameHeight = height;
-    }
-
-    onHeightChanged: {
-        if (frameHeight <= 0)
-            frameHeight = height;
-        else
-            heightLatch.restart();
-    }
-
-    Component.onCompleted: latchHeight()
-
-    Behavior on position {
-        enabled: root.animate
-        SpringAnimation {
-            spring: 1.7
-            damping: 0.5
-            epsilon: 0.005
-        }
-    }
-
-    Timer {
-        id: settle
-        interval: 120
-        onTriggered: root.animate = true
-    }
-
-    Timer {
-        id: heightLatch
-        interval: 250
-        onTriggered: {
-            if (Math.abs(root.position - root.current) < 0.01)
-                root.frameHeight = root.height;
-            else
-                heightLatch.restart();
-        }
+    WallpaperModel {
+        id: walls
+        onLoaded: root.rebuild()
     }
 
     Connections {
         target: WallpaperConfig
 
         function onCurrentWallpaperChanged() {
-            if (walls.count > 0 && walls.get(root.current, "filePath") !== undefined && "file://" + walls.get(root.current, "filePath") !== WallpaperConfig.currentWallpaper.toString())
+            const p = walls.get(carousel.currentIndex, "filePath");
+            if (p === undefined || "file://" + p !== WallpaperConfig.currentWallpaper.toString())
                 root.syncToCurrent();
         }
     }
 
-    WallpaperModel {
-        id: walls
-        onLoaded: root.syncToCurrent()
-    }
-
-    MouseArea {
+    MaterialCarousel {
+        id: carousel
         anchors.fill: parent
-        acceptedButtons: Qt.NoButton
-        onWheel: wheel => {
-            root.scroll -= wheel.pixelDelta.x !== 0 ? wheel.pixelDelta.x : wheel.angleDelta.y / 2;
-            if (root.scroll >= 50) {
-                root.select(root.current + 1);
-                root.scroll = 0;
-            } else if (root.scroll <= -50) {
-                root.select(root.current - 1);
-                root.scroll = 0;
-            }
+        model: root.items
+        type: MaterialCarousel.CenteredHero
+        activeFocusOnTab: true
+        itemRadius: 24
+        itemSpacing: 8
+        itemColor: Theme.surfaceContainerHighest
+        stateLayerColor: Theme.shadow
+
+        HoverHandler {
+            onHoveredChanged: if (hovered && !carousel.activeFocus)
+                carousel.forceActiveFocus()
         }
-    }
 
-    ClippingRectangle {
-        anchors.fill: parent
-        radius: root.radius
-        color: "transparent"
-
-        Repeater {
-            model: ScriptModel {
-                values: root.windowIndices
-            }
-
-            ClippingRectangle {
-                id: card
-                required property int modelData
-
-                readonly property int index: modelData
-                readonly property bool near: Math.abs(index - root.position) < root.visionRange
-
-                visible: near
-                color: Theme.surfaceContainerHighest
-                x: near ? root.leftFor(index) : 0
-                y: (root.height - height) / 2
-                height: root.frameHeight > 0 ? root.frameHeight : root.height
-                width: near ? root.widthFor(index) : 0
-                radius: Math.min(root.radius, width / 2)
-                opacity: near ? root.fadeFor(index) : 0
-
-                Image {
-                    anchors.centerIn: parent
-                    width: card.width
-                    height: card.height
-                    source: "file://" + walls.get(card.index, "filePath")
-                    sourceSize.height: root.decodeHeight
-                    asynchronous: true
-                    fillMode: Image.PreserveAspectCrop
-                    opacity: status === Image.Ready ? 1 : 0
-
-                    Behavior on opacity {
-                        NumberAnimation {
-                            duration: 150
-                        }
-                    }
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: root.select(card.index)
-                }
-            }
-        }
+        onClicked: (index, item) => root.select(index)
     }
 }
