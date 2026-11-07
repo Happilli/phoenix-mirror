@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
+import qs.components
 import Quickshell.Wayland
 import qs.services.theme
 import qs.configuration.Picker
@@ -48,15 +49,7 @@ Item {
                 z: win?.floating ? 1 : 0
                 color: Theme.surfaceContainerHigh
                 clip: true
-
-                ScreencopyView {
-                    readonly property real sw: implicitWidth > 0 ? implicitWidth : 16
-                    readonly property real sh: implicitHeight > 0 ? implicitHeight : 10
-                    readonly property real fill: Math.max(box.width / sw, box.height / sh)
-
-                    anchors.centerIn: parent
-                    width: sw * fill
-                    height: sh * fill
+                FillScreencopy {
                     opacity: hasContent ? 1 : 0
                     captureSource: box.alive ? box.win.top.wayland : null
                     live: box.alive

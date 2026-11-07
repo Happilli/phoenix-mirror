@@ -3,7 +3,6 @@ import QtQuick
 import QtQuick.Shapes
 import qs.services.theme
 import qs.configuration.Bar
-import qs.configuration.Hypr
 
 Item {
     id: root
@@ -24,9 +23,6 @@ Item {
     readonly property real length: horizontal ? width : height
     readonly property real thickness: horizontal ? height : width
 
-    readonly property real borderWidth: HyprConfig.get("border_size") ?? 0
-    readonly property color borderColor: Theme.primary
-
     readonly property real notchPadding: 4
     readonly property real notchRadius: 18
     readonly property real notchRadiusBottom: 30
@@ -39,6 +35,7 @@ Item {
 
     readonly property real topLine: floating ? 0 : radius
     readonly property real edgePad: floating ? Math.max(itemGap + notchPadding, radius * 0.5) : itemGap + notchPadding
+    readonly property real rightPad: edgePad
     readonly property real batteryPad: floating ? edgePad : radius + notchPadding + notchRadius - 10
     readonly property real leftTrim: Math.max(0, batteryPad - closedGap)
     readonly property real sessionLift: floating ? Math.max(0, radius + notchPadding + notchRadius - batteryPad) : 0
@@ -65,17 +62,11 @@ Item {
             return appSlot;
         if (sessionButton.hovered || sessionSlot.hovered)
             return sessionButton;
-        if (nightMode.hovered)
+        if (nightMode.hovered || nightSlot.hovered)
             return nightMode;
-        if (startMenu.hovered)
+        if (startMenu.hovered || startSlot.hovered)
             return startMenu;
-        if (mediaButton.hovered)
-            return mediaButton;
-        if (nightSlot.hovered)
-            return nightMode;
-        if (startSlot.hovered)
-            return startMenu;
-        if (mediaSlot.hovered)
+        if (mediaButton.hovered || mediaSlot.hovered)
             return mediaButton;
         if (host.hovered)
             return target;
@@ -102,7 +93,7 @@ Item {
     property real mediaOffset: groupShift(3)
     readonly property bool sessionWanted: notchOpen && target === sessionButton
     property bool sessionLifted: false
-    property real leftShift: sessionLifted ? -sessionLift : ((notchOpen && target === sessionButton) ? 0 : leftTrim)
+    property real leftShift: sessionLifted ? -sessionLift : (sessionWanted ? 0 : leftTrim)
 
     onSessionWantedChanged: {
         if (sessionWanted) {
@@ -127,7 +118,7 @@ Item {
     readonly property real mMedia: mMediaSlot + mediaOffset
     readonly property real mApps: mMediaSlot + lenOf(mediaButton) + itemGap
 
-    readonly property real mBattery: length - batteryPad - lenOf(battery)
+    readonly property real mBattery: length - rightPad - lenOf(battery)
     readonly property real mDateSlot: mBattery - itemGap - lenOf(datetime)
     readonly property real mControlsSlot: mDateSlot - itemGap - lenOf(controls)
     readonly property real mWarSlot: mControlsSlot - itemGap - lenOf(dailyWar)
@@ -176,9 +167,7 @@ Item {
     readonly property real permanentDepth: Math.max(0, fullFloorY - topLine)
     readonly property real depth: permanentDepth * notchProgress
 
-    readonly property var shapes: buildPaths()
-    readonly property string outlinePath: shapes.fill
-    readonly property string borderPath: shapes.border
+    readonly property string outlinePath: buildPath()
 
     function groupShift(i) {
         if (groupIndex < 0 || groupIndex === i)
@@ -214,7 +203,7 @@ Item {
         return u + " " + w;
     }
 
-    function buildPaths() {
+    function buildPath() {
         const R = radius;
         const W = length;
         const H = thickness;
@@ -243,20 +232,16 @@ Item {
         cuts.sort((a, b) => a.l - b.l);
 
         const last = cuts.length - 1;
-        const mergedL = !floating && R > 0 && cuts.length > 0 && cuts[0].l < R;
+        const mergedL = !floating && R > 0 && last >= 0 && cuts[0].l < R;
+        const mergedR = !floating && R > 0 && last >= 0 && cuts[last].r > W - R;
 
         let head;
-        let borderHead;
-        if (floating) {
+        if (floating)
             head = `M ${pt(0, H - r)} L ${pt(0, r)} Q ${pt(0, 0)} ${pt(r, 0)}`;
-            borderHead = `M ${pt(0, r)} Q ${pt(0, 0)} ${pt(r, 0)}`;
-        } else if (mergedL) {
+        else if (mergedL)
             head = `M ${pt(0, H)} L ${pt(0, 0)}`;
-            borderHead = `M ${pt(0, 0)}`;
-        } else {
+        else
             head = `M ${pt(0, H)} L ${pt(0, 0)} Q ${pt(0, R)} ${pt(R, R)}`;
-            borderHead = `M ${pt(0, 0)} Q ${pt(0, R)} ${pt(R, R)}`;
-        }
 
         let body = "";
         for (let i = 0; i < cuts.length; i++) {
@@ -273,7 +258,17 @@ Item {
                 const t = Math.sqrt(xs / R);
                 const ys = R * (2 * t - t * t);
                 const rb = Math.min(notchRadiusBottom, (c.r - xs) / 2, Math.max(0, f - ys));
-                body += ` Q ${pt(0, t * R)} ${pt(xs, ys)}`;
+                const rj = Math.min(notchRadius, Math.max(0, f - rb - ys));
+                const chord = Math.hypot(xs, ys);
+                const s = chord > 0 ? Math.min(0.5, rj / chord) : 0;
+
+                if (rj > 0.5 && s > 0) {
+                    const u = 1 - s;
+                    body += ` Q ${pt(0, u * t * R)} ${pt(u * u * xs, 2 * u * s * t * R + u * u * ys)}`;
+                    body += ` Q ${pt(xs, ys)} ${pt(xs, ys + rj)}`;
+                } else {
+                    body += ` Q ${pt(0, t * R)} ${pt(xs, ys)}`;
+                }
                 body += ` L ${pt(xs, f - rb)} Q ${pt(xs, f)} ${pt(xs + rb, f)}`;
             } else {
                 const rbL = Math.min(notchRadiusBottom, (c.r - c.l) / 2, Math.max(0, c.d - rtL));
@@ -281,27 +276,42 @@ Item {
                 body += ` L ${pt(c.l, f - rbL)} Q ${pt(c.l, f)} ${pt(c.l + rbL, f)}`;
             }
 
-            const rbR = Math.min(notchRadiusBottom, (c.r - c.l) / 2, Math.max(0, c.d - rtR));
-            body += ` L ${pt(c.r - rbR, f)} Q ${pt(c.r, f)} ${pt(c.r, f - rbR)}`;
-            body += ` L ${pt(c.r, T + rtR)} Q ${pt(c.r, T)} ${pt(c.r + rtR, T)}`;
+            if (mergedR && end) {
+                const xe = Math.min(W, c.r);
+                const t = Math.sqrt((W - xe) / R);
+                const ye = R * (2 * t - t * t);
+                const rb = Math.min(notchRadiusBottom, (xe - Math.max(0, c.l)) / 2, Math.max(0, f - ye));
+                const rj = Math.min(notchRadius, Math.max(0, f - rb - ye));
+                const chord = Math.hypot(W - xe, ye);
+                const s = chord > 0 ? Math.min(0.5, rj / chord) : 0;
+
+                body += ` L ${pt(xe - rb, f)} Q ${pt(xe, f)} ${pt(xe, f - rb)}`;
+
+                if (rj > 0.5 && s > 0) {
+                    const k = (1 - s) * (1 - s);
+                    const bx = k * xe + (1 - k) * W;
+                    const by = k * ye + 2 * s * (1 - s) * t * R;
+                    body += ` L ${pt(xe, ye + rj)} Q ${pt(xe, ye)} ${pt(bx, by)}`;
+                    body += ` Q ${pt(W, (1 - s) * t * R)} ${pt(W, 0)}`;
+                } else {
+                    body += ` L ${pt(xe, ye)} Q ${pt(W, t * R)} ${pt(W, 0)}`;
+                }
+            } else {
+                const rbR = Math.min(notchRadiusBottom, (c.r - c.l) / 2, Math.max(0, c.d - rtR));
+                body += ` L ${pt(c.r - rbR, f)} Q ${pt(c.r, f)} ${pt(c.r, f - rbR)}`;
+                body += ` L ${pt(c.r, T + rtR)} Q ${pt(c.r, T)} ${pt(c.r + rtR, T)}`;
+            }
         }
 
         let tail;
-        let borderTail;
-        if (floating) {
-            borderTail = ` L ${pt(W - r, 0)} Q ${pt(W, 0)} ${pt(W, r)}`;
-            tail = borderTail + ` L ${pt(W, H - r)} Q ${pt(W, H)} ${pt(W - r, H)} L ${pt(r, H)} Q ${pt(0, H)} ${pt(0, H - r)} Z`;
-        } else {
-            borderTail = ` L ${pt(W - R, R)} Q ${pt(W, R)} ${pt(W, 0)}`;
-            tail = borderTail + ` L ${pt(W, H)} Z`;
-        }
+        if (floating)
+            tail = ` L ${pt(W - r, 0)} Q ${pt(W, 0)} ${pt(W, r)} L ${pt(W, H - r)} Q ${pt(W, H)} ${pt(W - r, H)} L ${pt(r, H)} Q ${pt(0, H)} ${pt(0, H - r)} Z`;
+        else if (mergedR)
+            tail = ` L ${pt(W, H)} Z`;
+        else
+            tail = ` L ${pt(W - R, R)} Q ${pt(W, R)} ${pt(W, 0)} L ${pt(W, H)} Z`;
 
-        const fill = head + body + tail;
-
-        return {
-            fill: fill,
-            border: floating ? fill : borderHead + body + borderTail
-        };
+        return head + body + tail;
     }
 
     onHoveredItemChanged: {
@@ -416,6 +426,7 @@ Item {
         interval: (barHover.hovered || root.popupShown) ? 260 : 100
         onTriggered: root.notchOpen = false
     }
+
     Timer {
         id: liftTimer
         interval: 100
@@ -430,6 +441,7 @@ Item {
         anchors.leftMargin: root.edge === "right" ? root.topLine : 0
         anchors.rightMargin: root.edge === "left" ? root.topLine : 0
     }
+
     Shape {
         anchors.fill: parent
         preferredRendererType: Shape.CurveRenderer
@@ -442,23 +454,6 @@ Item {
 
             PathSvg {
                 path: root.outlinePath
-            }
-        }
-    }
-    Shape {
-        anchors.fill: parent
-        visible: root.borderWidth > 0
-        preferredRendererType: Shape.CurveRenderer
-
-        ShapePath {
-            fillColor: "transparent"
-            strokeColor: root.borderColor
-            strokeWidth: root.borderWidth
-            capStyle: ShapePath.FlatCap
-            joinStyle: ShapePath.RoundJoin
-
-            PathSvg {
-                path: root.borderPath
             }
         }
     }

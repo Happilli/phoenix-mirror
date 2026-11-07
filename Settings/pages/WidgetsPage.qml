@@ -12,26 +12,27 @@ SettingsPage {
     readonly property real contentWidth: width - margin * 2
     readonly property bool wide: contentWidth >= 820
     readonly property real gutter: 14
-    readonly property real previewWidth: wide ? Math.min(780, contentWidth * 0.64) : Math.min(contentWidth, 780)
-    readonly property real quickWidth: wide ? contentWidth - previewWidth - gutter : contentWidth
+    readonly property real edgeGap: 8
+    readonly property real previewWidth: wide ? Math.min(780, contentWidth * 0.64) - edgeGap : Math.min(contentWidth, 780) - edgeGap * 2
+    readonly property real quickWidth: wide ? contentWidth - previewWidth - edgeGap - gutter : contentWidth
 
     header: Item {
         id: hdr
 
         width: parent.width
-        height: page.wide ? Math.max(pv.height, quick.height) : pv.height + page.gutter + quick.height
+        height: page.wide ? Math.max(pv.height + page.edgeGap, quick.height) : page.edgeGap + pv.height + page.gutter + quick.height
 
         DesktopPreview {
             id: pv
-            x: page.wide ? hdr.width - width : (hdr.width - width) / 2
-            y: 0
+            x: page.wide ? hdr.width - width - page.edgeGap : (hdr.width - width) / 2
+            y: page.edgeGap
             width: page.previewWidth
         }
 
         SettingsGroup {
             id: quick
             x: 0
-            y: page.wide ? 0 : pv.height + page.gutter
+            y: page.wide ? 0 : page.edgeGap + pv.height + page.gutter
             width: page.quickWidth
 
             SettingsGroup.Entry {

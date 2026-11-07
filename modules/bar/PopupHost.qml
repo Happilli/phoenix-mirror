@@ -2,7 +2,7 @@ import QtQuick
 import Quickshell.Widgets
 import qs.services.theme
 
-Item {
+ClippingRectangle {
     id: root
 
     required property bool shown
@@ -41,7 +41,7 @@ Item {
 
     readonly property real cm: centerM
 
-    property real w: wantW + (vertical ? gap : 0)
+    property real w: wantW
     Behavior on w {
         enabled: root.settled
         SpringAnimation {
@@ -51,7 +51,7 @@ Item {
         }
     }
 
-    property real h: wantH + (vertical ? 0 : gap)
+    property real h: wantH
     Behavior on h {
         enabled: root.settled
         SpringAnimation {
@@ -66,26 +66,35 @@ Item {
 
     width: shown ? Math.max(0, w) : 0
     height: shown ? Math.max(0, h) : 0
-    x: vertical ? (edge === "left" ? attach : attach - width) : Math.round(Math.max(edgeMargin, Math.min(cm - width / 2, parentW - width - edgeMargin)))
-    y: vertical ? Math.round(Math.max(edgeMargin, Math.min(cm - height / 2, parentH - height - edgeMargin))) : (edge === "top" ? attach : attach - height)
+
+    x: {
+        if (vertical) {
+            if (edge === "left")
+                return attach + gap;
+            return attach - gap - width;
+        }
+        return Math.round(Math.max(edgeMargin, Math.min(cm - width / 2, parentW - width - edgeMargin)));
+    }
+    y: {
+        if (!vertical) {
+            if (edge === "top")
+                return attach + gap;
+            return attach - gap - height;
+        }
+        return Math.round(Math.max(edgeMargin, Math.min(cm - height / 2, parentH - height - edgeMargin)));
+    }
+
     visible: shown && height > 0.5 && width > 0.5
+
+    color: Theme.background
+    radius: cardRadius
 
     HoverHandler {
         id: hover
     }
 
-    ClippingRectangle {
+    Item {
+        id: holder
         anchors.fill: parent
-        anchors.bottomMargin: root.edge === "bottom" ? Math.min(root.gap, root.height) : 0
-        anchors.topMargin: root.edge === "top" ? Math.min(root.gap, root.height) : 0
-        anchors.leftMargin: root.edge === "left" ? Math.min(root.gap, root.width) : 0
-        anchors.rightMargin: root.edge === "right" ? Math.min(root.gap, root.width) : 0
-        color: Theme.background
-        radius: root.cardRadius
-
-        Item {
-            id: holder
-            anchors.fill: parent
-        }
     }
 }

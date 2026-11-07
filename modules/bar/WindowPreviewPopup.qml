@@ -3,6 +3,7 @@ import QtQuick
 import Quickshell.Wayland
 import Quickshell.Hyprland
 import Quickshell.Widgets
+import qs.components
 import qs.services.theme
 
 Item {
@@ -122,17 +123,10 @@ Item {
                     border.width: 1
                     border.color: Theme.outlineVariant
 
-                    ScreencopyView {
-                        readonly property real sw: implicitWidth > 0 ? implicitWidth : 16
-                        readonly property real sh: implicitHeight > 0 ? implicitHeight : 10
-                        readonly property real fill: Math.max(win.width / sw, win.height / sh)
-                        anchors.centerIn: parent
-                        width: sw * fill
-                        height: sh * fill
+                    FillScreencopy {
                         captureSource: win.modelData.top.wayland
                         live: root.active
                     }
-
                     MouseArea {
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor

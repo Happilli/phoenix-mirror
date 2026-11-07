@@ -1,11 +1,11 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
-import Quickshell.Wayland
 import Quickshell.Hyprland
 import Ryu.Extraa
 import qs.services.theme
 import qs.configuration.Picker
+import qs.components
 
 Scope {
     component PickGrid: GridView {
@@ -115,15 +115,8 @@ Scope {
                     color: Theme.surfaceContainerHighest
                     clip: true
 
-                    ScreencopyView {
+                    FillScreencopy {
                         id: sc
-                        readonly property real sw: implicitWidth > 0 ? implicitWidth : 16
-                        readonly property real sh: implicitHeight > 0 ? implicitHeight : 10
-                        readonly property real fill: Math.max(card.width / sw, card.height / sh)
-
-                        anchors.centerIn: parent
-                        width: sw * fill
-                        height: sh * fill
                         visible: !cell.isWorkspace
                         live: PickerConfig.open && !cell.isWorkspace
                         captureSource: cell.modelData.kind === "screen" ? cell.modelData.screen : null
