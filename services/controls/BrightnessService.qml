@@ -10,6 +10,11 @@ Singleton {
     property bool available: false
     property real pending: -1
 
+    function refresh() {
+        if (!reader.running && !setter.running && pending < 0)
+            reader.running = true;
+    }
+
     function setBrightness(v) {
         brightness = Math.max(0.01, Math.min(1, v));
         pending = brightness;
@@ -51,13 +56,5 @@ Singleton {
                 }
             }
         }
-    }
-
-    Timer {
-        interval: 2000
-        running: true
-        repeat: true
-        onTriggered: if (!reader.running && !setter.running)
-            reader.running = true
     }
 }

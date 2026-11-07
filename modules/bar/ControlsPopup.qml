@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Ryu.Extraa
 import qs.services.theme
+import qs.services.controls
 
 Item {
     id: root
@@ -13,7 +14,8 @@ Item {
     readonly property int trackWidth: 42
     readonly property int sliderLength: 400
     readonly property int sliderGap: 8
-
+    onActiveChanged: if (active)
+        BrightnessService.refresh()
     anchors.centerIn: parent
     implicitWidth: sliders.implicitWidth - (itemWidth - trackWidth)
     implicitHeight: sliders.implicitHeight

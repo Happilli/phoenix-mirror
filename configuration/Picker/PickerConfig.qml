@@ -266,7 +266,7 @@ Singleton {
         if (!open)
             return;
         open = false;
-        writer.command = ["sh", "-c", 'printf "%s" "$1" > "$2.tmp" && mv "$2.tmp" "$2"', "sh", text, resultPath];
+        writer.command = ["sh", "-c", '[ -p "$2" ] && printf "%s" "$1" | timeout 3 tee "$2" >/dev/null', "sh", text, resultPath];
         writer.running = true;
     }
 

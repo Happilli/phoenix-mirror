@@ -55,9 +55,12 @@ Grid {
     }
 
     Repeater {
-        model: root.groups
+        model: ScriptModel {
+            values: root.groups
+            objectProp: "appId"
+        }
 
-        delegate: Item {
+        delegate: Rectangle {
             id: cell
             required property var modelData
             required property int index
@@ -70,64 +73,51 @@ Grid {
                 return index < root.lastIndex ? -root.pushAmount : root.pushAmount;
             }
 
-            property real shift: push
-
             width: 40
             height: 40
+            radius: height / 2
+            color: Theme.background
 
             transform: Translate {
-                x: root.vertical ? 0 : cell.shift
-                y: root.vertical ? cell.shift : 0
-            }
-
-            Behavior on shift {
-                NumberAnimation {
-                    duration: 180
-                    easing.type: Easing.OutCubic
-                }
-            }
-
-            Rectangle {
-                anchors.fill: parent
-                radius: height / 2
-                color: Theme.background
+                x: root.vertical ? 0 : cell.push
+                y: root.vertical ? cell.push : 0
             }
 
             IconImage {
-                id: appIcon
                 anchors.centerIn: parent
                 source: cell.modelData.icon
                 implicitSize: 22
                 opacity: cell.anyActive ? 1 : 0.5
-                Behavior on opacity {
-                    NumberAnimation {
-                        duration: 150
-                    }
-                }
             }
 
             Repeater {
-                model: cell.instances
+                model: cell.instances.length
 
-                delegate: Rectangle {
+                delegate: Text {
                     id: dot
                     required property int index
 
                     readonly property int total: cell.instances.length
-                    readonly property real angle: (Math.PI * 2 / Math.max(total, 1)) * index + Math.PI / 2
                     readonly property real orbit: 16
+                    readonly property real targetAngle: (Math.PI * 2 / Math.max(total, 1)) * index + Math.PI / 2
+                    readonly property real birthAngle: index > 0 ? (Math.PI * 2 / Math.max(total - 1, 1)) * (index - 1) + Math.PI / 2 : targetAngle
 
-                    width: 4
-                    height: 4
-                    radius: 2
+                    property real angle: birthAngle
+
+                    visible: cell.anyActive
+                    text: "*"
+                    font.pixelSize: 10
+                    font.bold: true
                     color: Theme.primary
-                    opacity: cell.anyActive ? 1 : 0
                     x: cell.width / 2 + Math.cos(angle) * orbit - width / 2
                     y: cell.height / 2 + Math.sin(angle) * orbit - height / 2
 
-                    Behavior on opacity {
+                    Component.onCompleted: angle = Qt.binding(() => dot.targetAngle)
+
+                    Behavior on angle {
                         NumberAnimation {
-                            duration: 150
+                            duration: 320
+                            easing.type: Easing.OutCubic
                         }
                     }
                 }

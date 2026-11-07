@@ -3,9 +3,9 @@ dir="${XDG_RUNTIME_DIR:-/tmp}"
 out="$dir/phoenix-picker-result"
 exec 2>/dev/null
 rm -f "$out"
+mkfifo "$out" || exit 1
+trap 'rm -f "$out"' EXIT
 qs -p "$HOME/.config/quickshell/phoenix" ipc call picker toggle "$XDPH_WINDOW_SHARING_LIST" "$XDPH_WORKSPACE_SHARING_LIST_V3" || exit 1
-until [ -e "$out" ]; do sleep 0.1; done
 res=$(cat "$out")
-rm -f "$out"
 [ -n "$res" ] && printf '%s\n' "$res"
 exit 0

@@ -127,11 +127,6 @@ Item {
 
         Component.onCompleted: Qt.callLater(tryEnter)
 
-        onIsTopChanged: {
-            progressBar.animating = false;
-            progress = 0;
-        }
-
         onSlideChanged: {
             if (exiting && !collapsing && slide <= 0.02) {
                 collapsing = true;
@@ -216,20 +211,10 @@ Item {
                         Rectangle {
                             id: progressBar
 
-                            property bool animating: false
-
                             width: parent.width * tile.progress
                             height: 2
                             radius: 1
                             color: Theme.primary
-
-                            Behavior on width {
-                                enabled: progressBar.animating
-                                NumberAnimation {
-                                    duration: NotificationConfig.progressInterval
-                                    easing.type: Easing.Linear
-                                }
-                            }
                         }
                     }
 
@@ -367,20 +352,22 @@ Item {
             onTriggered: NotificationsService.onItemEntered()
         }
 
-        Timer {
-            interval: NotificationConfig.progressInterval
-            repeat: true
-            running: tile.isTop && !tile.entering && !tile.exiting && tile.slide > 0.5
-            onTriggered: {
-                if (hover.hovered) {
-                    return;
-                }
-                progressBar.animating = true;
-                tile.progress += NotificationConfig.progressInterval / NotificationConfig.autoCloseDuration;
-                if (tile.progress >= 1) {
-                    tile.beginExit();
-                }
-            }
+        NumberAnimation {
+            id: countdown
+            target: tile
+            property: "progress"
+            from: 0
+            to: 1
+            duration: NotificationConfig.autoCloseDuration
+            running: tile.isTop && !tile.entering && !tile.exiting
+            onFinished: tile.beginExit()
+        }
+
+        Binding {
+            target: countdown
+            property: "paused"
+            value: hover.hovered
+            when: countdown.running
         }
     }
 }
