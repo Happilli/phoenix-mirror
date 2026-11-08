@@ -44,10 +44,11 @@ Item {
     readonly property real attach: floating ? (lowFlat ? 0 : thickness) : (lowFlat ? radius : thickness - radius)
 
     readonly property var permanent: floating ? [] : [battery, recordingIndicator]
-    readonly property var popupLoaders: [warLoader, controlsLoader, powerLoader, calendarLoader, previewLoader, nightLoader, mediaLoader, startLoader]
+    readonly property var popupLoaders: [warLoader, controlsLoader, powerLoader, calendarLoader, previewLoader, nightLoader, mediaLoader, startLoader, wifiLoader]
     readonly property var activeLoader: popupLoaders.find(l => l.owner === target) ?? null
     readonly property var activeContent: activeLoader ? activeLoader.item : null
     readonly property bool popupShown: notchOpen && activeLoader !== null
+    readonly property bool pinned: popupShown && target === wifiButton && (activeContent?.pinned ?? false)
 
     readonly property Item hoveredItem: {
         if (powerSlot.hovered || powerProfile.hovered)
@@ -56,6 +57,8 @@ Item {
             return dailyWar;
         if (controls.hovered)
             return controls;
+        if (wifiButton.hovered)
+            return wifiButton;
         if (dateSlot.hovered)
             return datetime;
         if (openedApp.hoveredCell)
@@ -88,6 +91,7 @@ Item {
     property real dateOffset: (notchOpen && target === datetime) ? dateShift : 0
     property real recOffset: (notchOpen && target === powerProfile) ? dateShift : 0
     property real pairOffset: (notchOpen && (target === powerProfile || target === dailyWar)) ? slideShift : 0
+    property real wifiOffset: (notchOpen && target === wifiButton) ? slideShift : 0
     property real startOffset: groupShift(1)
     property real nightOffset: groupShift(2)
     property real mediaOffset: groupShift(3)
@@ -120,19 +124,23 @@ Item {
 
     readonly property real mBattery: length - rightPad - lenOf(battery)
     readonly property real mDateSlot: mBattery - itemGap - lenOf(datetime)
-    readonly property real mControlsSlot: mDateSlot - itemGap - lenOf(controls)
+    readonly property real mWifiSlot: mDateSlot - itemGap - lenOf(wifiButton)
+    readonly property real mControlsSlot: mWifiSlot - itemGap - lenOf(controls)
     readonly property real mWarSlot: mControlsSlot - itemGap - lenOf(dailyWar)
     readonly property real mPowerBase: mWarSlot - tightGap - lenOf(powerProfile)
     readonly property real mDate: mDateSlot - dateOffset
-    readonly property real mControls: mControlsSlot - dateOffset
-    readonly property real mWar: mWarSlot - dateOffset
+    readonly property real mWifi: mWifiSlot - dateOffset
+    readonly property real mControls: mControlsSlot - dateOffset - wifiOffset
+    readonly property real mWar: mWarSlot - dateOffset - wifiOffset
     readonly property real mPowerSlot: mPowerBase - dateOffset
-    readonly property real mPower: mPowerSlot - pairOffset
+    readonly property real mPower: mPowerSlot - pairOffset - wifiOffset
     readonly property real mRec: mPower - 16 - recOffset - lenOf(recordingIndicator)
 
     readonly property real targetM: {
         if (target === datetime)
             return mDateSlot - dateShift;
+        if (target === wifiButton)
+            return mWifiSlot;
         if (target === controls)
             return mControlsSlot;
         if (target === dailyWar)
@@ -354,6 +362,13 @@ Item {
         }
     }
 
+    Behavior on wifiOffset {
+        NumberAnimation {
+            duration: 180
+            easing.type: Easing.OutCubic
+        }
+    }
+
     Behavior on startOffset {
         NumberAnimation {
             duration: 180
@@ -424,7 +439,13 @@ Item {
     Timer {
         id: closeTimer
         interval: (barHover.hovered || root.popupShown) ? 260 : 100
-        onTriggered: root.notchOpen = false
+        onTriggered: {
+            if (root.pinned) {
+                closeTimer.restart();
+                return;
+            }
+            root.notchOpen = false;
+        }
     }
 
     Timer {
@@ -604,6 +625,13 @@ Item {
         y: root.py(root.mDate, datetime)
     }
 
+    WifiButton {
+        id: wifiButton
+        open: root.notchOpen && root.target === wifiButton
+        x: root.px(root.mWifi, wifiButton)
+        y: root.py(root.mWifi, wifiButton)
+    }
+
     Controls {
         id: controls
         vertical: !root.horizontal
@@ -657,6 +685,16 @@ Item {
             active: root.notchOpen && root.target === owner
             sourceComponent: ControlsPopup {
                 pill: controls
+                active: true
+            }
+        }
+
+        Loader {
+            id: wifiLoader
+            readonly property Item owner: wifiButton
+            anchors.centerIn: parent
+            active: root.notchOpen && root.target === owner
+            sourceComponent: WifiPopup {
                 active: true
             }
         }
