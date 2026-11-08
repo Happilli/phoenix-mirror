@@ -1,0 +1,1 @@
+- u need quickshell plus u need [ryu](https://github.com/Happilli/ryu) for it to work.
