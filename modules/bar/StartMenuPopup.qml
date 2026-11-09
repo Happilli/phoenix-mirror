@@ -1,9 +1,8 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Quickshell
-import Quickshell.Widgets
-import Ryu.Desktop as Desktop
+import Ryu.Desktop
 import Ryu.Io
+import Ryu.Ui
 import qs.services.theme
 
 Item {
@@ -12,7 +11,7 @@ Item {
     property int hoveredIndex: -1
     property bool pressing: false
     readonly property var items: {
-        const apps = Desktop.DesktopEntries.applications.values.filter(e => !e.noDisplay).sort((a, b) => a.name.localeCompare(b.name));
+        const apps = DesktopEntries.applications.values.filter(e => !e.noDisplay).sort((a, b) => a.name.localeCompare(b.name));
         const out = [];
         let last = "";
         for (const e of apps) {
@@ -158,7 +157,7 @@ Item {
                     anchors.leftMargin: 16
                     anchors.verticalCenter: parent.verticalCenter
                     implicitSize: 28
-                    source: Desktop.DesktopIcons.path(row.entry?.icon ?? "", "application-x-executable")
+                    source: DesktopIcons.path(row.entry?.icon ?? "", "application-x-executable")
                 }
                 Text {
                     anchors.left: icon.right

@@ -1,6 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Quickshell.Widgets
+import Ryu.Ui
 import Ryu.Extraa
 import Ryu.Shapes
 import qs.services.theme
@@ -8,17 +8,13 @@ import qs.services.network
 
 Item {
     id: root
-
     required property bool active
-
     readonly property var wifi: NetworkService.client
     readonly property real contentWidth: 340
     readonly property real maxListHeight: 340
     readonly property real emptyHeight: 72
     readonly property real hostPad: 8
-
     readonly property var rowDelegate: Qt.createComponent(Qt.resolvedUrl("WifiRowContent.qml"))
-
     property int tab: 0
     property string selPath: ""
     property string localMode: ""
@@ -27,10 +23,8 @@ Item {
     property string passText: ""
     property var listRows: []
     property string lastKey: ""
-
     readonly property Item holder: parent ? parent.parent : null
     readonly property string hostEdge: holder?.parent?.edge ?? "bottom"
-
     readonly property string mode: wifi.requestPending ? "agent" : localMode
     readonly property bool pinned: mode !== ""
     readonly property bool needUser: mode === "agent" ? wifi.requestKind === "userAndPassword" : (mode === "net" && picked?.type === "8021x")
@@ -38,7 +32,6 @@ Item {
     readonly property string agentRowPath: listRows.find(r => r.headline === wifi.requestNetwork)?.path ?? ""
     readonly property string promptPath: mode === "net" ? (picked?.path ?? "") : (mode === "agent" ? agentRowPath : "")
     readonly property bool orphanPrompt: mode !== "" && !listRows.some(r => r.path === promptPath)
-
     readonly property var rows: {
         const avail = tab === 0;
         return (avail ? wifi.networks : wifi.knownNetworks).map(n => {
@@ -62,7 +55,6 @@ Item {
             };
         });
     }
-
     function strengthIcon(s) {
         if (s > 75)
             return "\udb82\udd28";
@@ -72,7 +64,6 @@ Item {
             return "\udb82\udd22";
         return "\udb82\udd1f";
     }
-
     function refreshModel() {
         if (pinned)
             return;
@@ -85,13 +76,11 @@ Item {
                 popup: root
             }));
     }
-
     function syncSel() {
         const idx = listRows.findIndex(r => r.path === selPath);
         list.currentIndex = idx;
         list.expandedIndices = idx >= 0 ? [idx] : [];
     }
-
     function pin() {
         if (!holder)
             return;
@@ -104,12 +93,10 @@ Item {
         col.anchors.topMargin = hostPad;
         col.anchors.bottomMargin = hostPad;
     }
-
     function clearPrompt() {
         localMode = "";
         picked = null;
     }
-
     function cancel() {
         if (wifi.requestPending)
             wifi.cancelRequest();
@@ -117,7 +104,6 @@ Item {
         passText = "";
         userText = "";
     }
-
     function submit() {
         if (mode === "agent") {
             if (wifi.requestKind === "userAndPassword")
@@ -130,7 +116,6 @@ Item {
         }
         passText = "";
     }
-
     function connectRow(n) {
         if (n.known || n.type === "open") {
             NetworkService.connectTo(n.path, "", "");
@@ -139,23 +124,19 @@ Item {
         picked = n;
         localMode = "net";
     }
-
     function switchTab(index) {
         tab = index;
         selPath = "";
         forceActiveFocus();
     }
-
     onRowsChanged: refreshModel()
     onPinnedChanged: if (!pinned)
         refreshModel()
-
     onSelPathChanged: {
         syncSel();
         if (mode !== "" && selPath !== promptPath)
             cancel();
     }
-
     onModeChanged: {
         if (mode === "") {
             passText = "";
@@ -167,7 +148,6 @@ Item {
         if (selPath !== promptPath)
             selPath = promptPath;
     }
-
     onActiveChanged: {
         if (active) {
             NetworkService.scanIfStale();
@@ -176,12 +156,10 @@ Item {
             selPath = "";
         }
     }
-
     Component.onCompleted: {
         pin();
         refreshModel();
     }
-
     Keys.onEscapePressed: event => {
         event.accepted = mode !== "" || selPath !== "";
         if (mode !== "")
@@ -189,31 +167,25 @@ Item {
         else
             selPath = "";
     }
-
     anchors.centerIn: parent
     implicitWidth: contentWidth
     implicitHeight: col.implicitHeight
     visible: active
-
     Component {
         id: orphanForm
-
         WifiPromptForm {
             pop: root
             titled: true
         }
     }
-
     Column {
         id: col
         width: root.contentWidth
         spacing: 10
         visible: root.active
-
         Item {
             width: parent.width
             height: 40
-
             MaterialShape {
                 id: shape
                 anchors.left: parent.left
@@ -227,14 +199,12 @@ Item {
                 color: Theme.onPrimaryColor
                 containerColor: Theme.primary
             }
-
             Column {
                 anchors.left: shape.right
                 anchors.leftMargin: 10
                 anchors.right: scanBtn.left
                 anchors.rightMargin: 8
                 anchors.verticalCenter: parent.verticalCenter
-
                 Text {
                     width: parent.width
                     text: "Wi-Fi"
@@ -242,7 +212,6 @@ Item {
                     font.weight: Font.DemiBold
                     color: Theme.onBackgroundColor
                 }
-
                 Text {
                     width: parent.width
                     text: NetworkService.statusText
@@ -251,7 +220,6 @@ Item {
                     color: Theme.onSurfaceVariantColor
                 }
             }
-
             MaterialIconButton {
                 id: scanBtn
                 anchors.right: toggle.left
@@ -267,7 +235,6 @@ Item {
                 enabled: root.wifi.powered && !root.wifi.scanning
                 onClicked: root.wifi.scan()
             }
-
             MaterialSwitch {
                 id: toggle
                 anchors.right: parent.right
@@ -282,24 +249,20 @@ Item {
                 onToggled: root.wifi.powered = checked
             }
         }
-
         Item {
             width: parent.width
             height: root.listRows.length === 0 ? root.emptyHeight : Math.min(root.maxListHeight, list.height)
-
             ClippingRectangle {
                 anchors.fill: parent
                 visible: root.listRows.length > 0
                 radius: 16
                 color: "transparent"
-
                 Flickable {
                     id: flick
                     anchors.fill: parent
                     contentWidth: width
                     contentHeight: list.height
                     boundsBehavior: Flickable.StopAtBounds
-
                     MaterialList {
                         id: list
                         width: flick.width
@@ -318,7 +281,6 @@ Item {
                         supportingColor: Theme.onSurfaceVariantColor
                         dividerColor: Theme.outlineVariant
                         showChevron: false
-
                         onModelChanged: root.syncSel()
                         onExpandedChanged: (index, expanded) => {
                             const p = root.listRows[index]?.path ?? "";
@@ -330,7 +292,6 @@ Item {
                     }
                 }
             }
-
             Text {
                 anchors.centerIn: parent
                 visible: root.listRows.length === 0
@@ -340,14 +301,12 @@ Item {
                 opacity: 0.6
             }
         }
-
         Loader {
             width: parent.width
             active: root.orphanPrompt
             visible: active
             sourceComponent: orphanForm
         }
-
         Text {
             width: parent.width
             visible: NetworkService.message !== ""
@@ -356,7 +315,6 @@ Item {
             font.pixelSize: 11
             color: Theme.error
         }
-
         MaterialSegmentedButton {
             width: parent.width
             labels: ["Available", "Saved"]
@@ -368,7 +326,6 @@ Item {
             textColor: Theme.onSurfaceVariantColor
             checkedTextColor: Theme.onPrimaryColor
             borderColor: Theme.outline
-
             onToggled: (index, checked) => {
                 if (checked)
                     root.switchTab(index);

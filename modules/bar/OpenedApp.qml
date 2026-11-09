@@ -1,9 +1,8 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Quickshell
 import Quickshell.Wayland
-import Quickshell.Widgets
-import Ryu.Desktop as Desktop
+import Ryu.Desktop
+import Ryu.Ui
 import qs.services.theme
 
 Grid {
@@ -24,18 +23,18 @@ Grid {
         lastAppId = hoveredCell.modelData.appId;
     }
     readonly property var groups: {
-        const apps = Desktop.DesktopEntries.applications.values;
+        const apps = DesktopEntries.applications.values;
         const list = ToplevelManager.toplevels.values;
         const order = [];
         const map = {};
         for (const t of list) {
             const id = t.appId;
             if (!map[id]) {
-                const entry = apps.length > 0 ? Desktop.DesktopEntries.heuristicLookup(id) : null;
+                const entry = apps.length > 0 ? DesktopEntries.heuristicLookup(id) : null;
                 const name = entry?.icon || id.toLowerCase();
                 map[id] = {
                     appId: id,
-                    icon: Desktop.DesktopIcons.path(name),
+                    icon: DesktopIcons.path(name),
                     toplevels: []
                 };
                 order.push(map[id]);

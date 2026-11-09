@@ -1,23 +1,19 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Quickshell
+import Ryu.Ui
 import qs.components
-import Quickshell.Wayland
 import qs.services.theme
 import qs.configuration.Picker
 
 Item {
     id: mini
-
     property string wsName: ""
-
     readonly property var g: PickerConfig.groupMap[wsName] ?? null
     readonly property real mx: g?.mx ?? 0
     readonly property real my: g?.my ?? 0
     readonly property real mw: g?.mw ?? 1920
     readonly property real mh: g?.mh ?? 1080
     readonly property real k: width > 0 && mw > 0 ? width / mw : 0
-
     Rectangle {
         id: frame
         anchors.left: parent.left
@@ -28,19 +24,15 @@ Item {
         border.width: 2
         border.color: Theme.outlineVariant
         clip: true
-
         Repeater {
             model: ScriptModel {
                 values: mini.g ? mini.g.wins.map(w => w.key) : []
             }
-
             Rectangle {
                 id: box
                 required property string modelData
-
                 readonly property var win: mini.g?.wins.find(w => w.key === modelData) ?? null
                 readonly property bool alive: win !== null && mini.visible && PickerConfig.open
-
                 visible: win !== null
                 x: win ? (win.x - mini.mx) * mini.k : 0
                 y: win ? (win.y - mini.my) * mini.k : 0
@@ -57,7 +49,6 @@ Item {
             }
         }
     }
-
     Text {
         anchors.centerIn: parent
         visible: !mini.g || mini.g.wins.length === 0

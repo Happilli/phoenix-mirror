@@ -1,6 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Quickshell.Widgets
+import Ryu.Ui
 import Ryu.Extraa
 import Ryu.Clipsh
 import qs.services.theme
@@ -8,10 +8,8 @@ import qs.configuration.Clipboard
 
 Item {
     id: root
-
     property real shownHeight: 0
     property int hoveredIndex: -1
-
     readonly property real pad: 12
     readonly property real searchScale: 0.85
     readonly property real wipeSize: 40
@@ -38,10 +36,8 @@ Item {
     }
     readonly property real fullHeight: Math.min(maxHeight, pad + 48 + 8 + contentHeight + pad)
     readonly property real wantHeight: fullHeight
-
     width: 440
     height: Math.max(0, shownHeight)
-
     function sync() {
         const next = entries;
         const keep = new Set(next);
@@ -69,11 +65,9 @@ Item {
         while (shown.count > next.length)
             shown.remove(shown.count - 1);
     }
-
     ListModel {
         id: shown
     }
-
     Behavior on shownHeight {
         SpringAnimation {
             spring: 3
@@ -81,31 +75,25 @@ Item {
             epsilon: 0.33
         }
     }
-
     onWantHeightChanged: shownHeight = wantHeight
-
     onEntriesChanged: {
         hoveredIndex = -1;
         sync();
     }
-
     Component.onCompleted: {
         board.fetchHistory();
         search.forceActiveFocus();
         shownHeight = wantHeight;
         sync();
     }
-
     Shortcut {
         sequence: "Escape"
         onActivated: ClipboardConfig.hide()
     }
-
     Clipsh {
         id: board
         onItemCopied: ClipboardConfig.hide()
     }
-
     ClippingRectangle {
         id: card
         anchors.fill: parent
@@ -113,18 +101,15 @@ Item {
         color: Theme.background
         border.width: 1
         border.color: Theme.outlineVariant
-
         MouseArea {
             anchors.fill: parent
         }
-
         Item {
             id: body
             anchors.top: parent.top
             anchors.left: parent.left
             anchors.right: parent.right
             height: root.fullHeight
-
             Item {
                 id: searchRow
                 anchors.top: parent.top
@@ -132,7 +117,6 @@ Item {
                 anchors.right: parent.right
                 anchors.margins: root.pad
                 height: 48
-
                 MaterialSearchBox {
                     id: search
                     anchors.left: parent.left
@@ -152,7 +136,6 @@ Item {
                     onAccepted: if (root.entries.length > 0)
                         board.copyItem(root.entries[0])
                 }
-
                 MaterialIconButton {
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
@@ -166,7 +149,6 @@ Item {
                     onClicked: board.wipe()
                 }
             }
-
             ListView {
                 id: list
                 anchors.top: searchRow.bottom
@@ -184,7 +166,6 @@ Item {
                 highlightFollowsCurrentItem: false
                 currentIndex: -1
                 model: shown
-
                 add: Transition {
                     ParallelAnimation {
                         NumberAnimation {
@@ -202,7 +183,6 @@ Item {
                         }
                     }
                 }
-
                 remove: Transition {
                     ParallelAnimation {
                         NumberAnimation {
@@ -218,7 +198,6 @@ Item {
                         }
                     }
                 }
-
                 displaced: Transition {
                     NumberAnimation {
                         property: "y"
@@ -226,25 +205,20 @@ Item {
                         easing.type: Easing.OutCubic
                     }
                 }
-
                 highlight: Rectangle {
                     id: pill
-
                     readonly property bool tracking: root.hoveredIndex >= 0 && list.currentItem !== null
-
                     y: list.currentItem ? list.currentItem.y : 0
                     width: list.width
                     height: list.currentItem ? list.currentItem.height : 0
                     radius: 14
                     color: Theme.surfaceContainerHighest
                     opacity: tracking ? 1 : 0
-
                     Behavior on opacity {
                         NumberAnimation {
                             duration: 120
                         }
                     }
-
                     Behavior on y {
                         enabled: pill.opacity > 0.01
                         SpringAnimation {
@@ -253,7 +227,6 @@ Item {
                             epsilon: 0.25
                         }
                     }
-
                     Behavior on height {
                         enabled: pill.opacity > 0.01
                         SpringAnimation {
@@ -263,31 +236,24 @@ Item {
                         }
                     }
                 }
-
                 delegate: Item {
                     id: row
                     required property string entry
                     required property int index
-
                     readonly property bool isImage: board.isImage(entry)
                     readonly property bool hovered: root.hoveredIndex === index
                     property string imageUrl: ""
-
                     width: list.width
                     height: isImage ? root.imageRow : root.textRow
-
                     Component.onCompleted: if (isImage)
                         imageUrl = board.tempImagePath(entry)
-
                     Connections {
                         target: board
-
                         function onImageReady(entry, url) {
                             if (entry === row.entry)
                                 row.imageUrl = url;
                         }
                     }
-
                     HoverHandler {
                         onHoveredChanged: {
                             if (hovered) {
@@ -298,14 +264,12 @@ Item {
                             }
                         }
                     }
-
                     ClippingRectangle {
                         id: thumb
                         visible: row.isImage
                         anchors.fill: parent
                         radius: 14
                         color: Theme.surfaceContainerHighest
-
                         Image {
                             anchors.fill: parent
                             source: row.imageUrl
@@ -313,7 +277,6 @@ Item {
                             asynchronous: true
                             cache: false
                             opacity: status === Image.Ready ? 1 : 0
-
                             Behavior on opacity {
                                 NumberAnimation {
                                     duration: 150
@@ -321,7 +284,6 @@ Item {
                             }
                         }
                     }
-
                     Rectangle {
                         visible: row.isImage
                         anchors.fill: parent
@@ -330,20 +292,17 @@ Item {
                         border.width: 2
                         border.color: Theme.primary
                         opacity: row.hovered ? 1 : 0
-
                         Behavior on opacity {
                             NumberAnimation {
                                 duration: 120
                             }
                         }
                     }
-
                     MouseArea {
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
                         onClicked: board.copyItem(row.entry)
                     }
-
                     Text {
                         visible: !row.isImage
                         anchors.left: parent.left
@@ -358,7 +317,6 @@ Item {
                         font.pixelSize: 13
                         color: row.hovered ? Theme.primary : Theme.onSurfaceVariantColor
                     }
-
                     Text {
                         id: deleteIcon
                         anchors.right: parent.right
@@ -368,13 +326,11 @@ Item {
                         font.pixelSize: 14
                         color: Theme.error
                         opacity: deleteArea.containsMouse ? 1 : 0.7
-
                         Behavior on opacity {
                             NumberAnimation {
                                 duration: 120
                             }
                         }
-
                         MouseArea {
                             id: deleteArea
                             anchors.fill: parent
@@ -386,7 +342,6 @@ Item {
                     }
                 }
             }
-
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.top: searchRow.bottom

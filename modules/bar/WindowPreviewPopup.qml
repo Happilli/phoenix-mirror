@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell.Wayland
-import Quickshell.Widgets
+import Ryu.Ui
 import Ryu.Hyprland
 import qs.components
 import qs.services.theme
