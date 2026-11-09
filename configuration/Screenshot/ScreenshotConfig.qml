@@ -2,6 +2,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Hyprland
+import Ryu.Io
 import qs.services.paths
 import qs.services.screenshot
 
@@ -96,6 +97,7 @@ Singleton {
         selectPurpose = "record";
         return name !== "" && begin([name], false);
     }
+
     function captureRegionForShare() {
         const name = focusedName();
         regionMode = true;
@@ -113,7 +115,7 @@ Singleton {
         lassoMode = false;
         selectPurpose = "screenshot";
         if (purpose === "record" || purpose === "share") {
-            Quickshell.execDetached(["rm", "-f", source]);
+            Exec.detached(["rm", "-f", source]);
             if (purpose === "share")
                 sharePicked(screen, geom !== "" ? rect : null);
             else if (geom !== "" && rect)
@@ -121,7 +123,7 @@ Singleton {
         } else if (geom !== "") {
             ScreenshotService.present(screen, source, geom, "");
         } else {
-            Quickshell.execDetached(["rm", "-f", source]);
+            Exec.detached(["rm", "-f", source]);
         }
     }
 
@@ -135,7 +137,7 @@ Singleton {
         if (geom !== "" && poly !== "")
             ScreenshotService.present(screen, source, geom, poly);
         else
-            Quickshell.execDetached(["rm", "-f", source]);
+            Exec.detached(["rm", "-f", source]);
     }
 
     onCaptured: (screenName, path) => {

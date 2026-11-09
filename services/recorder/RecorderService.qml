@@ -1,7 +1,7 @@
 pragma Singleton
 import QtQuick
 import Quickshell
-import Quickshell.Io
+import Ryu.Io
 import qs.services.paths
 import qs.configuration.Screenshot
 
@@ -14,7 +14,6 @@ Singleton {
     property string pendingAudio: ""
     property var pendingTarget: []
     property real startedAt: 0
-
     readonly property string dir: PathService.home + "/Videos/"
 
     function audioArgs(audio) {
@@ -102,7 +101,8 @@ Singleton {
         onExited: code => {
             const saved = root.file;
             root.recording = false;
-            Quickshell.execDetached(["notify-send", "-a", "Recorder", "Recording saved", saved]);
+            Exec.detached(["notify-send", "-a", "Recorder", "Recording saved", saved]);
         }
+        onFailed: message => root.recording = false
     }
 }

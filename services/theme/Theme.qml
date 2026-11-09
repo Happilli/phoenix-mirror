@@ -1,7 +1,8 @@
 pragma Singleton
 import Quickshell
-import Quickshell.Io
+import Quickshell.Io as QsIo
 import QtQuick
+import Ryu.Io
 import qs.configuration.Wallpaper
 import qs.services.paths
 import qs.services.state
@@ -105,7 +106,7 @@ Singleton {
         onTriggered: colorsFile.reload()
     }
 
-    FileView {
+    QsIo.FileView {
         id: colorsFile
         path: PathService.home + "/.local/state/ryu/colors.json"
         watchChanges: true

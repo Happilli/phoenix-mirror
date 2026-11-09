@@ -1,7 +1,7 @@
 pragma Singleton
 import QtQuick
 import Quickshell
-import Quickshell.Io
+import Ryu.Io
 import qs.services.paths
 
 Singleton {
@@ -20,7 +20,7 @@ Singleton {
 
     function show(name, file) {
         if (path !== "" && path !== file) {
-            Quickshell.execDetached(["rm", "-f", path]);
+            Exec.detached(["rm", "-f", path]);
         }
         savedPath = "";
         copied = false;
@@ -67,7 +67,7 @@ Singleton {
 
     function dismiss() {
         if (path !== "") {
-            Quickshell.execDetached(["rm", "-f", path]);
+            Exec.detached(["rm", "-f", path]);
         }
         path = "";
     }
@@ -84,7 +84,7 @@ Singleton {
     Process {
         id: convert
         onExited: code => {
-            Quickshell.execDetached(["rm", "-f", root.pendingSource]);
+            Exec.detached(["rm", "-f", root.pendingSource]);
             if (code === 0) {
                 root.show(root.pendingScreen, root.pendingOut);
             }

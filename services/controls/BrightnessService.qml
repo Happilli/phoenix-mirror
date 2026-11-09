@@ -1,7 +1,7 @@
 pragma Singleton
 import Quickshell
-import Quickshell.Io
 import QtQuick
+import Ryu.Io
 
 Singleton {
     id: root

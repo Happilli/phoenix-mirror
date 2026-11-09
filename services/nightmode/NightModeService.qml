@@ -1,7 +1,7 @@
 pragma Singleton
 import QtQuick
 import Quickshell
-import Quickshell.Io
+import Ryu.Io
 import qs.services.state
 
 Singleton {
@@ -15,7 +15,6 @@ Singleton {
     property bool active: StateService.get("nightActive", false)
     property real temperature: StateService.get("nightTemp", 4000)
     property real gamma: StateService.get("nightGamma", 1)
-
     property bool dirty: false
     property bool ready: false
 
@@ -45,14 +44,13 @@ Singleton {
     }
 
     function start() {
-        // only launch if not already running; survives shell exit
-        Quickshell.execDetached(["sh", "-c", `pgrep -x hyprsunset >/dev/null || hyprsunset -t ${Math.round(temperature)} -g ${Math.round(gamma * 100)}`]);
+        Exec.detached(["sh", "-c", `pgrep -x hyprsunset >/dev/null || hyprsunset -t ${Math.round(temperature)} -g ${Math.round(gamma * 100)}`]);
         settle.restart();
     }
 
     function stop() {
         ready = false;
-        Quickshell.execDetached(["pkill", "-x", "hyprsunset"]);
+        Exec.detached(["pkill", "-x", "hyprsunset"]);
     }
 
     onActiveChanged: active ? start() : stop()

@@ -1,5 +1,5 @@
 import QtQuick
-import Quickshell
+import Ryu.Io
 import Ryu.Extraa
 import qs.services.paths
 import qs.services.theme
@@ -11,11 +11,11 @@ Item {
     readonly property string refreshScript: Qt.resolvedUrl("../../scripts/refresh.sh").toString().replace("file://", "")
 
     function openMonkey() {
-        Quickshell.execDetached(["sh", "-c", 'f="$1"; [ -f "$f" ] || exit 1; exec helium-browser --new-tab "https://monkeytype.com/?customTheme=$(base64 -w0 "$f")"', "sh", monkeyTheme]);
+        Exec.detached(["sh", "-c", 'f="$1"; [ -f "$f" ] || exit 1; exec helium-browser --new-tab "https://monkeytype.com/?customTheme=$(base64 -w0 "$f")"', "sh", monkeyTheme]);
     }
 
     function refresh() {
-        Quickshell.execDetached(["bash", refreshScript]);
+        Exec.detached(["bash", refreshScript]);
     }
 
     MouseArea {
@@ -38,7 +38,6 @@ Item {
         separatorColor: Theme.outlineVariant
         borderWidth: 1
         borderColor: Theme.outlineVariant
-
         model: [
             {
                 action: "refresh",
@@ -63,7 +62,6 @@ Item {
                 danger: true
             }
         ]
-
         onTriggered: (index, item) => {
             switch (item.action) {
             case "refresh":
@@ -76,7 +74,7 @@ Item {
                 root.openMonkey();
                 break;
             case "shutdown":
-                Quickshell.execDetached(["systemctl", "poweroff"]);
+                Exec.detached(["systemctl", "poweroff"]);
                 break;
             }
         }

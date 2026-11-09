@@ -1,7 +1,8 @@
 pragma Singleton
 import QtQuick
 import Quickshell
-import Quickshell.Io
+import Quickshell.Io as QsIo
+import Ryu.Io
 import qs.services.paths
 
 Singleton {
@@ -130,7 +131,7 @@ Singleton {
             root.flushLive()
     }
 
-    FileView {
+    QsIo.FileView {
         id: file
         path: PathService.home + "/.config/hypr/ergon.dumbAssBitch"
         blockLoading: true
@@ -144,7 +145,7 @@ Singleton {
         onSaved: {
             if (root.needsReload) {
                 root.needsReload = false;
-                Quickshell.execDetached(["hyprctl", "reload"]);
+                Exec.detached(["hyprctl", "reload"]);
             }
         }
     }

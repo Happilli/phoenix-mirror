@@ -1,6 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Quickshell
+import Ryu.Io
 import qs.services.theme
 import qs.configuration.Lock
 
@@ -46,10 +46,10 @@ Rectangle {
             LockConfig.requestLock();
             break;
         case "restart":
-            Quickshell.execDetached(["systemctl", "reboot"]);
+            Exec.detached(["systemctl", "reboot"]);
             break;
         case "shutdown":
-            Quickshell.execDetached(["systemctl", "poweroff"]);
+            Exec.detached(["systemctl", "poweroff"]);
             break;
         }
     }
@@ -115,6 +115,7 @@ Rectangle {
 
             Item {
                 id: btn
+
                 required property var modelData
 
                 width: root.cell

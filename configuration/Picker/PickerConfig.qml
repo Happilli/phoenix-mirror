@@ -1,8 +1,8 @@
 pragma Singleton
 import QtQuick
 import Quickshell
-import Quickshell.Io
 import Quickshell.Hyprland
+import Ryu.Io
 import qs.services.paths
 import qs.configuration.Screenshot
 
@@ -17,7 +17,6 @@ Singleton {
     property bool token: true
     property var groups: []
     property var groupMap: ({})
-
     readonly property string resultPath: PathService.runtime + "/phoenix-picker-result"
 
     readonly property var windows: {
@@ -156,7 +155,6 @@ Singleton {
     function parseWorkspaces(s) {
         const out = [];
         let i = 0;
-
         const take = n => {
             let j = i;
             let bytes = 0;
@@ -171,7 +169,6 @@ Singleton {
             i = j;
             return r;
         };
-
         const until = d => {
             const k = s.indexOf(d, i);
             if (k < 0)
@@ -180,12 +177,10 @@ Singleton {
             i = k + d.length;
             return r;
         };
-
         const num = d => {
             const t = until(d);
             return t !== null && /^\d+$/.test(t) ? Number(t) : -1;
         };
-
         while (i < s.length) {
             const id = until("[HN>]");
             if (id === null || !/^\d+$/.test(id))
@@ -239,6 +234,7 @@ Singleton {
         refresh();
         openDelay.restart();
     }
+
     Timer {
         id: openDelay
         interval: 60

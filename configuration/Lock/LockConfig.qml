@@ -1,6 +1,7 @@
 pragma Singleton
 import QtQuick
 import Quickshell
+import Ryu.Io
 import qs.services.paths
 import qs.configuration.Screenshot
 
@@ -35,10 +36,12 @@ Singleton {
     function release() {
         requested = false;
         active = false;
-        Quickshell.execDetached(["sh", "-c", `rm -f "${PathService.runtime}"/phoenix-capture-*.bmp`]);
+        Exec.detached(["sh", "-c", `rm -f "${PathService.runtime}"/phoenix-capture-*.bmp`]);
     }
+
     Connections {
         target: ScreenshotConfig
+
         function onFinished() {
             if (root.requested && !root.active) {
                 root.engage();
