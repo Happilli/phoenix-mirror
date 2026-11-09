@@ -1,7 +1,6 @@
 pragma Singleton
 import QtQuick
 import Quickshell
-import Quickshell.Io as QsIo
 import Ryu.Io
 import qs.services.paths
 
@@ -131,7 +130,7 @@ Singleton {
             root.flushLive()
     }
 
-    QsIo.FileView {
+    FileView {
         id: file
         path: PathService.home + "/.config/hypr/ergon.dumbAssBitch"
         blockLoading: true

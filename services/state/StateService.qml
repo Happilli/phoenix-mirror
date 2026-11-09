@@ -1,15 +1,17 @@
 pragma Singleton
 import Quickshell
-import Quickshell.Io
+import Ryu.Io
 import qs.services.paths
 
 Singleton {
     id: root
 
     property var data: ({})
+
     function get(key, fallback) {
         return data[key] ?? fallback;
     }
+
     function set(key, value) {
         if (data[key] === value) {
             return;
@@ -32,7 +34,6 @@ Singleton {
                 console.log("parsing failure: ", e);
             }
         }
-
         onLoadFailed: error => {
             if (error == FileViewError.FileNotFound) {
                 console.log("file not found");

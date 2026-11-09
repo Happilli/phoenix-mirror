@@ -1,7 +1,7 @@
 pragma Singleton
 import QtQuick
 import Quickshell
-import Quickshell.Io
+import Ryu.Io
 import qs.services.paths
 
 Singleton {
@@ -19,16 +19,17 @@ Singleton {
             return v;
         return v.title ?? v.name ?? v.label ?? JSON.stringify(v);
     }
+
     function detailOf(v) {
         if (v && typeof v === "object")
             return v.description ?? v.desc ?? v.summary ?? "";
         return "";
     }
+
     readonly property string difficulty: {
         const d = (challenge && typeof challenge === "object") ? challenge.difficulty : null;
         return typeof d === "string" ? d : "";
     }
-
     readonly property string challengeTitle: labelOf(challenge)
     readonly property string challengeDetail: detailOf(challenge)
     readonly property string languageName: labelOf(language)

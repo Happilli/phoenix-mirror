@@ -1,8 +1,7 @@
 import QtQuick
-import Quickshell
-import Quickshell.Services.Pam
+import Ryu.Pam
 
-Scope {
+QtObject {
     id: root
 
     signal unlocked
@@ -22,17 +21,17 @@ Scope {
             return;
         }
         unlockInProgress = true;
-        pam.start();
+        pamCtx.start();
     }
 
-    PamContext {
-        id: pam
+    property PamContext pam: PamContext {
+        id: pamCtx
         configDirectory: Qt.resolvedUrl("pam").toString().replace("file://", "")
         config: "password.conf"
 
         onPamMessage: {
-            if (this.responseRequired) {
-                this.respond(root.currentText);
+            if (pamCtx.responseRequired) {
+                pamCtx.respond(root.currentText);
             }
         }
 
