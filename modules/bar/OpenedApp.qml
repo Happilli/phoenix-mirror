@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Quickshell.Wayland
 import Ryu.Desktop
+import Ryu.Hyprland
 import Ryu.Ui
 import qs.services.theme
 
@@ -24,10 +24,12 @@ Grid {
     }
     readonly property var groups: {
         const apps = DesktopEntries.applications.values;
-        const list = ToplevelManager.toplevels.values;
+        const list = Hyprland.toplevels.values;
         const order = [];
         const map = {};
         for (const t of list) {
+            if (!t.mapped)
+                continue;
             const id = t.appId;
             if (!map[id]) {
                 const entry = apps.length > 0 ? DesktopEntries.heuristicLookup(id) : null;
