@@ -1,8 +1,8 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
-import Quickshell
 import Ryu.Extraa
+import Ryu.Notifications
 import qs.services.theme
 import qs.services.notifications
 import qs.configuration.Notification
@@ -21,9 +21,7 @@ Item {
 
     Column {
         id: column
-
         spacing: 0
-
         anchors {
             left: parent.left
             right: parent.right
@@ -32,7 +30,6 @@ Item {
 
         Repeater {
             model: notifications
-
             delegate: NotificationDelegate {}
         }
     }
@@ -81,15 +78,7 @@ Item {
         readonly property string displaySummary: summary || "Notification"
         readonly property string displayBody: body || ""
         readonly property string displayApp: appName || ""
-        readonly property string iconSource: {
-            if (image !== "") {
-                return image;
-            }
-            if (appIcon === "") {
-                return "";
-            }
-            return appIcon.startsWith("/") ? "file://" + appIcon : Quickshell.iconPath(appIcon, true);
-        }
+        readonly property string iconSource: image !== "" ? image : NotificationIcons.resolve(appIcon)
         readonly property bool isTop: index === 0
         readonly property bool overflows: ruler.implicitHeight > (13 * 1.4 * NotificationConfig.collapsedLines) + 2
         readonly property real naturalHeight: content.implicitHeight + 28
@@ -100,7 +89,6 @@ Item {
         property bool collapsing: false
         property bool dismissed: false
         property real progress: 0
-
         property real slide: (entering || exiting) ? 0 : 1
         property real grow: (entering || collapsing) ? 0 : 1
         property real pop: (entering || exiting) ? 0 : 1
@@ -168,6 +156,7 @@ Item {
         HoverHandler {
             id: hover
         }
+
         TapHandler {
             acceptedButtons: Qt.RightButton
             onTapped: tile.beginExit()
@@ -175,7 +164,6 @@ Item {
 
         Item {
             id: slider
-
             width: tile.width
             height: tile.naturalHeight
             x: (1 - tile.slide) * 420
@@ -184,7 +172,6 @@ Item {
 
             Rectangle {
                 id: card
-
                 anchors.fill: parent
                 radius: 18
                 color: Theme.background
@@ -193,9 +180,7 @@ Item {
 
                 Column {
                     id: content
-
                     spacing: 10
-
                     anchors {
                         left: parent.left
                         right: parent.right
@@ -210,7 +195,6 @@ Item {
 
                         Rectangle {
                             id: progressBar
-
                             width: parent.width * tile.progress
                             height: 2
                             radius: 1
@@ -311,7 +295,6 @@ Item {
 
                         Text {
                             id: bodyText
-
                             text: tile.displayBody
                             width: parent.width
                             font.pixelSize: 13
@@ -336,7 +319,6 @@ Item {
 
         Text {
             id: ruler
-
             text: tile.displayBody
             width: tile.width - 28
             font.pixelSize: 13
@@ -347,7 +329,6 @@ Item {
 
         Timer {
             id: readyTimer
-
             interval: NotificationConfig.enterHeightDuration + NotificationConfig.enterSlideDuration
             onTriggered: NotificationsService.onItemEntered()
         }

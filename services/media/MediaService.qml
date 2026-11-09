@@ -1,17 +1,16 @@
 pragma ComponentBehavior: Bound
 pragma Singleton
 import QtQuick
-import QtQml
 import Quickshell
-import Quickshell.Services.Mpris
 import Ryu.Cleave
+import Ryu.Mpris
 import qs.services.state
 import qs.services.controls
 
 Singleton {
     id: root
 
-    property MprisPlayer player: null
+    readonly property MprisPlayer player: Mpris.active
 
     readonly property bool hasPlayer: player !== null
     readonly property bool isPlaying: player?.isPlaying ?? false
@@ -55,27 +54,6 @@ Singleton {
         clients = Math.max(0, clients - 1);
     }
 
-    function pick() {
-        let playing = null;
-        let current = null;
-        let first = null;
-        for (let i = 0; i < tracker.count; i++) {
-            const p = (tracker.objectAt(i) as Tracked)?.modelData ?? null;
-            if (!p) {
-                continue;
-            }
-            first = first ?? p;
-            if (p.isPlaying) {
-                playing = p;
-                break;
-            }
-            if (p === root.player) {
-                current = p;
-            }
-        }
-        root.player = playing ?? current ?? first;
-    }
-
     function formatTime(seconds) {
         if (!seconds || seconds < 0)
             return "0:00";
@@ -97,21 +75,6 @@ Singleton {
     function previous() {
         if (player?.canGoPrevious)
             player.previous();
-    }
-
-    component Tracked: QtObject {
-        required property MprisPlayer modelData
-        readonly property bool playing: modelData?.isPlaying ?? false
-
-        onPlayingChanged: root.pick()
-    }
-
-    Instantiator {
-        id: tracker
-        model: Mpris.players
-        delegate: Tracked {}
-        onObjectAdded: root.pick()
-        onObjectRemoved: Qt.callLater(root.pick)
     }
 
     Cleave {

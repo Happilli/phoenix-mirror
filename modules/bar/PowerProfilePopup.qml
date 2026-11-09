@@ -1,6 +1,6 @@
 import QtQuick
-import Quickshell.Services.UPower
 import Ryu.Extraa
+import Ryu.Power
 import qs.services.theme
 
 Item {
@@ -8,8 +8,9 @@ Item {
 
     required property bool active
 
-    readonly property var profiles: PowerProfiles.hasPerformanceProfile ? [PowerProfile.PowerSaver, PowerProfile.Balanced, PowerProfile.Performance] : [PowerProfile.PowerSaver, PowerProfile.Balanced]
-    readonly property var profileIcons: ["\uf06c", "\uf24e", "\uf0e7"].slice(0, profiles.length)
+    readonly property var iconTable: ["\uf06c", "\uf24e", "\uf0e7"]
+    readonly property var profiles: PowerProfiles.profiles
+    readonly property var profileIcons: profiles.map(p => iconTable[p])
 
     anchors.centerIn: parent
     implicitWidth: group.implicitWidth
@@ -29,6 +30,9 @@ Item {
         textColor: Theme.onSurfaceVariantColor
         checkedTextColor: Theme.onPrimaryColor
 
-        onToggled: (index, checked) => PowerProfiles.profile = root.profiles[index]
+        onToggled: (index, checked) => {
+            if (checked)
+                PowerProfiles.profile = root.profiles[index];
+        }
     }
 }

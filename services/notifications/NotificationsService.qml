@@ -1,14 +1,12 @@
 pragma Singleton
 import QtQuick
-import Quickshell
 import Quickshell.Hyprland
-import Quickshell.Services.Notifications
+import Ryu.Notifications
 
-Singleton {
+QtObject {
     id: root
 
-    readonly property var list: server.trackedNotifications
-
+    readonly property var list: serverx.trackedNotifications
     property var queue: []
     property bool processing: false
 
@@ -16,7 +14,7 @@ Singleton {
     signal dismissNotification(int id)
 
     function focusedScreen() {
-        return Hyprland.focusedMonitor?.name ?? Quickshell.screens[0]?.name ?? "";
+        return Hyprland.focusedMonitor?.name ?? Hyprland.monitors.values[0]?.name ?? "";
     }
 
     function enqueue(n) {
@@ -37,16 +35,16 @@ Singleton {
     function processNext() {
         if (queue.length === 0) {
             processing = false;
-            watchdog.stop();
+            watchdoggo.stop();
             return;
         }
         processing = true;
-        watchdog.restart();
+        watchdoggo.restart();
         notificationReady(queue.shift());
     }
 
     function onItemEntered() {
-        watchdog.stop();
+        watchdoggo.stop();
         Qt.callLater(processNext);
     }
 
@@ -54,8 +52,8 @@ Singleton {
         dismissNotification(id);
     }
 
-    Timer {
-        id: watchdog
+    property Timer watchdog: Timer {
+        id: watchdoggo
         interval: 1500
         onTriggered: {
             root.processing = false;
@@ -63,8 +61,8 @@ Singleton {
         }
     }
 
-    NotificationServer {
-        id: server
+    property NotificationServer server: NotificationServer {
+        id: serverx
         imageSupported: true
         bodyHyperlinksSupported: true
         inlineReplySupported: true
@@ -76,7 +74,6 @@ Singleton {
         extraHints: ["values"]
         keepOnReload: false
         actionIconsSupported: true
-
         onNotification: n => {
             n.tracked = true;
             root.enqueue(n);

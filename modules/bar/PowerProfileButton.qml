@@ -1,6 +1,6 @@
 import QtQuick
-import Quickshell.Services.UPower
 import Ryu.Extraa
+import Ryu.Power
 import qs.services.theme
 
 Item {
@@ -16,22 +16,12 @@ Item {
 
     function iconOf(profile) {
         switch (profile) {
-        case PowerProfile.PowerSaver:
+        case PowerProfiles.PowerSaver:
             return "\uf06c";
-        case PowerProfile.Performance:
+        case PowerProfiles.Performance:
             return "\uf0e7";
         }
         return "\uf24e";
-    }
-
-    function cycle() {
-        const p = PowerProfiles.profile;
-        if (p === PowerProfile.PowerSaver)
-            PowerProfiles.profile = PowerProfile.Balanced;
-        else if (p === PowerProfile.Balanced && PowerProfiles.hasPerformanceProfile)
-            PowerProfiles.profile = PowerProfile.Performance;
-        else
-            PowerProfiles.profile = PowerProfile.PowerSaver;
     }
 
     MaterialIconButton {
@@ -40,8 +30,8 @@ Item {
         shape: MaterialIconButton.Round
         iconText: root.iconOf(PowerProfiles.profile)
         iconSize: 24
-        iconColor: PowerProfiles.profile === PowerProfile.Performance ? Theme.primary : Theme.onSurfaceVariantColor
-        onClicked: root.cycle()
+        iconColor: PowerProfiles.profile === PowerProfiles.Performance ? Theme.primary : Theme.onSurfaceVariantColor
+        onClicked: PowerProfiles.cycle()
         color: Theme.background
     }
 }

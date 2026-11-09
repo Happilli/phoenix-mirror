@@ -97,19 +97,16 @@ Item {
         value: MediaService.player?.position ?? 0
         when: !root.holding
     }
-
+    Binding {
+        target: MediaService.player
+        property: "trackPosition"
+        value: true
+        when: root.active
+    }
     Behavior on enter {
         NumberAnimation {
             duration: 260
             easing.type: Easing.OutCubic
-        }
-    }
-
-    Behavior on position {
-        enabled: !root.holding
-        NumberAnimation {
-            duration: 500
-            easing.type: Easing.Linear
         }
     }
 
@@ -125,16 +122,14 @@ Item {
         onTriggered: root.flushSeek()
     }
 
-    Timer {
-        interval: 500
-        repeat: true
-        running: root.active && MediaService.isPlaying
-        onTriggered: MediaService.player?.positionChanged()
-    }
-
     FrameAnimation {
-        running: root.active && MediaService.isPlaying && !root.seeking
-        onTriggered: root.angle = (root.angle + frameTime * root.spinSpeed) % 360
+        running: root.active && MediaService.isPlaying
+        onTriggered: {
+            if (!root.seeking)
+                root.angle = (root.angle + frameTime * root.spinSpeed) % 360;
+            if (!root.holding)
+                root.position = MediaService.player?.position ?? 0;
+        }
     }
 
     Column {

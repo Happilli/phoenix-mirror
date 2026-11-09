@@ -1,17 +1,16 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import Ryu.Power
 import qs.services.theme
-import Quickshell.Services.UPower
 
 Rectangle {
     id: root
 
     property bool vertical: false
 
-    readonly property var device: UPower.displayDevice
-    readonly property real level: Math.max(0, Math.min(1, device.percentage))
+    readonly property real level: UPower.percentage
     property real shown: level
-    readonly property bool charging: device.state === UPowerDeviceState.Charging || device.state === UPowerDeviceState.FullyCharged
+    readonly property bool charging: UPower.charging || UPower.fullyCharged
     readonly property bool critical: !charging && level <= 0.5
     readonly property real barWidth: vertical ? 28 : 55
     readonly property real barHeight: vertical ? 55 : 28
