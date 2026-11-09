@@ -1,4 +1,4 @@
-import Quickshell.Io
+import Ryu.Ipc
 import qs.configuration.Settings
 
 IpcHandler {

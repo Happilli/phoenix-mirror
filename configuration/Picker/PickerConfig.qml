@@ -1,6 +1,7 @@
 pragma Singleton
 import QtQuick
 import Quickshell
+import Quickshell.Wayland
 import Ryu.Hyprland
 import Ryu.Io
 import qs.services.paths
@@ -104,6 +105,16 @@ Singleton {
 
     function rebuild() {
         const mons = Hyprland.monitors.values;
+        const wls = ToplevelManager.toplevels.values;
+        const used = new Set();
+        const pick = o => {
+            let hit = wls.find(w => !used.has(w) && w.appId === o.class && w.title === o.title);
+            if (!hit)
+                hit = wls.find(w => !used.has(w) && w.appId === o.class);
+            if (hit)
+                used.add(hit);
+            return hit ?? null;
+        };
         const by = {};
         for (const t of Hyprland.toplevels.values) {
             const o = t.lastIpcObject;
@@ -122,6 +133,7 @@ Singleton {
                 };
             by[name].wins.push({
                 top: t,
+                wl: pick(o),
                 item: item,
                 shareable: item !== null,
                 label: item ? item.label : (o.class + "  ·  " + o.title),

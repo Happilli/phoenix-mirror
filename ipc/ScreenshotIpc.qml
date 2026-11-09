@@ -1,24 +1,20 @@
 import QtQuick
-import Quickshell.Io
+import Ryu.Ipc
 import qs.configuration.Screenshot
 import qs.services.screenshot
-import Quickshell
 
-Scope {
+QtObject {
     id: root
-
     property string mode: "full"
-
     function start(m) {
         mode = m;
         if (ScreenshotService.active) {
             ScreenshotService.dismiss();
-            delay.restart();
+            root.delayTimer.restart();
         } else {
             go();
         }
     }
-
     function go() {
         if (mode === "lasso")
             ScreenshotConfig.captureLasso();
@@ -27,24 +23,18 @@ Scope {
         else
             ScreenshotConfig.captureFocused();
     }
-
-    Timer {
-        id: delay
+    property Timer delayTimer: Timer {
         interval: 250
         onTriggered: root.go()
     }
-
-    IpcHandler {
+    property IpcHandler handler: IpcHandler {
         target: "screenshot"
-
         function full(): void {
             root.start("full");
         }
-
         function region(): void {
             root.start("region");
         }
-
         function lasso(): void {
             root.start("lasso");
         }

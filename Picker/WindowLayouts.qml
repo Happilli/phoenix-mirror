@@ -100,7 +100,7 @@ Flickable {
 
                             FillScreencopy {
                                 opacity: hasContent ? 1 : 0
-                                captureSource: box.alive ? box.win.top.wayland : null
+                                captureSource: box.alive ? box.win.wl : null
                                 live: box.alive
                             }
 

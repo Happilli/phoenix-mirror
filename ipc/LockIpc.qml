@@ -1,14 +1,12 @@
-import Quickshell.Io
+import Ryu.Ipc
 import qs.configuration.Lock
 
 IpcHandler {
     target: "lock"
-
     function lock(): string {
         LockConfig.requestLock();
         return "locking";
     }
-
     function locked(): bool {
         return LockConfig.active;
     }
