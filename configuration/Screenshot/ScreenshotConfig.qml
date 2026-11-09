@@ -1,7 +1,7 @@
 pragma Singleton
 import QtQuick
 import Quickshell
-import Quickshell.Hyprland
+import Ryu.Hyprland
 import Ryu.Io
 import qs.services.paths
 import qs.services.screenshot

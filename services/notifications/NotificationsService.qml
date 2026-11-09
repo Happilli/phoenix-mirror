@@ -1,6 +1,6 @@
 pragma Singleton
 import QtQuick
-import Quickshell.Hyprland
+import Ryu.Hyprland
 import Ryu.Notifications
 
 QtObject {

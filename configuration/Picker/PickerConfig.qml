@@ -1,7 +1,7 @@
 pragma Singleton
 import QtQuick
 import Quickshell
-import Quickshell.Hyprland
+import Ryu.Hyprland
 import Ryu.Io
 import qs.services.paths
 import qs.configuration.Screenshot
@@ -107,7 +107,7 @@ Singleton {
         const by = {};
         for (const t of Hyprland.toplevels.values) {
             const o = t.lastIpcObject;
-            if (!t.wayland || !o?.at || !o.size || o.mapped === false || o.title === "Share")
+            if (!o?.at || !o.size || o.mapped === false || o.title === "Share")
                 continue;
             const ws = o.workspace;
             const name = ws?.name || String(ws?.id);

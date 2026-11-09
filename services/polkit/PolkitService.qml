@@ -1,26 +1,22 @@
 pragma Singleton
 import QtQuick
-import Quickshell
-import Quickshell.Services.Polkit
+import Ryu.Polkit
 
-Singleton {
+QtObject {
     id: root
-
     readonly property bool active: agent.isActive
     readonly property var flow: agent.flow
     readonly property bool shown: active || verified
-
     property bool pending: false
     property bool verified: false
-
     function submit(text) {
-        if (!agent.flow)
+        if (!root.flow)
             return;
         pending = true;
+        verifiedHold.stop();
         pendingTimeout.restart();
-        agent.flow.submit(text);
+        root.flow.submit(text);
     }
-
     onActiveChanged: {
         if (active) {
             verified = false;
@@ -32,31 +28,22 @@ Singleton {
             verifiedHold.restart();
         }
     }
-
-    Connections {
-        target: agent.flow
-
+    property Connections flowWatcher: Connections {
+        target: root.agent.flow
         function onFailedChanged() {
-            if (agent.flow?.failed) {
+            if (root.agent.flow?.failed) {
                 root.pending = false;
-                pendingTimeout.stop();
+                root.pendingTimeout.stop();
             }
         }
     }
-
-    Timer {
-        id: verifiedHold
+    property Timer verifiedHold: Timer {
         interval: 700
         onTriggered: root.verified = false
     }
-
-    Timer {
-        id: pendingTimeout
+    property Timer pendingTimeout: Timer {
         interval: 8000
         onTriggered: root.pending = false
     }
-
-    PolkitAgent {
-        id: agent
-    }
+    property PolkitAgent agent: PolkitAgent {}
 }

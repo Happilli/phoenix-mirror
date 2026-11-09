@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
-import Quickshell.Hyprland
+import Ryu.Hyprland
 import Ryu.Extraa
 import qs.services.theme
 import qs.configuration.Picker
