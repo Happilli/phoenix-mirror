@@ -2,18 +2,17 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Widgets
+import Ryu.Desktop as Desktop
+import Ryu.Io
 import qs.services.theme
 
 Item {
     id: root
-
     required property bool active
-
     property int hoveredIndex: -1
     property bool pressing: false
-
     readonly property var items: {
-        const apps = DesktopEntries.applications.values.filter(e => !e.noDisplay).sort((a, b) => a.name.localeCompare(b.name));
+        const apps = Desktop.DesktopEntries.applications.values.filter(e => !e.noDisplay).sort((a, b) => a.name.localeCompare(b.name));
         const out = [];
         let last = "";
         for (const e of apps) {
@@ -35,11 +34,9 @@ Item {
         }
         return out;
     }
-
     implicitWidth: 300
     implicitHeight: 480
     visible: active
-
     onActiveChanged: if (!active) {
         root.hoveredIndex = -1;
         root.pressing = false;
@@ -47,7 +44,6 @@ Item {
         list.positionViewAtBeginning();
         list.targetY = list.originY;
     }
-
     ListView {
         id: list
         anchors.fill: parent
@@ -57,9 +53,7 @@ Item {
         highlightFollowsCurrentItem: false
         currentIndex: -1
         cacheBuffer: 400
-
         property real targetY: 0
-
         Behavior on contentY {
             enabled: !list.dragging && !list.flicking
             SpringAnimation {
@@ -69,10 +63,8 @@ Item {
                 epsilon: 0.25
             }
         }
-
         onMovementStarted: targetY = contentY
         onMovementEnded: targetY = contentY
-
         WheelHandler {
             target: null
             acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
@@ -83,17 +75,13 @@ Item {
                 list.contentY = list.targetY;
             }
         }
-
         model: ScriptModel {
             values: root.items
             objectProp: "key"
         }
-
         highlight: Rectangle {
             id: pill
-
             readonly property bool tracking: root.hoveredIndex >= 0 && list.currentItem !== null
-
             x: 2
             y: list.currentItem ? list.currentItem.y + 2 : 0
             width: list.width - 4
@@ -102,13 +90,11 @@ Item {
             color: Theme.surfaceContainerHighest
             opacity: tracking ? 1 : 0
             scale: root.pressing ? 0.96 : 1.0
-
             Behavior on opacity {
                 NumberAnimation {
                     duration: 120
                 }
             }
-
             Behavior on y {
                 enabled: pill.opacity > 0.01
                 SpringAnimation {
@@ -117,7 +103,6 @@ Item {
                     epsilon: 0.25
                 }
             }
-
             Behavior on height {
                 enabled: pill.opacity > 0.01
                 SpringAnimation {
@@ -126,7 +111,6 @@ Item {
                     epsilon: 0.25
                 }
             }
-
             Behavior on scale {
                 SpringAnimation {
                     spring: 5
@@ -135,19 +119,15 @@ Item {
                 }
             }
         }
-
         delegate: Item {
             id: row
             required property var modelData
             required property int index
-
             readonly property bool header: modelData.header
             readonly property var entry: modelData.entry
             readonly property bool hovered: root.hoveredIndex === index
-
             width: list.width
             height: header ? 36 : 44
-
             HoverHandler {
                 enabled: !row.header
                 onHoveredChanged: {
@@ -159,7 +139,6 @@ Item {
                     }
                 }
             }
-
             Text {
                 visible: row.header
                 anchors.left: parent.left
@@ -170,23 +149,17 @@ Item {
                 font.weight: Font.DemiBold
                 color: Theme.primary
             }
-
             Item {
                 anchors.fill: parent
                 visible: !row.header
-
                 IconImage {
                     id: icon
                     anchors.left: parent.left
                     anchors.leftMargin: 16
                     anchors.verticalCenter: parent.verticalCenter
                     implicitSize: 28
-                    source: {
-                        const n = row.entry?.icon ?? "";
-                        return n.startsWith("/") ? "file://" + n : Quickshell.iconPath(n, "application-x-executable");
-                    }
+                    source: Desktop.DesktopIcons.path(row.entry?.icon ?? "", "application-x-executable")
                 }
-
                 Text {
                     anchors.left: icon.right
                     anchors.leftMargin: 14
@@ -199,14 +172,18 @@ Item {
                     font.weight: Font.Medium
                     color: row.hovered ? Theme.primary : Theme.onSurfaceVariantColor
                 }
-
                 MouseArea {
                     id: area
                     anchors.fill: parent
                     anchors.margins: 2
                     cursorShape: Qt.PointingHandCursor
                     onPressedChanged: root.pressing = pressed
-                    onClicked: row.entry.runInTerminal ? Quickshell.execDetached(["kitty", "-e"].concat(Array.from(row.entry.command))) : row.entry.execute()
+                    onClicked: {
+                        if (row.entry.runInTerminal)
+                            Exec.detached(["kitty", "-e"].concat(Array.from(row.entry.command)));
+                        else
+                            row.entry.execute();
+                    }
                 }
             }
         }
