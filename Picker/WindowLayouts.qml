@@ -7,6 +7,7 @@ import qs.components
 
 Flickable {
     id: root
+
     property bool shown: false
     property var hot: null
     property var last: null
@@ -26,10 +27,12 @@ Flickable {
             h: Math.max(4, w.h * c.s)
         };
     }
+
     function reset() {
         hot = null;
         last = null;
     }
+
     opacity: shown ? 1 : 0
     enabled: shown
     z: shown ? 1 : 0
@@ -38,39 +41,51 @@ Flickable {
     contentHeight: flow.implicitHeight
     boundsBehavior: Flickable.StopAtBounds
     onShownChanged: reset()
+
     Flow {
         id: flow
+
         width: root.width
         spacing: root.gap
+
         Repeater {
             model: ScriptModel {
                 values: root.names
             }
+
             Item {
                 id: card
+
                 required property string modelData
                 readonly property var g: PickerConfig.groupMap[modelData] ?? null
                 readonly property real s: g && g.mw > 0 ? root.cardW / g.mw : 0
                 readonly property var hotWin: root.hot?.card === card ? g?.wins.find(w => w.key === root.hot.key) ?? null : null
+
                 width: root.cardW
                 height: g ? g.mh * s + 30 : 0
+
                 Rectangle {
                     id: screen
+
                     width: card.width
                     height: card.g ? card.g.mh * card.s : 0
                     color: Theme.background
                     border.width: 1
                     border.color: Theme.outlineVariant
                     clip: true
+
                     Repeater {
                         model: ScriptModel {
                             values: card.g ? card.g.wins.map(w => w.key) : []
                         }
+
                         Rectangle {
                             id: box
+
                             required property string modelData
                             readonly property var win: card.g?.wins.find(w => w.key === modelData) ?? null
-                            readonly property bool alive: win !== null && PickerConfig.open
+                            readonly property bool alive: win !== null && root.shown && PickerConfig.open
+
                             visible: win !== null
                             opacity: win && !win.shareable ? 0.45 : 1
                             x: win ? (win.x - card.g.mx) * card.s : 0
@@ -80,11 +95,15 @@ Flickable {
                             z: win?.floating ? 1 : 0
                             color: Theme.surfaceContainerHigh
                             clip: true
+
                             FillScreencopy {
-                                opacity: hasContent ? 1 : 0
+                                id: sc
+
+                                opacity: sc.hasContent ? 1 : 0
                                 captureSource: box.alive ? box.win.wl : null
                                 live: box.alive
                             }
+
                             HoverHandler {
                                 onHoveredChanged: {
                                     if (hovered)
@@ -96,6 +115,7 @@ Flickable {
                                         root.hot = null;
                                 }
                             }
+
                             MouseArea {
                                 anchors.fill: parent
                                 enabled: box.win !== null && box.win.shareable
@@ -105,6 +125,7 @@ Flickable {
                         }
                     }
                 }
+
                 Text {
                     anchors.left: parent.left
                     anchors.right: parent.right
@@ -119,8 +140,10 @@ Flickable {
             }
         }
     }
+
     Rectangle {
         id: pill
+
         z: 100
         x: root.geo?.x ?? 0
         y: root.geo?.y ?? 0
@@ -131,6 +154,7 @@ Flickable {
         border.color: Theme.primary
         opacity: root.hot && root.geo ? 1 : 0
         visible: opacity > 0.01
+
         Behavior on opacity {
             NumberAnimation {
                 duration: 120
@@ -169,6 +193,7 @@ Flickable {
             }
         }
     }
+
     Text {
         anchors.centerIn: parent
         visible: root.groups.length === 0

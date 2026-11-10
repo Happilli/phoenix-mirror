@@ -1,9 +1,9 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Quickshell
-import Quickshell.Wayland
+import Ryu.Wayland as Wl
+import qs.services.theme
 
-Scope {
+QtObject {
     id: root
 
     signal finished
@@ -15,36 +15,46 @@ Scope {
             return;
         }
         released = true;
-        lock.locked = false;
+        sessionLock.locked = false;
         finished();
     }
 
-    Component.onCompleted: lock.locked = true
-
-    LockContext {
-        id: lockContext
-        onUnlocked: fallback.start()
+    function engage() {
+        released = false;
+        lockContext.currentText = "";
+        lockContext.showFailure = false;
+        sessionLock.locked = true;
     }
 
-    Timer {
-        id: fallback
+    property LockContext lockCtx: LockContext {
+        id: lockContext
+        onUnlocked: fallbackTimer.start()
+    }
+
+    property Timer fallback: Timer {
+        id: fallbackTimer
         interval: 700
         onTriggered: root.release()
     }
 
-    WlSessionLock {
-        id: lock
+    property QtObject lock: Wl.WlSessionLock {
+        id: sessionLock
         locked: false
+        color: Theme.background
+        onFinished: root.release()
 
-        WlSessionLockSurface {
+        Wl.WlSessionLockSurface {
             id: surface
+            color: Theme.background
 
-            LockSurface {
+            Loader {
                 anchors.fill: parent
-                context: lockContext
-                // qmllint disable missing-property redundant-optional-chaining
-                screenName: surface.screen?.name ?? ""
-                // qmllint enable missing-property redundant-optional-chaining
+                focus: true
+                active: surface.ready
+                sourceComponent: LockSurface {
+                    context: lockContext
+                    screenName: surface.screen?.name ?? ""
+                }
             }
         }
     }

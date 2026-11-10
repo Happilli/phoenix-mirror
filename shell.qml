@@ -1,4 +1,5 @@
 //@ pragma DropExpensiveFonts
+//@ pragma Env QSG_RENDER_LOOP=basic
 import Quickshell
 import qs.layers
 import qs.ipc

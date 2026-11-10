@@ -10,6 +10,7 @@ Singleton {
 
     property bool requested: false
     property bool active: false
+    property int stamp: 0
 
     signal lockRequested
 
@@ -17,11 +18,16 @@ Singleton {
         return ScreenshotConfig.pathFor(name);
     }
 
+    function backgroundUrl(name) {
+        return "file://" + backgroundFor(name) + "?" + stamp;
+    }
+
     function requestLock() {
         if (requested || active) {
             return;
         }
         requested = true;
+        stamp += 1;
         const started = ScreenshotConfig.begin(Quickshell.screens.map(s => s.name), true);
         if (!started) {
             engage();

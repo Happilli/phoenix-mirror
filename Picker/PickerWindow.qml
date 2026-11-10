@@ -2,7 +2,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Ryu.Ui as Ui
-import Ryu.Hyprland
+import Ryu.Sway
 import Ryu.Extraa
 import qs.services.theme
 import qs.configuration.Picker
@@ -11,12 +11,14 @@ import qs.components
 Scope {
     component PickGrid: GridView {
         id: grid
+
         property var items: []
         property bool shown: false
         property int hoveredIndex: -1
         property real aspect: 9 / 16
         readonly property real inset: 6
         readonly property real labelHeight: 28
+
         clip: true
         opacity: shown ? 1 : 0
         enabled: shown
@@ -37,7 +39,9 @@ Scope {
         }
         highlight: Rectangle {
             id: pill
+
             readonly property bool tracking: grid.hoveredIndex >= 0 && grid.currentItem !== null
+
             z: 2
             x: grid.currentItem ? grid.currentItem.x + grid.inset : 0
             y: grid.currentItem ? grid.currentItem.y + grid.inset : 0
@@ -47,6 +51,7 @@ Scope {
             border.width: 2
             border.color: Theme.primary
             opacity: tracking ? 1 : 0
+
             Behavior on opacity {
                 NumberAnimation {
                     duration: 120
@@ -71,12 +76,15 @@ Scope {
         }
         delegate: Item {
             id: cell
+
             required property var modelData
             required property int index
             readonly property bool hovered: grid.hoveredIndex === index
             readonly property bool isWorkspace: modelData.kind === "workspace"
+
             width: grid.cellWidth
             height: grid.cellHeight
+
             HoverHandler {
                 onHoveredChanged: {
                     if (hovered) {
@@ -87,28 +95,36 @@ Scope {
                     }
                 }
             }
+
             Item {
                 anchors.fill: parent
                 anchors.margins: grid.inset
+
                 Rectangle {
                     id: card
+
                     anchors.left: parent.left
                     anchors.right: parent.right
                     anchors.top: parent.top
                     height: parent.height - grid.labelHeight
                     color: Theme.surfaceContainerHighest
                     clip: true
+
                     FillScreencopy {
                         id: sc
+
                         visible: !cell.isWorkspace
-                        live: PickerConfig.open && !cell.isWorkspace
-                        captureSource: cell.modelData.kind === "screen" ? cell.modelData.screen : null
+                        live: PickerConfig.open && grid.shown && !cell.isWorkspace
+                        captureSource: grid.shown && cell.modelData.kind === "screen" ? cell.modelData.screen : null
                     }
+
                     WorkspaceMini {
                         anchors.fill: parent
                         visible: cell.isWorkspace
+                        active: grid.shown
                         wsName: cell.modelData.wsName ?? ""
                     }
+
                     Text {
                         anchors.centerIn: parent
                         visible: !cell.isWorkspace && !sc.hasContent
@@ -118,6 +134,7 @@ Scope {
                         opacity: 0.6
                     }
                 }
+
                 Text {
                     anchors.left: parent.left
                     anchors.right: parent.right
@@ -129,6 +146,7 @@ Scope {
                     font.pixelSize: 12
                     color: cell.hovered ? Theme.primary : Theme.onBackgroundColor
                 }
+
                 MouseArea {
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
@@ -137,10 +155,12 @@ Scope {
             }
         }
     }
+
     FloatingWindow {
         id: win
+
         readonly property real wsAspect: {
-            const m = Hyprland.focusedMonitor ?? Hyprland.monitors.values[0] ?? null;
+            const m = Sway.focusedMonitor ?? Sway.monitors.values[0] ?? null;
             const o = m ? m.lastIpcObject : null;
             if (!o || !o.width || !o.height)
                 return 9 / 16;
@@ -150,6 +170,7 @@ Scope {
             const h = o.height / sc - rs[1] - rs[3];
             return w > 0 && h > 0 ? h / w : 9 / 16;
         }
+
         title: "Share"
         color: Theme.background
         implicitWidth: 760
@@ -161,21 +182,26 @@ Scope {
             if (!visible && !PickerConfig.regioning)
                 PickerConfig.cancel();
         }
+
         Shortcut {
             sequence: "Escape"
             enabled: PickerConfig.open
             onActivated: PickerConfig.cancel()
         }
+
         Loader {
             anchors.fill: parent
             active: PickerConfig.open
             sourceComponent: Column {
                 id: layout
+
                 anchors.fill: parent
                 anchors.margins: 16
                 spacing: 12
+
                 MaterialSegmentedButton {
                     id: tabs
+
                     labels: ["Screen", "Window", "Workspace", "Region"]
                     currentIndex: PickerConfig.tab
                     selectionMode: MaterialSegmentedButton.Single
@@ -189,24 +215,29 @@ Scope {
                             PickerConfig.tab = index;
                     }
                 }
+
                 Item {
                     width: parent.width
                     height: layout.height - tabs.height - restoreBox.height - layout.spacing * 2
+
                     PickGrid {
                         anchors.fill: parent
                         items: PickerConfig.screenItems
                         shown: PickerConfig.tab === 0
                     }
+
                     WindowLayouts {
                         anchors.fill: parent
                         shown: PickerConfig.tab === 1
                     }
+
                     PickGrid {
                         anchors.fill: parent
                         items: PickerConfig.workspaceItems
                         shown: PickerConfig.tab === 2
                         aspect: win.wsAspect
                     }
+
                     Text {
                         anchors.centerIn: parent
                         visible: PickerConfig.tab === 2 && PickerConfig.workspaceItems.length === 0
@@ -214,26 +245,32 @@ Scope {
                         font.pixelSize: 14
                         color: Theme.onSurfaceVariantColor
                     }
+
                     Item {
                         anchors.fill: parent
                         visible: PickerConfig.tab === 3
+
                         Column {
                             anchors.centerIn: parent
                             spacing: 16
+
                             Text {
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 text: "Drag over any part of the screen to share it"
                                 font.pixelSize: 14
                                 color: Theme.onSurfaceVariantColor
                             }
+
                             Rectangle {
                                 id: selectBtn
+
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 width: 180
                                 height: 44
                                 radius: 22
                                 color: Theme.primary
                                 scale: pick.pressed ? 0.94 : 1
+
                                 Behavior on scale {
                                     SpringAnimation {
                                         spring: 5
@@ -241,6 +278,7 @@ Scope {
                                         epsilon: 0.005
                                     }
                                 }
+
                                 Text {
                                     anchors.centerIn: parent
                                     text: "Select region"
@@ -248,8 +286,10 @@ Scope {
                                     font.weight: Font.DemiBold
                                     color: Theme.onPrimaryColor
                                 }
+
                                 MouseArea {
                                     id: pick
+
                                     anchors.fill: parent
                                     cursorShape: Qt.PointingHandCursor
                                     onClicked: PickerConfig.startRegion()
@@ -258,8 +298,10 @@ Scope {
                         }
                     }
                 }
+
                 MaterialCheckbox {
                     id: restoreBox
+
                     text: "Allow a restore token"
                     checked: PickerConfig.token
                     color: Theme.primary

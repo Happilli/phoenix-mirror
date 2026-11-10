@@ -1,7 +1,7 @@
 pragma Singleton
 import QtQuick
 import Quickshell
-import Ryu.Hyprland
+import Ryu.Sway
 
 Singleton {
     id: root
@@ -10,7 +10,7 @@ Singleton {
     property string screenName: ""
 
     function focusedName() {
-        return Hyprland.focusedMonitor?.name ?? Quickshell.screens[0]?.name ?? "";
+        return Sway.focusedMonitor?.name ?? Quickshell.screens[0]?.name ?? "";
     }
 
     function show() {

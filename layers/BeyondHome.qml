@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
-import Quickshell.Wayland
+import Ryu.Wayland as Wl
 import qs.components.screenshot
 import qs.components.notifications
 import qs.components.clipboard
@@ -59,26 +59,26 @@ Variants {
             onTriggered: screenScope.polkitGrab = false
         }
 
-        WlrLayershell {
+        Wl.WlrLayershell {
             id: layer
             namespace: "phoenix-beyondHome"
             screen: screenScope.modelData
-            layer: WlrLayer.Overlay
+            layer: Wl.WlrLayer.Overlay
             exclusiveZone: -1
             color: "transparent"
-            keyboardFocus: screenScope.polkitOpen ? (screenScope.polkitGrab ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.OnDemand) : (screenScope.selecting ? WlrKeyboardFocus.Exclusive : (screenScope.clipOpen ? (screenScope.clipGrab ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.OnDemand) : WlrKeyboardFocus.None))
-            mask: Region {
+            keyboardFocus: screenScope.polkitOpen ? (screenScope.polkitGrab ? Wl.WlrKeyboardFocus.Exclusive : Wl.WlrKeyboardFocus.OnDemand) : (screenScope.selecting ? Wl.WlrKeyboardFocus.Exclusive : (screenScope.clipOpen ? (screenScope.clipGrab ? Wl.WlrKeyboardFocus.Exclusive : Wl.WlrKeyboardFocus.OnDemand) : Wl.WlrKeyboardFocus.None))
+            mask: Wl.Region {
                 item: screenScope.selecting ? picker : shot
 
-                Region {
+                Wl.Region {
                     item: clipLoader.item as Item
                 }
 
-                Region {
+                Wl.Region {
                     item: notif
                 }
 
-                Region {
+                Wl.Region {
                     item: polkitLoader.item as Item
                 }
             }

@@ -5,7 +5,9 @@ import qs.services.screenshot
 
 QtObject {
     id: root
+
     property string mode: "full"
+
     function start(m) {
         mode = m;
         if (ScreenshotService.active) {
@@ -15,6 +17,7 @@ QtObject {
             go();
         }
     }
+
     function go() {
         if (mode === "lasso")
             ScreenshotConfig.captureLasso();
@@ -23,18 +26,23 @@ QtObject {
         else
             ScreenshotConfig.captureFocused();
     }
+
     property Timer delayTimer: Timer {
         interval: 250
         onTriggered: root.go()
     }
+
     property IpcHandler handler: IpcHandler {
         target: "screenshot"
+
         function full(): void {
             root.start("full");
         }
+
         function region(): void {
             root.start("region");
         }
+
         function lasso(): void {
             root.start("lasso");
         }

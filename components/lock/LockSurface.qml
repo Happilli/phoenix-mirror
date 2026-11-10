@@ -1,7 +1,8 @@
 pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Effects
-import Quickshell
+import Ryu.Io
 import qs.services.theme
 import qs.configuration.Lock
 
@@ -20,10 +21,9 @@ Item {
     readonly property bool failed: context.showFailure
     readonly property bool busy: context.unlockInProgress
     readonly property real presence: enter * (1 - leave)
-
     readonly property real frameMargin: 28
     readonly property int maxShown: 48
-    readonly property string user: Quickshell.env("USER") || "user"
+    readonly property string user: Env.get("USER") || "user"
     readonly property string hashes: (length > maxShown ? "…" : "") + "#".repeat(Math.min(length, maxShown))
     readonly property color accent: failed ? Theme.error : Theme.primary
     readonly property color dimText: Theme.onSurfaceVariantColor
@@ -108,6 +108,7 @@ Item {
             anchors.fill: parent
             source: root.screenName !== "" ? "file://" + LockConfig.backgroundFor(root.screenName) : ""
             fillMode: Image.PreserveAspectCrop
+            asynchronous: true
             cache: false
             smooth: true
             layer.enabled: true
@@ -154,7 +155,7 @@ Item {
         TermText {
             x: frame.width - 38 - implicitWidth
             y: frame.height - 16 - implicitHeight
-            text: "[ enter unlock / esc clear ]"
+            text: "[ enter unlock · esc clear ]"
             font.pixelSize: 16
             color: root.dimText
         }
@@ -184,6 +185,7 @@ Item {
                     text: "password "
                     color: root.dimText
                 }
+
                 TermText {
                     text: root.hashes
                     color: root.accent

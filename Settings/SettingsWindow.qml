@@ -3,7 +3,6 @@ import QtQuick
 import Quickshell
 import qs.services.theme
 import qs.configuration.Settings
-import qs.configuration.Hypr
 import qs.Settings.pages
 
 Scope {
@@ -25,7 +24,6 @@ Scope {
             maximumSize: Qt.size(win.implicitWidth, win.implicitHeight)
 
             onVisibleChanged: if (!win.visible) {
-                HyprConfig.revertAll();
                 SettingsConfig.open = false;
             }
 
@@ -43,11 +41,6 @@ Scope {
             Component {
                 id: generalPage
                 GeneralPage {}
-            }
-
-            Component {
-                id: hyprPage
-                HyprPage {}
             }
 
             Item {
@@ -98,8 +91,6 @@ Scope {
                             switch (SettingsConfig.page) {
                             case "general":
                                 return generalPage;
-                            case "hyprland":
-                                return hyprPage;
                             }
                             return widgetsPage;
                         }

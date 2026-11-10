@@ -1,7 +1,7 @@
 pragma Singleton
 import QtQuick
 import Quickshell
-import Ryu.Hyprland
+import Ryu.Sway
 import Ryu.Io
 import qs.services.paths
 import qs.services.screenshot
@@ -63,7 +63,7 @@ Singleton {
     }
 
     function focusedName() {
-        return Hyprland.focusedMonitor?.name ?? Quickshell.screens[0]?.name ?? "";
+        return Sway.focusedMonitor?.name ?? Quickshell.screens[0]?.name ?? "";
     }
 
     function captureFocused() {

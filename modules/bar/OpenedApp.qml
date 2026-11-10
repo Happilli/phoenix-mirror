@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import Ryu.Desktop
-import Ryu.Hyprland
+import Ryu.Sway
 import Ryu.Ui
 import qs.services.theme
 
@@ -24,7 +24,7 @@ Grid {
     }
     readonly property var groups: {
         const apps = DesktopEntries.applications.values;
-        const list = Hyprland.toplevels.values;
+        const list = Sway.toplevels.values;
         const order = [];
         const map = {};
         for (const t of list) {

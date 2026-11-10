@@ -1,6 +1,6 @@
 import Quickshell
 import QtQuick
-import Quickshell.Wayland
+import Ryu.Wayland as Wl
 import qs.services.theme
 import qs.modules.bar
 import qs.components.osd
@@ -17,13 +17,13 @@ Variants {
         readonly property real mT: BarConfig.floating ? BarConfig.marginTop : 0
         readonly property real mB: BarConfig.floating ? BarConfig.marginBottom : 0
 
-        WlrLayershell {
+        Wl.WlrLayershell {
             namespace: "phoenix-aboveHome"
             screen: screenScope.modelData
-            layer: WlrLayer.Top
+            layer: Wl.WlrLayer.Top
             exclusiveZone: BarConfig.floating ? BarConfig.dockMargin + BarConfig.thickness + screenScope.gap : BarConfig.thickness - BarConfig.radius + screenScope.gap
             color: "transparent"
-            mask: Region {}
+            mask: Wl.Region {}
 
             anchors {
                 top: BarConfig.edge !== "bottom"
@@ -32,17 +32,17 @@ Variants {
                 right: BarConfig.edge !== "left"
             }
         }
-        WlrLayershell {
+        Wl.WlrLayershell {
             namespace: "phoenix-aboveHome"
             screen: screenScope.modelData
-            layer: WlrLayer.Top
-            keyboardFocus: WlrKeyboardFocus.OnDemand
+            layer: Wl.WlrLayer.Top
+            keyboardFocus: Wl.WlrKeyboardFocus.OnDemand
             exclusiveZone: -1
             color: "transparent"
-            mask: Region {
+            mask: Wl.Region {
                 item: bar.hitbox
 
-                Region {
+                Wl.Region {
                     item: bar.popupS
                 }
             }

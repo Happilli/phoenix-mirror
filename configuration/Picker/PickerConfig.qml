@@ -1,15 +1,13 @@
 pragma Singleton
 import QtQuick
 import Quickshell
-import Quickshell.Wayland
-import Ryu.Hyprland
+import Ryu.Sway
 import Ryu.Io
 import qs.services.paths
 import qs.configuration.Screenshot
 
 Singleton {
     id: root
-
     property bool open: false
     property bool regioning: false
     property string raw: ""
@@ -19,7 +17,6 @@ Singleton {
     property var groups: []
     property var groupMap: ({})
     readonly property string resultPath: PathService.runtime + "/phoenix-picker-result"
-
     readonly property var windows: {
         const out = [];
         for (const e of raw.split("[HA>]")) {
@@ -41,9 +38,7 @@ Singleton {
         }
         return out;
     }
-
     readonly property var workspaces: parseWorkspaces(wsRaw)
-
     readonly property var screenItems: Quickshell.screens.map(s => ({
                 key: "s:" + s.name,
                 label: s.name + "  ·  " + s.width + "x" + s.height,
@@ -52,7 +47,6 @@ Singleton {
                 addr: "",
                 screen: s
             }))
-
     readonly property var windowItems: windows.map(w => ({
                 label: w.cls + "  ·  " + w.title,
                 kind: "window",
@@ -60,14 +54,12 @@ Singleton {
                 addr: w.addr,
                 screen: null
             }))
-
     readonly property var windowByAddr: {
         const m = {};
         for (const w of windowItems)
             m[norm(w.addr)] = w;
         return m;
     }
-
     readonly property var workspaceItems: {
         const out = [];
         for (const g of groups) {
@@ -90,33 +82,20 @@ Singleton {
         }
         return out.sort((a, b) => a.sortId - b.sortId);
     }
-
     function norm(addr) {
         const s = String(addr ?? "");
         const n = Number(s);
         return s === "" ? "" : isNaN(n) ? s.toLowerCase().replace(/^0x/, "") : n.toString(16);
     }
-
     function refresh() {
-        Hyprland.refreshToplevels();
-        Hyprland.refreshWorkspaces();
-        Hyprland.refreshMonitors();
+        Sway.refreshToplevels();
+        Sway.refreshWorkspaces();
+        Sway.refreshMonitors();
     }
-
     function rebuild() {
-        const mons = Hyprland.monitors.values;
-        const wls = ToplevelManager.toplevels.values;
-        const used = new Set();
-        const pick = o => {
-            let hit = wls.find(w => !used.has(w) && w.appId === o.class && w.title === o.title);
-            if (!hit)
-                hit = wls.find(w => !used.has(w) && w.appId === o.class);
-            if (hit)
-                used.add(hit);
-            return hit ?? null;
-        };
+        const mons = Sway.monitors.values;
         const by = {};
-        for (const t of Hyprland.toplevels.values) {
+        for (const t of Sway.toplevels.values) {
             const o = t.lastIpcObject;
             if (!o?.at || !o.size || o.mapped === false || o.title === "Share")
                 continue;
@@ -133,7 +112,7 @@ Singleton {
                 };
             by[name].wins.push({
                 top: t,
-                wl: pick(o),
+                wl: t,
                 item: item,
                 shareable: item !== null,
                 label: item ? item.label : (o.class + "  ·  " + o.title),
@@ -163,7 +142,6 @@ Singleton {
         groups = out;
         groupMap = map;
     }
-
     function parseWorkspaces(s) {
         const out = [];
         let i = 0;
@@ -229,14 +207,12 @@ Singleton {
         }
         return out;
     }
-
     function toggle(windows, workspaces) {
         if (open)
             cancel();
         else
             show(windows, workspaces);
     }
-
     function show(windows, workspaces) {
         raw = windows;
         wsRaw = workspaces;
@@ -246,7 +222,6 @@ Singleton {
         refresh();
         openDelay.restart();
     }
-
     Timer {
         id: openDelay
         interval: 60
@@ -255,21 +230,17 @@ Singleton {
             root.open = true;
         }
     }
-
     function startRegion() {
         regioning = true;
         regionDelay.restart();
     }
-
     function pick(kind, target) {
         const k = kind === "workspace" ? "workspace-id" : kind;
         finish("[SELECTION]" + (token ? "r" : "") + "/" + k + ":" + target);
     }
-
     function cancel() {
         finish("");
     }
-
     function finish(text) {
         if (!open)
             return;
@@ -277,7 +248,6 @@ Singleton {
         writer.command = ["sh", "-c", '[ -p "$2" ] && printf "%s" "$1" | timeout 3 tee "$2" >/dev/null', "sh", text, resultPath];
         writer.running = true;
     }
-
     Timer {
         id: regionDelay
         interval: 250
@@ -286,10 +256,8 @@ Singleton {
                 root.regioning = false;
         }
     }
-
     Connections {
         target: ScreenshotConfig
-
         function onSharePicked(screenName, rect) {
             if (!root.regioning)
                 return;
@@ -297,13 +265,11 @@ Singleton {
                 root.pick("region", screenName + "@" + rect.x + "," + rect.y + "," + rect.w + "," + rect.h);
             root.regioning = false;
         }
-
         function onFinished() {
             if (root.regioning && !ScreenshotConfig.selecting && !regionDelay.running)
                 root.regioning = false;
         }
     }
-
     Process {
         id: writer
     }

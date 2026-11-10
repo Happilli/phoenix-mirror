@@ -1,6 +1,6 @@
 import Quickshell
 import QtQuick
-import Quickshell.Wayland
+import Ryu.Wayland as Wl
 import qs.configuration.Wallpaper
 import qs.components.menu
 import qs.components.clock
@@ -11,10 +11,10 @@ Variants {
         id: screenScope
         required property var modelData
 
-        WlrLayershell {
+        Wl.WlrLayershell {
             namespace: "phoenix-background"
             screen: screenScope.modelData
-            layer: WlrLayer.Background
+            layer: Wl.WlrLayer.Background
             exclusiveZone: -1
             color: "transparent"
 

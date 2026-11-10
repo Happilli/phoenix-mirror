@@ -1,2 +1,2 @@
 - u need quickshell plus u need [ryu](https://github.com/Happilli/ryu) for it to work.
-- it  relies on hyprland stuff as well (for setting), so it only supports hyprland..
+- targets sway.

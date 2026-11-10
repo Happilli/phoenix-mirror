@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import qs.services.theme
-import Ryu.Hyprland
+import Ryu.Sway
 
 Item {
     id: root
@@ -9,15 +9,15 @@ Item {
     property bool vertical: false
     readonly property int count: 10
     readonly property var hyprMonitor: {
-        const monitors = Hyprland.monitors.values;
-        return monitors.length > 0 ? Hyprland.monitorFor(screen) : null;
+        const monitors = Sway.monitors.values;
+        return monitors.length > 0 ? Sway.monitorFor(screen) : null;
     }
     readonly property int activeId: hyprMonitor?.activeWorkspace?.id ?? 1
-    readonly property var occupied: new Set(Hyprland.workspaces.values.map(w => w.id))
+    readonly property var occupied: new Set(Sway.workspaces.values.map(w => w.id))
     implicitWidth: vertical ? strip.implicitHeight : strip.implicitWidth
     implicitHeight: vertical ? strip.implicitWidth : strip.implicitHeight
     function go(i) {
-        Hyprland.dispatch(`hl.dsp.focus({workspace = ${i}})`);
+        Sway.dispatch(`workspace number ${i}`);
     }
     Row {
         id: strip

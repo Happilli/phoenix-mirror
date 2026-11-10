@@ -1,20 +1,18 @@
 import QtQuick
-import Quickshell.Wayland
+import Ryu.Wayland
 import qs.configuration.Screenshot
 
 Item {
     id: root
-
     required property var screen
     property bool done: false
-
     ScreencopyView {
         id: view
         width: root.screen.width
         height: root.screen.height
         captureSource: root.screen
         live: false
-
+        fullResolution: true
         onHasContentChanged: {
             if (!hasContent || root.done) {
                 return;

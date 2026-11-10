@@ -1,6 +1,6 @@
 pragma Singleton
 import QtQuick
-import Ryu.Hyprland
+import Ryu.Sway
 import Ryu.Notifications
 
 QtObject {
@@ -14,7 +14,7 @@ QtObject {
     signal dismissNotification(int id)
 
     function focusedScreen() {
-        return Hyprland.focusedMonitor?.name ?? Hyprland.monitors.values[0]?.name ?? "";
+        return Sway.focusedMonitor?.name ?? Sway.monitors.values[0]?.name ?? "";
     }
 
     function enqueue(n) {
