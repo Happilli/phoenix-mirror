@@ -2,9 +2,9 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Ryu.Ui
 import Ryu.Extraa
-import qs.services.theme
-import qs.configuration.Picker
-import qs.components
+import px.services.theme
+import px.configuration.Picker
+import px.components
 
 FloatingWindow {
     id: win

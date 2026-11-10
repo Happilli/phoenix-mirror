@@ -1,6 +1,6 @@
 import QtQuick
-import qs.services.theme
-import qs.services.recorder
+import px.services.theme
+import px.services.recorder
 
 Rectangle {
     id: root

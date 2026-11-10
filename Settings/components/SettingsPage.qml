@@ -1,5 +1,5 @@
 import QtQuick
-import qs.configuration.Settings
+import px.configuration.Settings
 
 Item {
     id: root

@@ -7,4 +7,5 @@ QtObject {
     property ClipboardIpc clipboard: ClipboardIpc {}
     property SettingsIpc settings: SettingsIpc {}
     property PickerIpc picker: PickerIpc {}
+    property WallpaperIpc wallpaper: WallpaperIpc {}
 }

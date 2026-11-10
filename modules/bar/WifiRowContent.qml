@@ -1,8 +1,8 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import Ryu.Extraa
-import qs.services.theme
-import qs.services.network
+import px.services.theme
+import px.services.network
 
 Column {
     id: body

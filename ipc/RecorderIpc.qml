@@ -1,5 +1,5 @@
 import Ryu.Ipc
-import qs.services.recorder
+import px.services.recorder
 
 IpcHandler {
     target: "recorder"

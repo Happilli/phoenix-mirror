@@ -1,7 +1,7 @@
 import QtQuick
 import Ryu.Extraa
 import Ryu.Power
-import qs.services.theme
+import px.services.theme
 
 Item {
     id: root

@@ -1,6 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import qs.services.theme
+import px.services.theme
 import Ryu.Sway
 
 Item {

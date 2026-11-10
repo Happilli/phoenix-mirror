@@ -1,9 +1,10 @@
 pragma Singleton
-import Quickshell
-import Ryu.Io
-import qs.services.paths
 
-Singleton {
+import QtQuick
+import Ryu.Io
+import px.services.paths
+
+QtObject {
     id: root
 
     property var data: ({})
@@ -22,11 +23,11 @@ Singleton {
         file.setText(JSON.stringify(data, null, 2));
     }
 
-    FileView {
-        id: file
+    property FileView file: FileView {
         path: PathService.home + "/.local/state/ryu/state.json"
         blockLoading: true
         atomicWrites: true
+
         onLoaded: {
             try {
                 root.data = JSON.parse(text());
@@ -34,10 +35,11 @@ Singleton {
                 console.log("parsing failure: ", e);
             }
         }
+
         onLoadFailed: error => {
             if (error == FileViewError.FileNotFound) {
                 console.log("file not found");
-                file.setText("{}");
+                root.file.setText("{}");
             } else {
                 console.log("some failure");
             }

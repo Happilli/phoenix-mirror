@@ -1,15 +1,15 @@
 import QtQuick
-import Quickshell
-import qs.configuration.Wallpaper
-import qs.components.clock
-import qs.services.theme
+import Ryu.Shell
+import px.configuration.Wallpaper
+import px.components.clock
+import px.services.theme
 
 Rectangle {
     id: root
 
-    readonly property var screenObj: Quickshell.screens[0] ?? null
-    readonly property real sw: screenObj ? screenObj.width : 1920
-    readonly property real sh: screenObj ? screenObj.height : 1080
+    readonly property var screenObj: Screens.list[0] ?? null
+    readonly property real sw: screenObj ? screenObj.size.width : 1920
+    readonly property real sh: screenObj ? screenObj.size.height : 1080
     readonly property real aspect: sw / sh
     readonly property real bw: border.width
     readonly property real k: width > 0 ? (width - bw * 2) / sw : 1

@@ -3,8 +3,8 @@ import QtQuick
 import Ryu.Ui
 import Ryu.Extraa
 import Ryu.Clipsh
-import qs.services.theme
-import qs.configuration.Clipboard
+import px.services.theme
+import px.configuration.Clipboard
 
 Item {
     id: root

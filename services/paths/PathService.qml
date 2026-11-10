@@ -1,8 +1,9 @@
 pragma Singleton
-import Quickshell
+
 import QtQuick
+import Ryu.Io
 
 QtObject {
-    readonly property string home: Quickshell.env("HOME")
-    readonly property string runtime: Quickshell.env("XDG_RUNTIME_DIR") || "/tmp"
+    readonly property string home: Env.get("HOME")
+    readonly property string runtime: Env.get("XDG_RUNTIME_DIR") || "/tmp"
 }

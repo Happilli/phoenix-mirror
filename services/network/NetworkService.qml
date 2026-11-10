@@ -1,9 +1,9 @@
 pragma Singleton
+
 import QtQuick
-import Quickshell
 import Ryu.Network
 
-Singleton {
+QtObject {
     id: root
 
     readonly property var client: iwd
@@ -55,18 +55,17 @@ Singleton {
         clear.restart();
     }
 
-    Timer {
-        id: clear
+    property Timer clear: Timer {
         interval: 5000
         onTriggered: root.message = ""
     }
 
-    Iwd {
-        id: iwd
+    property Iwd iwd: Iwd {
         onError: msg => {
             root.connecting = false;
             root.flash(msg);
         }
+
         onConnectResult: (path, ok, msg) => {
             root.connecting = false;
             root.flash(ok ? "" : "Failed: " + msg);

@@ -1,7 +1,7 @@
 import QtQuick
 import Ryu.Ipc
-import qs.configuration.Screenshot
-import qs.services.screenshot
+import px.configuration.Screenshot
+import px.services.screenshot
 
 QtObject {
     id: root

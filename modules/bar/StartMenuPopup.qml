@@ -3,7 +3,7 @@ import QtQuick
 import Ryu.Desktop
 import Ryu.Io
 import Ryu.Ui
-import qs.services.theme
+import px.services.theme
 
 Item {
     id: root

@@ -1,8 +1,8 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Shapes
-import qs.services.theme
-import qs.configuration.Bar
+import px.services.theme
+import px.configuration.Bar
 
 Item {
     id: root

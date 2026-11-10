@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import Ryu.Power
-import qs.services.theme
+import px.services.theme
 
 Rectangle {
     id: root

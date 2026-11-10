@@ -1,7 +1,7 @@
 import QtQuick
-import Quickshell
-import qs.components.lock
-import qs.configuration.Lock
+import Ryu.Shell
+import px.components.lock
+import px.configuration.Lock
 
 Scope {
     SessionLock {

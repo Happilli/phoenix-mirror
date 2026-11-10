@@ -1,26 +1,29 @@
 pragma ComponentBehavior: Bound
+
 import QtQuick
-import Quickshell
+import Ryu.Shell
 import Ryu.Wayland as Wl
-import qs.components.screenshot
-import qs.components.notifications
-import qs.components.clipboard
-import qs.components.polkit
-import qs.configuration.Screenshot
-import qs.configuration.Clipboard
-import qs.services.polkit
-import qs.services.theme
+import px.components.screenshot
+import px.components.notifications
+import px.components.clipboard
+import px.components.polkit
+import px.configuration.Screenshot
+import px.configuration.Clipboard
+import px.services.polkit
+import px.services.theme
 
 Variants {
-    model: Quickshell.screens
+    model: Screens.list
 
     Scope {
         id: screenScope
+
         required property var modelData
 
         readonly property bool selecting: ScreenshotConfig.selecting && ScreenshotConfig.selectScreen === modelData.name
         readonly property bool clipOpen: ClipboardConfig.open && ClipboardConfig.screenName === modelData.name
         readonly property bool polkitOpen: PolkitService.shown && ScreenshotConfig.focusedName() === modelData.name
+
         property bool clipShown: false
         property bool clipGrab: false
         property bool polkitGrab: false
@@ -67,6 +70,7 @@ Variants {
             exclusiveZone: -1
             color: "transparent"
             keyboardFocus: screenScope.polkitOpen ? (screenScope.polkitGrab ? Wl.WlrKeyboardFocus.Exclusive : Wl.WlrKeyboardFocus.OnDemand) : (screenScope.selecting ? Wl.WlrKeyboardFocus.Exclusive : (screenScope.clipOpen ? (screenScope.clipGrab ? Wl.WlrKeyboardFocus.Exclusive : Wl.WlrKeyboardFocus.OnDemand) : Wl.WlrKeyboardFocus.None))
+
             mask: Wl.Region {
                 item: screenScope.selecting ? picker : shot
 

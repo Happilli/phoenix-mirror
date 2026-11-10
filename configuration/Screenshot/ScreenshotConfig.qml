@@ -1,13 +1,14 @@
 pragma Singleton
+
 import QtQuick
-import Quickshell
-import qs.services.theme
+import px.services.theme
 import Ryu.Sway
 import Ryu.Io
-import qs.services.paths
-import qs.services.screenshot
+import Ryu.Shell
+import px.services.paths
+import px.services.screenshot
 
-Singleton {
+QtObject {
     id: root
 
     property bool capturing: false
@@ -63,7 +64,7 @@ Singleton {
     }
 
     function focusedName() {
-        return Sway.focusedMonitor?.name ?? Quickshell.screens[0]?.name ?? "";
+        return Sway.focusedMonitor?.name ?? Screens.list[0]?.name ?? "";
     }
 
     function startGrim(args) {
@@ -134,8 +135,7 @@ Singleton {
         Exec.detached(["rm", "-f", path]);
     }
 
-    Process {
-        id: grim
+    property Process grim: Process {
         onExited: code => {
             if (code === 0) {
                 ScreenshotService.show(root.shotScreen, root.shotPath);
@@ -145,8 +145,7 @@ Singleton {
         }
     }
 
-    Timer {
-        id: timeout
+    property Timer timeout: Timer {
         interval: 2500
         onTriggered: root.complete()
     }

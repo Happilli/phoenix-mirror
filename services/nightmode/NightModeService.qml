@@ -1,7 +1,7 @@
 pragma Singleton
 import QtQuick
 import Ryu.Wayland
-import qs.services.state
+import px.services.state
 
 QtObject {
     id: root

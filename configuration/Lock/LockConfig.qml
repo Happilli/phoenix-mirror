@@ -1,11 +1,12 @@
 pragma Singleton
-import QtQuick
-import Quickshell
-import Ryu.Io
-import qs.services.paths
-import qs.configuration.Screenshot
 
-Singleton {
+import QtQuick
+import Ryu.Io
+import Ryu.Shell
+import px.services.paths
+import px.configuration.Screenshot
+
+QtObject {
     id: root
 
     property bool requested: false
@@ -28,7 +29,7 @@ Singleton {
         }
         requested = true;
         stamp += 1;
-        const started = ScreenshotConfig.begin(Quickshell.screens.map(s => s.name), true);
+        const started = ScreenshotConfig.begin(Screens.list.map(s => s.name), true);
         if (!started) {
             engage();
         }
@@ -45,7 +46,7 @@ Singleton {
         Exec.detached(["sh", "-c", `rm -f "${PathService.runtime}"/phoenix-capture-*.bmp`]);
     }
 
-    Connections {
+    property Connections screenshotWatch: Connections {
         target: ScreenshotConfig
 
         function onFinished() {

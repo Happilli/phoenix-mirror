@@ -1,8 +1,8 @@
 import QtQuick
 import Ryu.Ui
-import qs.services.theme
-import qs.configuration.Settings
-import qs.Settings.pages
+import px.services.theme
+import px.configuration.Settings
+import px.Settings.pages
 
 LazyLoader {
     active: SettingsConfig.open

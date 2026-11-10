@@ -1,10 +1,10 @@
 pragma Singleton
-import QtQuick
-import Quickshell
-import Ryu.Io
-import qs.services.paths
 
-Singleton {
+import QtQuick
+import Ryu.Io
+import px.services.paths
+
+QtObject {
     id: root
 
     property string path: ""
@@ -15,6 +15,7 @@ Singleton {
     property string pendingScreen: ""
     property string pendingSource: ""
     property bool copied: false
+
     readonly property bool active: path !== ""
     readonly property string dir: PathService.home + "/Screenshots"
 
@@ -72,8 +73,7 @@ Singleton {
         path = "";
     }
 
-    Process {
-        id: mover
+    property Process mover: Process {
         onExited: code => {
             if (code === 0) {
                 root.show(root.pendingScreen, root.pendingOut);
@@ -81,8 +81,7 @@ Singleton {
         }
     }
 
-    Process {
-        id: convert
+    property Process convert: Process {
         onExited: code => {
             Exec.detached(["rm", "-f", root.pendingSource]);
             if (code === 0) {
@@ -91,8 +90,7 @@ Singleton {
         }
     }
 
-    Process {
-        id: store
+    property Process store: Process {
         onExited: code => {
             if (code === 0) {
                 root.savedPath = root.target;
@@ -100,8 +98,7 @@ Singleton {
         }
     }
 
-    Process {
-        id: copier
+    property Process copier: Process {
         onExited: code => root.copied = code === 0
     }
 }

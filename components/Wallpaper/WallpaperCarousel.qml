@@ -1,8 +1,8 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import Ryu.Extraa
-import qs.configuration.Wallpaper
-import qs.services.theme
+import px.configuration.Wallpaper
+import px.services.theme
 
 Item {
     id: root

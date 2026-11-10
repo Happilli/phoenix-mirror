@@ -1,9 +1,9 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import Ryu.Extraa
-import qs.services.theme
-import qs.configuration.Widgets
-import qs.Settings.components
+import px.services.theme
+import px.configuration.Widgets
+import px.Settings.components
 
 SettingsPage {
     id: page

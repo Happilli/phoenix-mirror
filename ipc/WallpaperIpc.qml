@@ -1,5 +1,5 @@
 import Ryu.Ipc
-import qs.configuration.Wallpaper
+import px.configuration.Wallpaper
 
 IpcHandler {
     target: "wallpaper"

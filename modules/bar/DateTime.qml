@@ -1,7 +1,7 @@
 import QtQuick
-import Quickshell
-import qs.services.theme
-import qs.configuration.Widgets
+import Ryu.Shell
+import px.services.theme
+import px.configuration.Widgets
 
 Rectangle {
     id: root
@@ -18,11 +18,13 @@ Rectangle {
         id: sysClock
         precision: SystemClock.Minutes
     }
+
     Row {
         id: row
         visible: !root.vertical
         spacing: 8
         anchors.centerIn: parent
+
         Text {
             anchors.verticalCenter: parent.verticalCenter
             color: root.showTime ? Theme.onSurfaceVariantColor : Theme.primary
@@ -30,6 +32,7 @@ Rectangle {
             font.pixelSize: 16
             font.bold: true
         }
+
         Rectangle {
             visible: root.showTime
             width: 4
@@ -38,6 +41,7 @@ Rectangle {
             anchors.verticalCenter: parent.verticalCenter
             color: Theme.onSurfaceVariantColor
         }
+
         Text {
             visible: root.showTime
             color: Theme.primary
@@ -47,6 +51,7 @@ Rectangle {
             font.bold: true
         }
     }
+
     Column {
         id: col
         visible: root.vertical
@@ -62,6 +67,7 @@ Rectangle {
             color: Theme.onSurfaceVariantColor
             opacity: 0.7
         }
+
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
             text: Qt.formatDateTime(sysClock.date, "d")
@@ -69,6 +75,7 @@ Rectangle {
             font.bold: true
             color: root.showTime ? Theme.onSurfaceVariantColor : Theme.primary
         }
+
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
             text: Qt.formatDateTime(sysClock.date, "MMM").toUpperCase()
@@ -84,6 +91,7 @@ Rectangle {
             width: 1
             height: 7
         }
+
         Rectangle {
             visible: root.showTime
             anchors.horizontalCenter: parent.horizontalCenter
@@ -92,6 +100,7 @@ Rectangle {
             radius: 1
             color: Theme.outlineVariant
         }
+
         Item {
             visible: root.showTime
             width: 1
@@ -106,6 +115,7 @@ Rectangle {
             font.bold: true
             color: Theme.primary
         }
+
         Text {
             visible: root.showTime
             anchors.horizontalCenter: parent.horizontalCenter
@@ -114,6 +124,7 @@ Rectangle {
             font.bold: true
             color: Theme.primary
         }
+
         Text {
             visible: root.showTime
             anchors.horizontalCenter: parent.horizontalCenter

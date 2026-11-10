@@ -3,9 +3,9 @@ import QtQuick
 import QtQuick.Layouts
 import Ryu.Extraa
 import Ryu.Notifications
-import qs.services.theme
-import qs.services.notifications
-import qs.configuration.Notification
+import px.services.theme
+import px.services.notifications
+import px.configuration.Notification
 
 Item {
     id: root

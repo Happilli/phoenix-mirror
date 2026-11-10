@@ -1,11 +1,11 @@
 pragma Singleton
-import QtQuick
-import Quickshell
-import qs.services.state
-import qs.services.theme
-import qs.configuration.Wallpaper
 
-Singleton {
+import QtQuick
+import px.services.state
+import px.services.theme
+import px.configuration.Wallpaper
+
+QtObject {
     id: root
 
     readonly property var defaults: ({
@@ -28,32 +28,40 @@ Singleton {
             margin: 48,
             randomizePosition: false
         })
+
     function place(pos, container, item, margin) {
         const a = margin;
         const b = (container - item) / 2;
         const c = container - item - margin;
         return pos <= 1 ? a + (b - a) * pos : b + (c - b) * (pos - 1);
     }
-    property real hPos: hAlign
-    property real vPos: vAlign
 
-    Behavior on hPos {
-        SpringAnimation {
-            spring: 1.2
-            damping: 0.22
-            mass: 1.4
-            epsilon: 0.001
+    property Item motion: Item {
+        property real h: root.hAlign
+        property real v: root.vAlign
+
+        Behavior on h {
+            SpringAnimation {
+                spring: 1.2
+                damping: 0.22
+                mass: 1.4
+                epsilon: 0.001
+            }
+        }
+
+        Behavior on v {
+            SpringAnimation {
+                spring: 1.2
+                damping: 0.22
+                mass: 1.4
+                epsilon: 0.001
+            }
         }
     }
 
-    Behavior on vPos {
-        SpringAnimation {
-            spring: 1.2
-            damping: 0.22
-            mass: 1.4
-            epsilon: 0.001
-        }
-    }
+    readonly property real hPos: motion.h
+    readonly property real vPos: motion.v
+
     readonly property var colorOptions: [
         {
             key: "primary",
@@ -114,7 +122,6 @@ Singleton {
 
     readonly property bool randomizePosition: get("randomizePosition")
     readonly property var autoPosition: autoPositions[hash(WallpaperConfig.currentWallpaper.toString()) % autoPositions.length]
-
     readonly property bool enabled: get("enabled")
     readonly property int size: get("size")
     readonly property int hAlign: randomizePosition ? autoPosition[0] : get("hAlign")
@@ -134,8 +141,7 @@ Singleton {
     readonly property string colorKey: get("colorKey")
     readonly property color tint: colorFor(colorKey)
 
-    Timer {
-        id: saveTimer
+    property Timer saveTimer: Timer {
         interval: 400
         onTriggered: StateService.set("clock", root.values)
     }

@@ -1,14 +1,16 @@
-import Quickshell
 import QtQuick
+import Ryu.Shell
 import Ryu.Wayland as Wl
-import qs.configuration.Wallpaper
-import qs.components.menu
-import qs.components.clock
+import px.configuration.Wallpaper
+import px.components.menu
+import px.components.clock
 
 Variants {
-    model: Quickshell.screens
+    model: Screens.list
+
     Scope {
         id: screenScope
+
         required property var modelData
 
         Wl.WlrLayershell {
@@ -24,6 +26,7 @@ Variants {
                 left: true
                 right: true
             }
+
             Item {
                 id: wall
                 anchors.fill: parent
@@ -47,11 +50,11 @@ Variants {
                     fillMode: Image.PreserveAspectCrop
                     cache: false
                     asynchronous: true
-
                     x: wall.pannable ? -(width - wall.width) * wall.mouseNorm : 0
 
                     Behavior on x {
                         enabled: wall.pannable
+
                         NumberAnimation {
                             duration: 400
                             easing.type: Easing.OutCubic

@@ -1,6 +1,6 @@
 import QtQuick
 import Ryu.Ui
-import qs.services.theme
+import px.services.theme
 
 ClippingRectangle {
     id: root

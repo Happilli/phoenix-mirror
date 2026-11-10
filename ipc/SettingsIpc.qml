@@ -1,5 +1,5 @@
 import Ryu.Ipc
-import qs.configuration.Settings
+import px.configuration.Settings
 
 IpcHandler {
     target: "settings"

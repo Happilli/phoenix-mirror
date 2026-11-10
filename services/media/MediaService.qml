@@ -1,17 +1,16 @@
 pragma ComponentBehavior: Bound
 pragma Singleton
+
 import QtQuick
-import Quickshell
 import Ryu.Cleave
 import Ryu.Mpris
-import qs.services.state
-import qs.services.controls
+import px.services.state
+import px.services.controls
 
-Singleton {
+QtObject {
     id: root
 
     readonly property MprisPlayer player: Mpris.active
-
     readonly property bool hasPlayer: player !== null
     readonly property bool isPlaying: player?.isPlaying ?? false
     readonly property string title: player?.trackTitle || "Nothing playing"
@@ -24,6 +23,7 @@ Singleton {
         visualizerEnabled = !visualizerEnabled;
         StateService.set("visualizer", visualizerEnabled);
     }
+
     readonly property string visualizerSource: {
         const n = AudioService.sink?.name ?? "";
         return n !== "" ? n + ".monitor" : "";
@@ -77,8 +77,7 @@ Singleton {
             player.previous();
     }
 
-    Cleave {
-        id: cleave
+    property Cleave cleave: Cleave {
         bandCount: 64
         smoothing: 0.3
         peakDecay: 0.006
@@ -88,17 +87,16 @@ Singleton {
         onError: msg => console.warn("[MediaService]", msg)
     }
 
-    FrameAnimation {
+    property FrameAnimation frames: FrameAnimation {
         running: root.capturing || root.decaying
-        onTriggered: {
-            const raw = root.capturing ? cleave.magnitudes : null;
-            const n = raw ? raw.length : 0;
 
+        onTriggered: {
+            const raw = root.capturing ? root.cleave.magnitudes : null;
+            const n = raw ? raw.length : 0;
             let peak = 0;
             for (let k = 0; k < n; k++)
                 peak = Math.max(peak, raw[k] || 0);
             root.ref = peak > root.ref ? root.ref + (peak - root.ref) * 0.3 : Math.max(0.01, root.ref * 0.997);
-
             const count = root.bandCount;
             const targets = new Array(count).fill(0);
             if (n > 1) {
@@ -111,7 +109,6 @@ Singleton {
                     targets[i] = Math.pow(Math.min(1, m / root.ref), 0.7);
                 }
             }
-
             const next = new Array(count);
             let maxLevel = 0;
             for (let i = 0; i < count; i++) {
@@ -126,7 +123,6 @@ Singleton {
                 maxLevel = Math.max(maxLevel, v);
             }
             root.spectrum = next;
-
             if (!root.capturing && maxLevel < 0.002) {
                 root.spectrum = new Array(count).fill(0);
                 root.ref = 0.01;

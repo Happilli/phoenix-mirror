@@ -1,8 +1,8 @@
 pragma Singleton
 import QtQuick
 import Ryu.Io
-import qs.services.paths
-import qs.configuration.Screenshot
+import px.services.paths
+import px.configuration.Screenshot
 
 QtObject {
     id: root

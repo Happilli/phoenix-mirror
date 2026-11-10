@@ -1,6 +1,6 @@
 import QtQuick
 import Ryu.Extraa
-import qs.services.theme
+import px.services.theme
 
 MaterialSwitch {
     trackColor: Theme.surfaceContainerHighest

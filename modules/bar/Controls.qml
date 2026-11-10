@@ -1,8 +1,8 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import qs.services.theme
+import px.services.theme
 import Ryu.Extraa
-import qs.services.controls
+import px.services.controls
 
 Rectangle {
     id: root

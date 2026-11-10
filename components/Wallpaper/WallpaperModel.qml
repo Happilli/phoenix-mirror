@@ -1,5 +1,5 @@
 import Qt.labs.folderlistmodel
-import qs.configuration.Wallpaper
+import px.configuration.Wallpaper
 
 FolderListModel {
     signal loaded

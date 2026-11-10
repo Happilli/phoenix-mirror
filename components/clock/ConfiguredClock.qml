@@ -1,6 +1,6 @@
 import QtQuick
 import Ryu.Widgets
-import qs.configuration.Widgets
+import px.configuration.Widgets
 
 Loader {
     active: ClockConfig.enabled

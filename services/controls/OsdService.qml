@@ -1,8 +1,8 @@
 pragma Singleton
-import QtQuick
-import Quickshell
 
-Singleton {
+import QtQuick
+
+QtObject {
     id: root
 
     property bool shown: false
@@ -14,8 +14,7 @@ Singleton {
         hideTimer.restart();
     }
 
-    Timer {
-        id: hideTimer
+    property Timer hideTimer: Timer {
         interval: 1500
         onTriggered: root.shown = false
     }

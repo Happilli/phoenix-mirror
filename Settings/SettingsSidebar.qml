@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import qs.services.theme
-import qs.configuration.Settings
+import px.services.theme
+import px.configuration.Settings
 
 Item {
     id: root

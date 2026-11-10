@@ -1,10 +1,10 @@
 pragma Singleton
-import QtQuick
-import Quickshell
-import Ryu.Io
-import qs.services.paths
 
-Singleton {
+import QtQuick
+import Ryu.Io
+import px.services.paths
+
+QtObject {
     id: root
 
     property string date: ""
@@ -34,18 +34,18 @@ Singleton {
     readonly property string challengeDetail: detailOf(challenge)
     readonly property string languageName: labelOf(language)
 
-    Timer {
-        id: reloadTimer
+    property Timer reloadTimer: Timer {
         interval: 100
-        onTriggered: file.reload()
+        onTriggered: root.file.reload()
     }
 
-    FileView {
-        id: file
+    property FileView file: FileView {
         path: PathService.home + "/.cache/todaywarpick.json"
         watchChanges: true
-        onFileChanged: reloadTimer.restart()
+
+        onFileChanged: root.reloadTimer.restart()
         onLoadFailed: err => root.loaded = false
+
         onLoaded: {
             const raw = text();
             if (raw.trim() === "")

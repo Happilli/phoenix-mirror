@@ -1,8 +1,8 @@
 import QtQuick
 import Ryu.Io
 import Ryu.Extraa
-import qs.services.paths
-import qs.services.theme
+import px.services.paths
+import px.services.theme
 
 Item {
     id: root

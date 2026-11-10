@@ -1,5 +1,5 @@
 import QtQuick
-import qs.services.theme
+import px.services.theme
 
 Text {
     font.family: "CaskaydiaCove NF"

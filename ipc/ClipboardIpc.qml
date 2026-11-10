@@ -1,5 +1,5 @@
 import Ryu.Ipc
-import qs.configuration.Clipboard
+import px.configuration.Clipboard
 
 IpcHandler {
     target: "clipboard"

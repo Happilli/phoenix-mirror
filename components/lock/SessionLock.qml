@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import Ryu.Wayland as Wl
-import qs.services.theme
+import px.services.theme
 
 QtObject {
     id: root

@@ -1,5 +1,5 @@
 import QtQuick
-import qs.services.media
+import px.services.media
 
 QtObject {
     id: root

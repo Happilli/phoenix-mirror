@@ -3,8 +3,8 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Ryu.Ui
 import Ryu.Sway
-import qs.components
-import qs.services.theme
+import px.components
+import px.services.theme
 
 Item {
     id: root

@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Shapes
-import qs.services.theme
-import qs.configuration.Screenshot
+import px.services.theme
+import px.configuration.Screenshot
 
 Item {
     id: root

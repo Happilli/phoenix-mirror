@@ -1,16 +1,17 @@
 pragma Singleton
-import QtQuick
-import Quickshell
-import Ryu.Sway
 
-Singleton {
+import QtQuick
+import Ryu.Sway
+import Ryu.Shell
+
+QtObject {
     id: root
 
     property bool open: false
     property string screenName: ""
 
     function focusedName() {
-        return Sway.focusedMonitor?.name ?? Quickshell.screens[0]?.name ?? "";
+        return Sway.focusedMonitor?.name ?? Screens.list[0]?.name ?? "";
     }
 
     function show() {

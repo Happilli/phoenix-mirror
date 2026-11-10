@@ -1,5 +1,5 @@
 import Ryu.Ipc
-import qs.configuration.Lock
+import px.configuration.Lock
 
 IpcHandler {
     target: "lock"

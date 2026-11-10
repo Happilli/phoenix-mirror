@@ -1,15 +1,17 @@
-import Quickshell
 import QtQuick
+import Ryu.Shell
 import Ryu.Wayland as Wl
-import qs.services.theme
-import qs.modules.bar
-import qs.components.osd
-import qs.configuration.Bar
+import px.services.theme
+import px.modules.bar
+import px.components.osd
+import px.configuration.Bar
 
 Variants {
-    model: Quickshell.screens
+    model: Screens.list
+
     Scope {
         id: screenScope
+
         required property var modelData
         property int gap: 2
         readonly property real mL: BarConfig.floating ? BarConfig.marginLeft : 0
@@ -32,6 +34,7 @@ Variants {
                 right: BarConfig.edge !== "left"
             }
         }
+
         Wl.WlrLayershell {
             namespace: "phoenix-aboveHome"
             screen: screenScope.modelData
@@ -53,6 +56,7 @@ Variants {
                 left: true
                 right: true
             }
+
             Bar {
                 id: bar
                 screen: screenScope.modelData
@@ -63,6 +67,7 @@ Variants {
                 x: BarConfig.horizontal ? screenScope.mL : (BarConfig.edge === "right" ? parent.width - width - screenScope.mR : screenScope.mL)
                 y: BarConfig.horizontal ? (BarConfig.edge === "bottom" ? parent.height - height - screenScope.mB : screenScope.mT) : screenScope.mT
             }
+
             Osd {
                 x: BarConfig.horizontal ? (parent.width - width) / 2 : (BarConfig.edge === "left" ? bar.x + bar.width + 8 : bar.x - width - 8)
                 y: BarConfig.horizontal ? (BarConfig.edge === "top" ? bar.y + bar.height + 8 : bar.y - height - 8) : (parent.height - height) / 2

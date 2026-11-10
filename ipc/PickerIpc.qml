@@ -1,5 +1,5 @@
 import Ryu.Ipc
-import qs.configuration.Picker
+import px.configuration.Picker
 
 IpcHandler {
     target: "picker"

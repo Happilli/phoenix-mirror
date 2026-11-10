@@ -1,12 +1,12 @@
 pragma Singleton
-import Quickshell
+
 import QtQuick
 import Ryu.Io
-import qs.configuration.Wallpaper
-import qs.services.paths
-import qs.services.state
+import px.configuration.Wallpaper
+import px.services.paths
+import px.services.state
 
-Singleton {
+QtObject {
     id: root
 
     property string mode: StateService.get("mode", "dark")
@@ -89,8 +89,7 @@ Singleton {
         matugen.running = true;
     }
 
-    Process {
-        id: matugen
+    property Process matugen: Process {
         onRunningChanged: {
             if (!running && root.queued) {
                 root.queued = false;
@@ -99,18 +98,18 @@ Singleton {
         }
     }
 
-    Timer {
-        id: reloadTimer
+    property Timer reloadTimer: Timer {
         interval: 50
-        onTriggered: colorsFile.reload()
+        onTriggered: root.colorsFile.reload()
     }
 
-    FileView {
-        id: colorsFile
+    property FileView colorsFile: FileView {
         path: PathService.home + "/.local/state/ryu/colors.json"
         watchChanges: true
-        onFileChanged: reloadTimer.restart()
+
+        onFileChanged: root.reloadTimer.restart()
         onLoadFailed: err => console.log("error loading file: ", err)
+
         onLoaded: {
             const raw = text();
             if (raw.trim() === "" || raw === root.lastText)

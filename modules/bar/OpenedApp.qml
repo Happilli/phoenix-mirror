@@ -3,7 +3,7 @@ import QtQuick
 import Ryu.Desktop
 import Ryu.Sway
 import Ryu.Ui
-import qs.services.theme
+import px.services.theme
 
 Grid {
     id: root

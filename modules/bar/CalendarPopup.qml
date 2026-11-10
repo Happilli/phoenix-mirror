@@ -3,7 +3,7 @@ import QtQuick
 import Ryu.Warsa
 import Ryu.Sqliter
 import Ryu.Extraa
-import qs.services.theme
+import px.services.theme
 
 Item {
     id: root

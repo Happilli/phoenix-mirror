@@ -2,11 +2,11 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Dialogs
 import Ryu.Extraa
-import qs.services.theme
-import qs.configuration.Wallpaper
-import qs.configuration.Bar
-import qs.components.Wallpaper
-import qs.Settings.components
+import px.services.theme
+import px.configuration.Wallpaper
+import px.configuration.Bar
+import px.components.Wallpaper
+import px.Settings.components
 
 SettingsPage {
     id: page

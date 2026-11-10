@@ -2,7 +2,7 @@ pragma Singleton
 import QtQuick
 import Ryu.Sway
 import Ryu.Io
-import qs.services.paths
+import px.services.paths
 
 QtObject {
     id: root

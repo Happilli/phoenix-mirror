@@ -2,8 +2,8 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Ryu.Ui
 import Ryu.Extraa
-import qs.services.theme
-import qs.services.media
+import px.services.theme
+import px.services.media
 
 Item {
     id: root

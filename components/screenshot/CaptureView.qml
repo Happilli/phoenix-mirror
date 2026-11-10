@@ -1,6 +1,6 @@
 import QtQuick
 import Ryu.Wayland
-import qs.configuration.Screenshot
+import px.configuration.Screenshot
 
 Item {
     id: root

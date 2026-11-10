@@ -3,8 +3,8 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Effects
 import Ryu.Io
-import qs.services.theme
-import qs.configuration.Lock
+import px.services.theme
+import px.configuration.Lock
 
 Item {
     id: root

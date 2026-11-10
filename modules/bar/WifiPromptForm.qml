@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import Ryu.Extraa
-import qs.services.theme
+import px.services.theme
 
 Column {
     id: form

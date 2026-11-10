@@ -1,7 +1,7 @@
 pragma Singleton
 import QtQuick
-import qs.services.paths
-import qs.services.state
+import px.services.paths
+import px.services.state
 
 QtObject {
     id: root

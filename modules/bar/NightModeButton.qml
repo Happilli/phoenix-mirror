@@ -1,7 +1,7 @@
 import QtQuick
 import Ryu.Extraa
-import qs.services.theme
-import qs.services.nightmode
+import px.services.theme
+import px.services.nightmode
 
 Item {
     id: root

@@ -1,8 +1,8 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import Ryu.Io
-import qs.services.theme
-import qs.configuration.Lock
+import px.services.theme
+import px.configuration.Lock
 
 Rectangle {
     id: root

@@ -1,6 +1,6 @@
 import QtQuick
-import qs.services.theme
-import qs.services.controls
+import px.services.theme
+import px.services.controls
 
 Rectangle {
     id: root

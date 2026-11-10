@@ -1,8 +1,8 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import Ryu.Shapes
-import qs.services.theme
-import qs.services.polkit
+import px.services.theme
+import px.services.polkit
 
 Rectangle {
     id: card

@@ -3,8 +3,8 @@ import QtQuick
 import Ryu.Ui
 import Ryu.Extraa
 import Ryu.Shapes
-import qs.services.theme
-import qs.services.network
+import px.services.theme
+import px.services.network
 
 Item {
     id: root
