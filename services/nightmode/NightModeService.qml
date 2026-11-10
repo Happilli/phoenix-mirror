@@ -1,10 +1,9 @@
 pragma Singleton
 import QtQuick
-import Quickshell
-import Ryu.Io
+import Ryu.Wayland
 import qs.services.state
 
-Singleton {
+QtObject {
     id: root
 
     readonly property var keys: ["temperature", "gamma"]
@@ -15,8 +14,15 @@ Singleton {
     property bool active: StateService.get("nightActive", false)
     property real temperature: StateService.get("nightTemp", 4000)
     property real gamma: StateService.get("nightGamma", 1)
-    property bool dirty: false
-    property bool ready: false
+
+    property Timer saver: Timer {
+        interval: 400
+        onTriggered: {
+            StateService.set("nightActive", root.active);
+            StateService.set("nightTemp", root.temperature);
+            StateService.set("nightGamma", root.gamma);
+        }
+    }
 
     function valueOf(key) {
         if (key === "temperature")
@@ -35,68 +41,30 @@ Singleton {
         else
             return;
         active = true;
-        changed();
+        persist();
     }
 
     function toggle() {
         active = !active;
-        changed();
+        persist();
     }
 
-    function start() {
-        Exec.detached(["sh", "-c", `pgrep -x hyprsunset >/dev/null || hyprsunset -t ${Math.round(temperature)} -g ${Math.round(gamma * 100)}`]);
-        settle.restart();
+    function persist() {
+        root.saver.restart();
     }
 
-    function stop() {
-        ready = false;
-        Exec.detached(["pkill", "-x", "hyprsunset"]);
+    function apply() {
+        NightLight.temperature = root.temperature;
+        NightLight.gamma = root.gamma;
+        NightLight.active = root.active;
     }
 
-    onActiveChanged: active ? start() : stop()
+    onActiveChanged: root.apply()
+    onTemperatureChanged: root.apply()
+    onGammaChanged: root.apply()
 
     Component.onCompleted: {
-        if (active)
-            start();
-    }
-
-    function changed() {
-        dirty = true;
-        flush();
-        saveTimer.restart();
-    }
-
-    function flush() {
-        if (!dirty || !active || !ready || proc.running)
-            return;
-        dirty = false;
-        proc.command = ["sh", "-c", `hyprctl hyprsunset temperature ${Math.round(temperature)} && hyprctl hyprsunset gamma ${Math.round(gamma * 100)}`];
-        proc.running = true;
-    }
-
-    Timer {
-        id: settle
-        interval: 300
-        onTriggered: {
-            root.ready = true;
-            root.dirty = true;
-            root.flush();
-        }
-    }
-
-    Process {
-        id: proc
-        onRunningChanged: if (!running)
-            root.flush()
-    }
-
-    Timer {
-        id: saveTimer
-        interval: 400
-        onTriggered: {
-            StateService.set("nightActive", root.active);
-            StateService.set("nightTemp", root.temperature);
-            StateService.set("nightGamma", root.gamma);
-        }
+        if (root.active)
+            root.apply();
     }
 }
