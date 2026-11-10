@@ -1,5 +1,6 @@
 import QtQuick
 import Ryu.Ui
+import Ryu.Shell
 import px.services.theme
 import px.configuration.Settings
 import px.Settings.pages
@@ -10,10 +11,11 @@ LazyLoader {
     FloatingWindow {
         id: win
 
-        readonly property var screenObj: Qt.application.screens[0] ?? null
-        readonly property real maxWidth: (win.screenObj ? win.screenObj.width : 1920) * 0.97
-        readonly property real maxHeight: (win.screenObj ? win.screenObj.height : 1080) * 0.9
+        readonly property var screenObj: Screens.list[0] ?? null
+        readonly property real maxWidth: (win.screenObj ? win.screenObj.size.width : 1920) * 0.97
+        readonly property real maxHeight: (win.screenObj ? win.screenObj.size.height : 1080) * 0.9
 
+        visible: true
         title: "Phoenix Settings"
         color: Theme.background
         implicitWidth: Math.min(1920, win.maxWidth)
