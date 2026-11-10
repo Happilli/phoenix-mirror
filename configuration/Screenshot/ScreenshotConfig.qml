@@ -17,14 +17,12 @@ Singleton {
     property bool selecting: false
     property string selectScreen: ""
     property string selectSource: ""
-    property string selectPurpose: "screenshot"
     property var targets: []
     property int pending: 0
     property string shotScreen: ""
     property string shotPath: ""
 
     signal captured(string screenName, string path)
-    signal sharePicked(string screenName, var rect)
     signal finished
 
     function pathFor(name) {
@@ -95,34 +93,20 @@ Singleton {
     function grimRegion() {
         return startGrim((name, out) => ["sh", "-c", 'out="$1"; shift; g=$(slurp "$@") || exit 1; exec grim -g "$g" "$out"', "sh", out].concat(slurpArgs()));
     }
+
     function captureLasso() {
         const name = focusedName();
         regionMode = true;
         lassoMode = true;
-        selectPurpose = "screenshot";
-        return name !== "" && begin([name], false);
-    }
-
-    function captureRegionForShare() {
-        const name = focusedName();
-        regionMode = true;
-        lassoMode = false;
-        selectPurpose = "share";
         return name !== "" && begin([name], false);
     }
 
     function finishSelect(geom, rect) {
         const source = selectSource;
-        const purpose = selectPurpose;
-        const screen = selectScreen;
         selecting = false;
         regionMode = false;
         lassoMode = false;
-        selectPurpose = "screenshot";
         Exec.detached(["rm", "-f", source]);
-        if (purpose === "share") {
-            sharePicked(screen, geom !== "" ? rect : null);
-        }
     }
 
     function finishLasso(geom, poly) {
@@ -131,7 +115,6 @@ Singleton {
         selecting = false;
         regionMode = false;
         lassoMode = false;
-        selectPurpose = "screenshot";
         if (geom !== "" && poly !== "")
             ScreenshotService.present(screen, source, geom, poly);
         else
