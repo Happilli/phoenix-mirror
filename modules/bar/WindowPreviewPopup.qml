@@ -110,7 +110,7 @@ Item {
                     values: mini.modelData.wins
                     objectProp: "key"
                 }
-                delegate: Rectangle {
+                delegate: ClippingRectangle {
                     id: win
                     required property var modelData
                     x: Math.round((modelData.x - mini.modelData.mx) * mini.s)

@@ -22,9 +22,9 @@ QtObject {
         if (mode === "lasso")
             ScreenshotConfig.captureLasso();
         else if (mode === "region")
-            ScreenshotConfig.captureRegion();
+            ScreenshotConfig.grimRegion();
         else
-            ScreenshotConfig.captureFocused();
+            ScreenshotConfig.grimFull();
     }
 
     property Timer delayTimer: Timer {

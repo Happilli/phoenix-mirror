@@ -1,6 +1,7 @@
 pragma Singleton
 import QtQuick
 import Quickshell
+import qs.services.theme
 import Ryu.Sway
 import Ryu.Io
 import qs.services.paths
@@ -19,9 +20,10 @@ Singleton {
     property string selectPurpose: "screenshot"
     property var targets: []
     property int pending: 0
+    property string shotScreen: ""
+    property string shotPath: ""
 
     signal captured(string screenName, string path)
-    signal regionPicked(string screenName, var rect)
     signal sharePicked(string screenName, var rect)
     signal finished
 
@@ -66,35 +68,38 @@ Singleton {
         return Sway.focusedMonitor?.name ?? Quickshell.screens[0]?.name ?? "";
     }
 
-    function captureFocused() {
+    function startGrim(args) {
+        if (grim.running || capturing || selecting) {
+            return false;
+        }
         const name = focusedName();
-        regionMode = false;
-        lassoMode = false;
-        selectPurpose = "screenshot";
-        return name !== "" && begin([name], false);
+        if (name === "") {
+            return false;
+        }
+        shotScreen = name;
+        shotPath = PathService.runtime + "/phoenix-shot-" + Date.now() + ".png";
+        grim.command = args(name, shotPath);
+        grim.running = true;
+        return true;
     }
 
-    function captureRegion() {
-        const name = focusedName();
-        regionMode = true;
-        lassoMode = false;
-        selectPurpose = "screenshot";
-        return name !== "" && begin([name], false);
+    function grimFull() {
+        return startGrim((name, out) => ["grim", "-o", name, out]);
     }
 
+    function slurpArgs() {
+        const accent = String(Theme.primary).replace("#", "").slice(0, 6);
+        return ["-b", "#00000099", "-s", "#00000000", "-c", "#" + accent + "ff", "-w", "2"];
+    }
+
+    function grimRegion() {
+        return startGrim((name, out) => ["sh", "-c", 'out="$1"; shift; g=$(slurp "$@") || exit 1; exec grim -g "$g" "$out"', "sh", out].concat(slurpArgs()));
+    }
     function captureLasso() {
         const name = focusedName();
         regionMode = true;
         lassoMode = true;
         selectPurpose = "screenshot";
-        return name !== "" && begin([name], false);
-    }
-
-    function captureRegionForRecording() {
-        const name = focusedName();
-        regionMode = true;
-        lassoMode = false;
-        selectPurpose = "record";
         return name !== "" && begin([name], false);
     }
 
@@ -114,16 +119,9 @@ Singleton {
         regionMode = false;
         lassoMode = false;
         selectPurpose = "screenshot";
-        if (purpose === "record" || purpose === "share") {
-            Exec.detached(["rm", "-f", source]);
-            if (purpose === "share")
-                sharePicked(screen, geom !== "" ? rect : null);
-            else if (geom !== "" && rect)
-                regionPicked(screen, rect);
-        } else if (geom !== "") {
-            ScreenshotService.present(screen, source, geom, "");
-        } else {
-            Exec.detached(["rm", "-f", source]);
+        Exec.detached(["rm", "-f", source]);
+        if (purpose === "share") {
+            sharePicked(screen, geom !== "" ? rect : null);
         }
     }
 
@@ -150,7 +148,18 @@ Singleton {
             selecting = true;
             return;
         }
-        ScreenshotService.present(screenName, path, "", "");
+        Exec.detached(["rm", "-f", path]);
+    }
+
+    Process {
+        id: grim
+        onExited: code => {
+            if (code === 0) {
+                ScreenshotService.show(root.shotScreen, root.shotPath);
+            } else {
+                Exec.detached(["rm", "-f", root.shotPath]);
+            }
+        }
     }
 
     Timer {

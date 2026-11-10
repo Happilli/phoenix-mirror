@@ -1,11 +1,10 @@
 pragma Singleton
 import QtQuick
-import Quickshell
 import Ryu.Io
 import qs.services.paths
 import qs.configuration.Screenshot
 
-Singleton {
+QtObject {
     id: root
 
     property bool recording: false
@@ -13,6 +12,7 @@ Singleton {
     property string file: ""
     property string pendingAudio: ""
     property var pendingTarget: []
+    property string slurped: ""
     property real startedAt: 0
     readonly property string dir: PathService.home + "/Videos/"
 
@@ -57,38 +57,17 @@ Singleton {
             stop();
             return "stopped";
         }
-        if (picking) {
+        if (picking || slurp.running) {
             return "busy";
         }
         pendingAudio = audio;
-        picking = ScreenshotConfig.captureRegionForRecording();
-        return picking ? "select a region" : "busy";
+        slurped = "";
+        picking = true;
+        slurp.command = ["slurp"].concat(ScreenshotConfig.slurpArgs());
+        slurp.running = true;
+        return "select a region";
     }
-
-    Connections {
-        target: ScreenshotConfig
-
-        function onRegionPicked(screenName, rect) {
-            if (!rect) {
-                root.picking = false;
-                return;
-            }
-            const s = Quickshell.screens.find(m => m.name === screenName);
-            const gx = rect.x + (s ? s.x : 0);
-            const gy = rect.y + (s ? s.y : 0);
-            root.pendingTarget = ["-g", gx + "," + gy + " " + rect.w + "x" + rect.h];
-            startDelay.restart();
-        }
-
-        function onFinished() {
-            if (root.picking && !ScreenshotConfig.selecting && !startDelay.running) {
-                root.picking = false;
-            }
-        }
-    }
-
-    Timer {
-        id: startDelay
+    property Timer startDelay: Timer {
         interval: 150
         onTriggered: {
             root.begin(root.pendingTarget, root.pendingAudio);
@@ -96,8 +75,21 @@ Singleton {
         }
     }
 
-    Process {
-        id: recorder
+    property Process slurp: Process {
+        stdout: SplitParser {
+            onRead: data => root.slurped = data.trim()
+        }
+        onExited: code => {
+            if (code === 0 && root.slurped !== "") {
+                root.pendingTarget = ["-g", root.slurped];
+                root.startDelay.restart();
+            } else {
+                root.picking = false;
+            }
+        }
+    }
+
+    property Process recorder: Process {
         onExited: code => {
             const saved = root.file;
             root.recording = false;
