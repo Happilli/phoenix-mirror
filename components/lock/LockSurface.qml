@@ -174,7 +174,7 @@ Item {
         TermText {
             x: frame.width - 38 - implicitWidth
             y: frame.height - 16 - implicitHeight
-            text: "[ enter unlock · esc clear ]"
+            text: "[ enter unlock / esc clear ]"
             font.pixelSize: 16
             color: root.dimText
         }

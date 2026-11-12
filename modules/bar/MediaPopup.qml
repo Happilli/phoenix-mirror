@@ -7,6 +7,7 @@ import px.services.media
 
 Item {
     id: root
+
     required property bool active
     readonly property int disc: 160
     readonly property int artSize: 145
@@ -28,6 +29,7 @@ Item {
     property real enter: 0
     readonly property bool holding: seeking || settle.running
     readonly property real frac: holding ? seekFrac : (length > 0 ? Math.max(0, Math.min(1, position / length)) : 0)
+
     function flushSeek() {
         if (!scrubDirty)
             return;
@@ -35,12 +37,14 @@ Item {
         if (MediaService.player && length > 0)
             MediaService.player.position = seekFrac * length;
     }
+
     function endSeek() {
         flushSeek();
         position = seekFrac * length;
         settle.restart();
         seeking = false;
     }
+
     function scrubTo(next) {
         const clamped = Math.max(0, Math.min(1, next));
         if (length > 0)
@@ -48,27 +52,32 @@ Item {
         seekFrac = clamped;
         scrubDirty = true;
     }
+
     anchors.centerIn: parent
     implicitWidth: contentWidth
     implicitHeight: column.implicitHeight
     visible: active
     Component.onCompleted: enter = 1
+
     TextMetrics {
         id: titleMetrics
         text: MediaService.title
         font.pixelSize: 18
         font.weight: Font.DemiBold
     }
+
     TextMetrics {
         id: artistMetrics
         text: MediaService.artist
         font.pixelSize: 13
     }
+
     TextMetrics {
         id: albumMetrics
         text: MediaService.album
         font.pixelSize: 11
     }
+
     TextMetrics {
         id: headerMetrics
         text: MediaService.identity.toUpperCase()
@@ -76,34 +85,40 @@ Item {
         font.weight: Font.DemiBold
         font.letterSpacing: 1.2
     }
+
     Binding {
         target: root
         property: "position"
         value: MediaService.player?.position ?? 0
         when: !root.holding
     }
+
     Binding {
         target: MediaService.player
         property: "trackPosition"
         value: true
         when: root.active
     }
+
     Behavior on enter {
         NumberAnimation {
             duration: 260
             easing.type: Easing.OutCubic
         }
     }
+
     Timer {
         id: settle
         interval: 700
     }
+
     Timer {
         interval: 70
         repeat: true
         running: root.seeking
         onTriggered: root.flushSeek()
     }
+
     FrameAnimation {
         running: root.active && MediaService.isPlaying
         onTriggered: {
@@ -113,6 +128,7 @@ Item {
                 root.position = MediaService.player?.position ?? 0;
         }
     }
+
     Column {
         id: column
         x: 0
@@ -120,13 +136,16 @@ Item {
         width: root.contentWidth
         spacing: 18
         opacity: root.enter
+
         Row {
             width: parent.width
             height: root.disc
             spacing: root.rowGap
+
             Item {
                 width: root.disc
                 height: root.disc
+
                 Rectangle {
                     anchors.fill: parent
                     radius: width / 2
@@ -134,12 +153,15 @@ Item {
                     border.width: 1
                     border.color: Theme.outlineVariant
                 }
+
                 Item {
                     id: spinner
                     anchors.fill: parent
                     rotation: root.angle
+
                     Repeater {
                         model: 3
+
                         Rectangle {
                             id: groove
                             required property int index
@@ -152,12 +174,14 @@ Item {
                             border.color: Theme.outlineVariant
                         }
                     }
+
                     ClippingRectangle {
                         anchors.centerIn: parent
                         width: root.artSize
                         height: root.artSize
                         radius: width / 2
                         color: Theme.surfaceContainerHighest
+
                         Image {
                             anchors.fill: parent
                             source: MediaService.artUrl
@@ -166,12 +190,14 @@ Item {
                             asynchronous: true
                             cache: false
                             opacity: status === Image.Ready ? 1 : 0
+
                             Behavior on opacity {
                                 NumberAnimation {
                                     duration: 200
                                 }
                             }
                         }
+
                         Text {
                             anchors.centerIn: parent
                             visible: MediaService.artUrl === ""
@@ -181,6 +207,7 @@ Item {
                             opacity: 0.4
                         }
                     }
+
                     Rectangle {
                         anchors.centerIn: parent
                         width: root.artSize
@@ -190,6 +217,7 @@ Item {
                         border.width: 2
                         border.color: Theme.primary
                     }
+
                     Rectangle {
                         anchors.centerIn: parent
                         width: 14
@@ -200,13 +228,16 @@ Item {
                         border.color: Theme.primary
                     }
                 }
+
                 MouseArea {
                     anchors.fill: parent
                     enabled: MediaService.player?.canSeek ?? false
                     cursorShape: pressed ? Qt.ClosedHandCursor : Qt.OpenHandCursor
+
                     function pointerAngle(m) {
                         return Math.atan2(m.y - height / 2, m.x - width / 2) * 180 / Math.PI;
                     }
+
                     onPressed: m => {
                         const dx = m.x - width / 2;
                         const dy = m.y - height / 2;
@@ -218,6 +249,7 @@ Item {
                         root.seekFrac = root.frac;
                         root.seeking = true;
                     }
+
                     onPositionChanged: m => {
                         if (!pressed)
                             return;
@@ -234,17 +266,21 @@ Item {
                             root.scrubDirty = true;
                         }
                     }
+
                     onReleased: root.endSeek()
                     onCanceled: root.endSeek()
                 }
             }
+
             Column {
                 width: root.textWidth
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: 5
+
                 Item {
                     width: parent.width
                     height: 28
+
                     Text {
                         anchors.left: parent.left
                         anchors.right: toggle.left
@@ -258,6 +294,7 @@ Item {
                         color: Theme.primary
                         opacity: 0.8
                     }
+
                     MaterialIconButton {
                         id: toggle
                         anchors.right: parent.right
@@ -273,6 +310,7 @@ Item {
                         onClicked: MediaService.toggleVisualizer()
                     }
                 }
+
                 Text {
                     width: parent.width
                     text: MediaService.title
@@ -282,6 +320,7 @@ Item {
                     lineHeight: 1.1
                     color: Theme.onBackgroundColor
                 }
+
                 Text {
                     width: parent.width
                     visible: text !== ""
@@ -291,6 +330,7 @@ Item {
                     color: Theme.onSurfaceVariantColor
                     opacity: 0.9
                 }
+
                 Text {
                     width: parent.width
                     visible: text !== ""
@@ -302,12 +342,15 @@ Item {
                 }
             }
         }
+
         Column {
             width: parent.width
             spacing: 4
+
             Item {
                 width: parent.width
                 height: 16
+
                 WavyProgress {
                     anchors.fill: parent
                     style: WavyProgress.Linear
@@ -319,7 +362,8 @@ Item {
                     gap: 4
                     wavelength: 30
                     waveSpeed: 0.67
-                    amplitude: MediaService.isPlaying ? 2.5 : 0
+                    amplitude: (MediaService.isPlaying && !root.seeking) ? 2.5 : 0
+
                     Behavior on amplitude {
                         NumberAnimation {
                             duration: 400
@@ -327,34 +371,42 @@ Item {
                         }
                     }
                 }
+
                 MouseArea {
                     anchors.fill: parent
                     anchors.margins: -4
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     enabled: MediaService.player?.canSeek ?? false
+
                     function update(mouse) {
                         root.scrubTo(mouse.x / width);
                     }
+
                     onPressed: mouse => {
                         root.seekFrac = root.frac;
                         root.seeking = true;
                         update(mouse);
                     }
+
                     onPositionChanged: mouse => {
                         if (pressed)
                             update(mouse);
                     }
+
                     onReleased: mouse => {
                         update(mouse);
                         root.endSeek();
                     }
+
                     onCanceled: root.endSeek()
                 }
             }
+
             Item {
                 width: parent.width
                 height: timeLeft.implicitHeight
+
                 Text {
                     id: timeLeft
                     anchors.left: parent.left
@@ -363,6 +415,7 @@ Item {
                     color: Theme.onSurfaceVariantColor
                     opacity: 0.7
                 }
+
                 Text {
                     anchors.right: parent.right
                     text: MediaService.formatTime(root.length)

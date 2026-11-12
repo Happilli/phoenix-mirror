@@ -26,7 +26,7 @@ QtObject {
 
     function begin(targetArgs, audio) {
         file = dir + "/recording_" + Qt.formatDateTime(new Date(), "yyyy-MM-dd_hh-mm-ss") + ".mp4";
-        const args = ["wl-screenrec", "-f", file].concat(targetArgs, audioArgs(audio));
+        const args = ["wl-screenrec", "-f", file, "--low-power=off"].concat(targetArgs, audioArgs(audio));
         recorder.command = ["sh", "-c", 'mkdir -p "$1" && shift && exec "$@"', "sh", dir].concat(args);
         recorder.running = true;
         startedAt = Date.now();
