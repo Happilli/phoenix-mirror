@@ -1,21 +1,40 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Effects
 import Ryu.Io
+import Ryu.Wayland as Wl
 import px.services.theme
-import px.configuration.Lock
 
 Item {
     id: root
 
     required property var context
+    required property var host
     required property string screenName
+
+    signal exited
 
     property bool exiting: false
     property real enter: 0
     property real leave: 0
     property real warp: 0
+    property bool shown: false
+
+    function log(message) {
+        if (host)
+            host.log(message);
+    }
+
+    onShownChanged: {
+        log("animations start shown=" + shown);
+        if (shown) {
+            forceActiveFocus();
+            enter = 1;
+            warp = 1;
+        }
+    }
+
+    Component.onCompleted: log("scene created " + width + "x" + height)
 
     readonly property int length: context.currentText.length
     readonly property bool failed: context.showFailure
@@ -27,7 +46,6 @@ Item {
     readonly property string hashes: (length > maxShown ? "…" : "") + "#".repeat(Math.min(length, maxShown))
     readonly property color accent: failed ? Theme.error : Theme.primary
     readonly property color dimText: Theme.onSurfaceVariantColor
-
     readonly property string statusText: {
         if (exiting)
             return "access granted";
@@ -67,16 +85,23 @@ Item {
 
     Behavior on warp {
         NumberAnimation {
-            duration: root.exiting ? 650 : 1100
-            easing.type: root.exiting ? Easing.InOutCubic : Easing.OutBack
+            duration: 1100
+            easing.type: Easing.OutBack
             easing.overshoot: 1.1
         }
     }
 
-    Component.onCompleted: {
-        forceActiveFocus();
-        enter = 1;
-        warp = 1;
+    NumberAnimation {
+        id: exitWarp
+        target: root
+        property: "warp"
+        to: 0
+        duration: 650
+        easing.type: Easing.InOutCubic
+        onFinished: {
+            root.log("exit animation finished");
+            root.exited();
+        }
     }
 
     Keys.onPressed: e => {
@@ -103,15 +128,9 @@ Item {
         scale: root.stageScale
         transformOrigin: Item.Center
 
-        Image {
-            id: bg
+        Wl.LockBackdrop {
             anchors.fill: parent
-            source: root.screenName !== "" ? "file://" + LockConfig.backgroundFor(root.screenName) : ""
-            fillMode: Image.PreserveAspectCrop
-            asynchronous: true
-            cache: false
-            smooth: true
-            layer.enabled: true
+            screenName: root.screenName
         }
     }
 
@@ -198,9 +217,10 @@ Item {
         target: root.context
 
         function onUnlocked() {
+            root.log("password accepted, exiting");
             root.exiting = true;
             root.leave = 1;
-            root.warp = 0;
+            exitWarp.start();
         }
     }
 }

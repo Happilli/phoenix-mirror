@@ -1,7 +1,9 @@
 pragma ComponentBehavior: Bound
+
 import QtQuick
+import Ryu.Shell
 import Ryu.Wayland as Wl
-import px.services.theme
+import px.configuration.Lock
 
 QtObject {
     id: root
@@ -15,47 +17,40 @@ QtObject {
             return;
         }
         released = true;
+        LockConfig.log("session release");
         sessionLock.locked = false;
         finished();
     }
 
-    function engage() {
-        released = false;
-        lockContext.currentText = "";
-        lockContext.showFailure = false;
-        sessionLock.locked = true;
-    }
-
     property LockContext lockCtx: LockContext {
         id: lockContext
-        onUnlocked: fallbackTimer.start()
-    }
-
-    property Timer fallback: Timer {
-        id: fallbackTimer
-        interval: 700
-        onTriggered: root.release()
     }
 
     property QtObject lock: Wl.WlSessionLock {
         id: sessionLock
-        locked: false
-        color: Theme.background
+        color: "#ff00ff"
         onFinished: root.release()
 
         Wl.WlSessionLockSurface {
             id: surface
-            color: Theme.background
 
-            Loader {
+            LockSurface {
                 anchors.fill: parent
-                focus: true
-                active: surface.ready
-                sourceComponent: LockSurface {
-                    context: lockContext
-                    screenName: surface.screen?.name ?? ""
-                }
+                context: lockContext
+                host: surface
+                screenName: surface.screen?.name ?? ""
+                shown: surface.painted
+                onExited: root.release()
             }
         }
+    }
+
+    Component.onCompleted: {
+        const paths = {};
+        for (const s of Screens.list) {
+            paths[s.name] = LockConfig.backgroundFor(s.name);
+        }
+        sessionLock.backgrounds = paths;
+        sessionLock.locked = true;
     }
 }

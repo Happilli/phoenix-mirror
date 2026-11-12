@@ -4,55 +4,72 @@ import QtQuick
 import Ryu.Io
 import Ryu.Shell
 import px.services.paths
-import px.configuration.Screenshot
 
 QtObject {
     id: root
 
     property bool requested: false
     property bool active: false
-    property int stamp: 0
+    property double stamp: 0
 
-    signal lockRequested
-
-    function backgroundFor(name) {
-        return ScreenshotConfig.pathFor(name);
+    function log(message) {
+        console.log("lock qml +" + (Date.now() - stamp) + "ms", message);
     }
 
-    function backgroundUrl(name) {
-        return "file://" + backgroundFor(name) + "?" + stamp;
+    function backgroundFor(name) {
+        return PathService.runtime + "/phoenix-lock-" + name + ".ppm";
     }
 
     function requestLock() {
         if (requested || active) {
             return;
         }
-        requested = true;
-        stamp += 1;
-        const started = ScreenshotConfig.begin(Screens.list.map(s => s.name), true);
-        if (!started) {
-            engage();
+        const names = Screens.list.map(s => s.name);
+        if (names.length === 0) {
+            return;
         }
+        requested = true;
+        stamp = Date.now();
+        log("request " + names.join(","));
+        grim.command = ["sh", "-c", 'dir="$1"; shift; for o in "$@"; do grim -t ppm -o "$o" "$dir/phoenix-lock-$o.ppm" & done; wait', "sh", PathService.runtime].concat(names);
+        grim.running = true;
+        timeout.restart();
     }
 
     function engage() {
+        if (!requested || active) {
+            return;
+        }
+        timeout.stop();
+        log("engage");
         active = true;
-        lockRequested();
     }
 
     function release() {
+        log("release");
+        timeout.stop();
         requested = false;
         active = false;
-        Exec.detached(["sh", "-c", `rm -f "${PathService.runtime}"/phoenix-capture-*.bmp`]);
+        Exec.detached(["sh", "-c", 'rm -f "$1"/phoenix-lock-*.ppm', "sh", PathService.runtime]);
     }
 
-    property Connections screenshotWatch: Connections {
-        target: ScreenshotConfig
+    property Process grim: Process {
+        onExited: code => {
+            root.log("grim exited " + code);
+            root.engage();
+        }
+        onFailed: message => {
+            root.log("grim failed " + message);
+            root.engage();
+        }
+    }
 
-        function onFinished() {
-            if (root.requested && !root.active) {
-                root.engage();
-            }
+    property Timer timeout: Timer {
+        interval: 3000
+        onTriggered: {
+            root.log("grim timeout");
+            grim.running = false;
+            root.engage();
         }
     }
 }

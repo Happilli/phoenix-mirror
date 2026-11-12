@@ -1,19 +1,15 @@
 import QtQuick
 import Ryu.Shell
+import Ryu.Ui
 import px.components.lock
 import px.configuration.Lock
 
 Scope {
-    SessionLock {
-        id: sl
-        onFinished: LockConfig.release()
-    }
+    LazyLoader {
+        active: LockConfig.active
 
-    Connections {
-        target: LockConfig
-
-        function onLockRequested() {
-            sl.engage();
+        SessionLock {
+            onFinished: LockConfig.release()
         }
     }
 }
