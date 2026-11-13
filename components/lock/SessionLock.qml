@@ -17,7 +17,6 @@ QtObject {
             return;
         }
         released = true;
-        LockConfig.log("session release");
         sessionLock.locked = false;
         finished();
     }
@@ -28,17 +27,16 @@ QtObject {
 
     property QtObject lock: Wl.WlSessionLock {
         id: sessionLock
+
         color: "#ff00ff"
         onFinished: root.release()
 
         Wl.WlSessionLockSurface {
             id: surface
-
             LockSurface {
                 anchors.fill: parent
                 context: lockContext
-                host: surface
-                screenName: surface.screen?.name ?? ""
+                screenName: surface.screenName
                 shown: surface.painted
                 onExited: root.release()
             }

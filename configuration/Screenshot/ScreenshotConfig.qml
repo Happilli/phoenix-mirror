@@ -60,6 +60,10 @@ QtObject {
         capturing = false;
         targets = [];
         pending = 0;
+        if (!selecting) {
+            regionMode = false;
+            lassoMode = false;
+        }
         finished();
     }
 
@@ -97,9 +101,15 @@ QtObject {
 
     function captureLasso() {
         const name = focusedName();
+        if (name === "") {
+            return false;
+        }
+        if (!begin([name], false)) {
+            return false;
+        }
         regionMode = true;
         lassoMode = true;
-        return name !== "" && begin([name], false);
+        return true;
     }
 
     function finishSelect(geom, rect) {

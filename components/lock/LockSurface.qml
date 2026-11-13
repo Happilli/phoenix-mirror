@@ -9,7 +9,6 @@ Item {
     id: root
 
     required property var context
-    required property var host
     required property string screenName
 
     signal exited
@@ -20,21 +19,13 @@ Item {
     property real warp: 0
     property bool shown: false
 
-    function log(message) {
-        if (host)
-            host.log(message);
-    }
-
     onShownChanged: {
-        log("animations start shown=" + shown);
-        if (shown) {
-            forceActiveFocus();
-            enter = 1;
-            warp = 1;
+        if (root.shown) {
+            root.forceActiveFocus();
+            root.enter = 1;
+            root.warp = 1;
         }
     }
-
-    Component.onCompleted: log("scene created " + width + "x" + height)
 
     readonly property int length: context.currentText.length
     readonly property bool failed: context.showFailure
@@ -56,7 +47,6 @@ Item {
         return length + " chars";
     }
     readonly property color statusColor: exiting ? Theme.primary : (failed ? Theme.error : dimText)
-
     readonly property real maxAngle: -6
     readonly property real zoom: 0.5
     readonly property real dim: 0.5
@@ -93,15 +83,13 @@ Item {
 
     NumberAnimation {
         id: exitWarp
+
         target: root
         property: "warp"
         to: 0
         duration: 650
         easing.type: Easing.InOutCubic
-        onFinished: {
-            root.log("exit animation finished");
-            root.exited();
-        }
+        onFinished: root.exited()
     }
 
     Keys.onPressed: e => {
@@ -123,6 +111,7 @@ Item {
 
     Item {
         id: stage
+
         anchors.fill: parent
         rotation: root.tilt
         scale: root.stageScale
@@ -150,6 +139,7 @@ Item {
 
     Item {
         id: frame
+
         anchors.fill: parent
         anchors.margins: root.frameMargin
         opacity: root.presence
@@ -217,7 +207,6 @@ Item {
         target: root.context
 
         function onUnlocked() {
-            root.log("password accepted, exiting");
             root.exiting = true;
             root.leave = 1;
             exitWarp.start();

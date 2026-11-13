@@ -10,11 +10,6 @@ QtObject {
 
     property bool requested: false
     property bool active: false
-    property double stamp: 0
-
-    function log(message) {
-        console.log("lock qml +" + (Date.now() - stamp) + "ms", message);
-    }
 
     function backgroundFor(name) {
         return PathService.runtime + "/phoenix-lock-" + name + ".ppm";
@@ -29,8 +24,6 @@ QtObject {
             return;
         }
         requested = true;
-        stamp = Date.now();
-        log("request " + names.join(","));
         grim.command = ["sh", "-c", 'dir="$1"; shift; for o in "$@"; do grim -t ppm -o "$o" "$dir/phoenix-lock-$o.ppm" & done; wait', "sh", PathService.runtime].concat(names);
         grim.running = true;
         timeout.restart();
@@ -41,12 +34,10 @@ QtObject {
             return;
         }
         timeout.stop();
-        log("engage");
         active = true;
     }
 
     function release() {
-        log("release");
         timeout.stop();
         requested = false;
         active = false;
@@ -54,21 +45,14 @@ QtObject {
     }
 
     property Process grim: Process {
-        onExited: code => {
-            root.log("grim exited " + code);
-            root.engage();
-        }
-        onFailed: message => {
-            root.log("grim failed " + message);
-            root.engage();
-        }
+        onExited: root.engage()
+        onFailed: root.engage()
     }
 
     property Timer timeout: Timer {
         interval: 3000
         onTriggered: {
-            root.log("grim timeout");
-            grim.running = false;
+            root.grim.running = false;
             root.engage();
         }
     }
