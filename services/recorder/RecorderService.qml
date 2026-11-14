@@ -12,7 +12,6 @@ QtObject {
     property string file: ""
     property string pendingAudio: ""
     property var pendingTarget: []
-    property string slurped: ""
     property real startedAt: 0
     readonly property string dir: PathService.home + "/Videos/"
 
@@ -57,35 +56,39 @@ QtObject {
             stop();
             return "stopped";
         }
-        if (picking || slurp.running) {
+        if (picking || ScreenshotConfig.selecting || ScreenshotConfig.capturing) {
             return "busy";
         }
         pendingAudio = audio;
-        slurped = "";
         picking = true;
-        slurp.command = ["slurp"].concat(ScreenshotConfig.slurpArgs());
-        slurp.running = true;
+        if (!ScreenshotConfig.pickRegion()) {
+            picking = false;
+            return "busy";
+        }
         return "select a region";
     }
+
+    property Connections picker: Connections {
+        target: ScreenshotConfig
+
+        function onRegionPicked(name, rect) {
+            if (!rect) {
+                root.picking = false;
+                return;
+            }
+            const s = Qt.application.screens.find(x => x.name === name);
+            const ox = s ? s.virtualX : 0;
+            const oy = s ? s.virtualY : 0;
+            root.pendingTarget = ["-g", (ox + rect.x) + "," + (oy + rect.y) + " " + rect.w + "x" + rect.h];
+            root.startDelay.restart();
+        }
+    }
+
     property Timer startDelay: Timer {
         interval: 150
         onTriggered: {
             root.begin(root.pendingTarget, root.pendingAudio);
             root.picking = false;
-        }
-    }
-
-    property Process slurp: Process {
-        stdout: SplitParser {
-            onRead: data => root.slurped = data.trim()
-        }
-        onExited: code => {
-            if (code === 0 && root.slurped !== "") {
-                root.pendingTarget = ["-g", root.slurped];
-                root.startDelay.restart();
-            } else {
-                root.picking = false;
-            }
         }
     }
 

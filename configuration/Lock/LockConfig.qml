@@ -1,9 +1,9 @@
 pragma Singleton
-
 import QtQuick
 import Ryu.Io
 import Ryu.Shell
 import px.services.paths
+import px.configuration.Screenshot
 
 QtObject {
     id: root
@@ -24,8 +24,14 @@ QtObject {
             return;
         }
         requested = true;
-        grim.command = ["sh", "-c", 'dir="$1"; shift; for o in "$@"; do grim -t ppm -o "$o" "$dir/phoenix-lock-$o.ppm" & done; wait', "sh", PathService.runtime].concat(names);
-        grim.running = true;
+        ScreenshotConfig.prefix = "phoenix-lock-";
+        ScreenshotConfig.ext = "ppm";
+        if (!ScreenshotConfig.begin(names, true)) {
+            ScreenshotConfig.prefix = "phoenix-capture-";
+            ScreenshotConfig.ext = "bmp";
+            engage();
+            return;
+        }
         timeout.restart();
     }
 
@@ -44,16 +50,18 @@ QtObject {
         Exec.detached(["sh", "-c", 'rm -f "$1"/phoenix-lock-*.ppm', "sh", PathService.runtime]);
     }
 
-    property Process grim: Process {
-        onExited: root.engage()
-        onFailed: root.engage()
+    property Connections capture: Connections {
+        target: ScreenshotConfig
+
+        function onFinished() {
+            if (root.requested && !root.active) {
+                root.engage();
+            }
+        }
     }
 
     property Timer timeout: Timer {
         interval: 3000
-        onTriggered: {
-            root.grim.running = false;
-            root.engage();
-        }
+        onTriggered: root.engage()
     }
 }

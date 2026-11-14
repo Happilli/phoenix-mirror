@@ -1,5 +1,5 @@
 #!/bin/sh
-ryuctl="/home/safalski/development/ryuzin-dependancies/ryu/build/ryuctl"
+ryuctl="ryuctl"
 dir="${XDG_RUNTIME_DIR:-/tmp}"
 out="$dir/phoenix-picker-result"
 log="$dir/picker-debug.log"

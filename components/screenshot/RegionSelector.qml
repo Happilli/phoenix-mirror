@@ -9,7 +9,6 @@ Item {
     property point a: Qt.point(0, 0)
     property point b: Qt.point(0, 0)
     property bool dragging: false
-
     property var pts: []
     property point cur: Qt.point(0, 0)
     property bool seen: false
@@ -20,13 +19,11 @@ Item {
 
     readonly property bool lasso: ScreenshotConfig.lassoMode
     readonly property real iconOffset: 0
-
     readonly property real sx: Math.min(a.x, b.x)
     readonly property real sy: Math.min(a.y, b.y)
     readonly property real sw: Math.abs(a.x - b.x)
     readonly property real sh: Math.abs(a.y - b.y)
     readonly property bool has: dragging && sw > 1 && sh > 1
-    readonly property real ratio: width > 0 && frozen.implicitWidth > 0 ? frozen.implicitWidth / width : 1
 
     function steer(x, y) {
         const dx = x - lastX;
@@ -41,7 +38,6 @@ Item {
 
     function finishLasso() {
         dragging = false;
-        const k = ratio;
         if (pts.length < 3) {
             pts = [];
             ScreenshotConfig.finishSelect("", null);
@@ -54,17 +50,24 @@ Item {
             x1 = Math.max(x1, p.x);
             y1 = Math.max(y1, p.y);
         }
-        const w = Math.round((x1 - x0) * k);
-        const h = Math.round((y1 - y0) * k);
-        if (w <= 4 || h <= 4) {
+        if (x1 - x0 <= 4 || y1 - y0 <= 4) {
             pts = [];
             ScreenshotConfig.finishSelect("", null);
             return;
         }
-        const geom = w + "x" + h + "+" + Math.round(x0 * k) + "+" + Math.round(y0 * k);
-        const poly = pts.map(p => Math.round(p.x * k) + "," + Math.round(p.y * k)).join(" ");
+        const rect = {
+            x: x0,
+            y: y0,
+            w: x1 - x0,
+            h: y1 - y0,
+            sw: root.width
+        };
+        const poly = pts.map(p => ({
+                    x: p.x,
+                    y: p.y
+                }));
         pts = [];
-        ScreenshotConfig.finishLasso(geom, poly);
+        ScreenshotConfig.finishLasso(rect, poly);
     }
 
     focus: true
@@ -79,14 +82,6 @@ Item {
         }
     }
 
-    Image {
-        id: frozen
-        anchors.fill: parent
-        source: "file://" + ScreenshotConfig.selectSource
-        fillMode: Image.Stretch
-        cache: false
-    }
-
     Rectangle {
         x: 0
         y: 0
@@ -94,7 +89,9 @@ Item {
         height: root.has ? root.sy : parent.height
         color: Theme.scrim
         opacity: 0.55
+        visible: !root.lasso
     }
+
     Rectangle {
         x: 0
         y: root.sy + root.sh
@@ -102,7 +99,9 @@ Item {
         height: root.has ? parent.height - y : 0
         color: Theme.scrim
         opacity: 0.55
+        visible: !root.lasso
     }
+
     Rectangle {
         x: 0
         y: root.sy
@@ -110,7 +109,9 @@ Item {
         height: root.sh
         color: Theme.scrim
         opacity: 0.55
+        visible: !root.lasso
     }
+
     Rectangle {
         x: root.sx + root.sw
         y: root.sy
@@ -118,8 +119,35 @@ Item {
         height: root.sh
         color: Theme.scrim
         opacity: 0.55
+        visible: !root.lasso
     }
 
+    Shape {
+        anchors.fill: parent
+        visible: root.lasso
+        preferredRendererType: Shape.CurveRenderer
+
+        ShapePath {
+            fillRule: ShapePath.OddEvenFill
+            fillColor: Qt.alpha(Theme.scrim, 0.55)
+            strokeWidth: -1
+            strokeColor: "transparent"
+
+            PathSvg {
+                path: {
+                    let d = "M 0 0 L " + root.width + " 0 L " + root.width + " " + root.height + " L 0 " + root.height + " Z";
+                    const all = root.pts.length > 0 ? root.pts.concat([root.cur]) : [];
+                    if (all.length > 2) {
+                        d += " M " + all[0].x + " " + all[0].y;
+                        for (let i = 1; i < all.length; i++)
+                            d += " L " + all[i].x + " " + all[i].y;
+                        d += " Z";
+                    }
+                    return d;
+                }
+            }
+        }
+    }
     Rectangle {
         visible: root.has && !root.lasso
         x: root.sx
@@ -143,7 +171,7 @@ Item {
         Text {
             id: label
             anchors.centerIn: parent
-            text: Math.round(root.sw * root.ratio) + " × " + Math.round(root.sh * root.ratio)
+            text: Math.round(root.sw) + " × " + Math.round(root.sh)
             font.pixelSize: 12
             font.weight: Font.Medium
             color: Theme.primary
@@ -189,7 +217,6 @@ Item {
         onPositionChanged: mouse => {
             const x = Math.max(0, Math.min(width, mouse.x));
             const y = Math.max(0, Math.min(height, mouse.y));
-
             if (root.lasso) {
                 if (!root.seen) {
                     root.lastX = x;
@@ -198,7 +225,6 @@ Item {
                 root.cur = Qt.point(x, y);
                 root.seen = true;
                 root.steer(x, y);
-
                 if (root.dragging) {
                     const last = root.pts[root.pts.length - 1];
                     if (Math.hypot(x - last.x, y - last.y) >= 3)
@@ -206,7 +232,6 @@ Item {
                 }
                 return;
             }
-
             if (root.dragging)
                 root.b = Qt.point(x, y);
         }
@@ -216,19 +241,19 @@ Item {
                 root.finishLasso();
                 return;
             }
-            const k = root.ratio;
             const ok = root.sw > 4 && root.sh > 4;
-            const geom = Math.round(root.sw * k) + "x" + Math.round(root.sh * k) + "+" + Math.round(root.sx * k) + "+" + Math.round(root.sy * k);
             const rect = {
                 x: Math.round(root.sx),
                 y: Math.round(root.sy),
                 w: Math.round(root.sw),
-                h: Math.round(root.sh)
+                h: Math.round(root.sh),
+                sw: Math.round(root.width)
             };
             root.dragging = false;
-            ScreenshotConfig.finishSelect(ok ? geom : "", ok ? rect : null);
+            ScreenshotConfig.finishSelect(ok ? "go" : "", ok ? rect : null);
         }
     }
+
     Item {
         id: scissors
         z: 10

@@ -1,5 +1,4 @@
 pragma Singleton
-
 import QtQuick
 import px.services.theme
 import Ryu.Sway
@@ -13,21 +12,27 @@ QtObject {
 
     property bool capturing: false
     property bool silent: false
-    property bool regionMode: false
     property bool lassoMode: false
     property bool selecting: false
+    property bool direct: false
+    property bool afterSelect: false
+    property bool forRecord: false
     property string selectScreen: ""
-    property string selectSource: ""
+    property string prefix: "phoenix-capture-"
+    property string ext: "bmp"
+    property string pendingScreen: ""
+    property var pendingRect: null
+    property var pendingPoly: null
+    property real imageWidth: 0
     property var targets: []
     property int pending: 0
-    property string shotScreen: ""
-    property string shotPath: ""
 
     signal captured(string screenName, string path)
+    signal regionPicked(string screenName, var rect)
     signal finished
 
     function pathFor(name) {
-        return PathService.runtime + "/phoenix-capture-" + name + ".bmp";
+        return PathService.runtime + "/" + prefix + name + "." + ext;
     }
 
     function begin(names, quiet) {
@@ -60,10 +65,10 @@ QtObject {
         capturing = false;
         targets = [];
         pending = 0;
-        if (!selecting) {
-            regionMode = false;
-            lassoMode = false;
-        }
+        direct = false;
+        afterSelect = false;
+        prefix = "phoenix-capture-";
+        ext = "bmp";
         finished();
     }
 
@@ -71,86 +76,99 @@ QtObject {
         return Sway.focusedMonitor?.name ?? Screens.list[0]?.name ?? "";
     }
 
-    function startGrim(args) {
-        if (grim.running || capturing || selecting) {
-            return false;
-        }
+    function captureFull() {
         const name = focusedName();
-        if (name === "") {
+        if (name === "" || !begin([name], false)) {
             return false;
         }
-        shotScreen = name;
-        shotPath = PathService.runtime + "/phoenix-shot-" + Date.now() + ".png";
-        grim.command = args(name, shotPath);
-        grim.running = true;
+        direct = true;
         return true;
     }
 
-    function grimFull() {
-        return startGrim((name, out) => ["grim", "-o", name, out]);
+    function startSelect(lasso) {
+        const name = focusedName();
+        if (name === "" || capturing || selecting) {
+            return false;
+        }
+        selectScreen = name;
+        lassoMode = lasso;
+        selecting = true;
+        return true;
     }
 
-    function slurpArgs() {
-        const accent = String(Theme.primary).replace("#", "").slice(0, 6);
-        return ["-b", "#00000099", "-s", "#00000000", "-c", "#" + accent + "ff", "-w", "2"];
-    }
-
-    function grimRegion() {
-        return startGrim((name, out) => ["sh", "-c", 'out="$1"; shift; g=$(slurp "$@") || exit 1; exec grim -g "$g" "$out"', "sh", out].concat(slurpArgs()));
+    function captureRegion() {
+        return startSelect(false);
     }
 
     function captureLasso() {
-        const name = focusedName();
-        if (name === "") {
+        return startSelect(true);
+    }
+
+    function pickRegion() {
+        if (!startSelect(false)) {
             return false;
         }
-        if (!begin([name], false)) {
-            return false;
-        }
-        regionMode = true;
-        lassoMode = true;
+        forRecord = true;
         return true;
     }
 
     function finishSelect(geom, rect) {
-        const source = selectSource;
+        const screen = selectScreen;
+        const record = forRecord;
         selecting = false;
-        regionMode = false;
         lassoMode = false;
-        Exec.detached(["rm", "-f", source]);
+        forRecord = false;
+        pendingPoly = null;
+        if (record) {
+            regionPicked(screen, rect);
+            return;
+        }
+        if (!rect) {
+            return;
+        }
+        pendingRect = rect;
+        pendingScreen = screen;
+        afterTimer.restart();
     }
 
-    function finishLasso(geom, poly) {
-        const source = selectSource;
+    function finishLasso(rect, pts) {
         const screen = selectScreen;
         selecting = false;
-        regionMode = false;
         lassoMode = false;
-        if (geom !== "" && poly !== "")
-            ScreenshotService.present(screen, source, geom, poly);
-        else
-            Exec.detached(["rm", "-f", source]);
+        forRecord = false;
+        pendingRect = rect;
+        pendingPoly = pts;
+        pendingScreen = screen;
+        afterTimer.restart();
     }
 
     onCaptured: (screenName, path) => {
         if (silent) {
             return;
         }
-        if (regionMode) {
-            selectScreen = screenName;
-            selectSource = path;
-            selecting = true;
+        if (direct) {
+            direct = false;
+            ScreenshotService.present(screenName, path, "", "");
+            return;
+        }
+        if (afterSelect) {
+            afterSelect = false;
+            const r = pendingRect;
+            const k = r && r.sw > 0 && imageWidth > 0 ? imageWidth / r.sw : 1;
+            const geom = Math.round(r.w * k) + "x" + Math.round(r.h * k) + "+" + Math.round(r.x * k) + "+" + Math.round(r.y * k);
+            const poly = pendingPoly ? pendingPoly.map(p => Math.round(p.x * k) + "," + Math.round(p.y * k)).join(" ") : "";
+            pendingPoly = null;
+            ScreenshotService.present(screenName, path, geom, poly);
             return;
         }
         Exec.detached(["rm", "-f", path]);
     }
 
-    property Process grim: Process {
-        onExited: code => {
-            if (code === 0) {
-                ScreenshotService.show(root.shotScreen, root.shotPath);
-            } else {
-                Exec.detached(["rm", "-f", root.shotPath]);
+    property Timer afterTimer: Timer {
+        interval: 140
+        onTriggered: {
+            if (root.begin([root.pendingScreen], false)) {
+                root.afterSelect = true;
             }
         }
     }
